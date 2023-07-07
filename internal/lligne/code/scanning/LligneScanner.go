@@ -18,8 +18,8 @@ import (
 type LligneScanner struct {
 	fileName   string
 	sourceCode string
-	currentPos sourcePos
-	markedPos  sourcePos
+	currentPos int
+	markedPos  int
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -29,16 +29,8 @@ func NewLligneScanner(fileName string, sourceCode string) LligneScanner {
 	return LligneScanner{
 		fileName:   fileName,
 		sourceCode: sourceCode,
-		currentPos: sourcePos{
-			charPos: 0,
-			line:    1,
-			column:  1,
-		},
-		markedPos: sourcePos{
-			charPos: 0,
-			line:    1,
-			column:  1,
-		},
+		currentPos: 0,
+		markedPos:  0,
 	}
 }
 
@@ -58,10 +50,7 @@ func (s *LligneScanner) ReadToken() LligneToken {
 
 	switch ch {
 	case '&':
-		if s.advanceIf('&') {
-			return s.newToken(TokenTypeAmpersandAmpersand)
-		}
-		return s.newToken(TokenTypeAmpersand)
+		return s.oneOrTwoRuneToken(TokenTypeAmpersand, '&', TokenTypeAmpersandAmpersand)
 	case '*':
 		return s.newToken(TokenTypeAsterisk)
 	case ':':
@@ -79,23 +68,13 @@ func (s *LligneScanner) ReadToken() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------
 
-type sourcePos struct {
-	charPos int
-	line    int
-	column  int
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
 func (s *LligneScanner) advance(width int, result rune) {
 
-	s.currentPos.charPos += width
-
-	s.currentPos.column += 1
 	if result == '\n' {
-		s.currentPos.line += 1
-		s.currentPos.column = 1
+		// TODO: track line break positions
 	}
+
+	s.currentPos += width
 
 }
 
@@ -103,11 +82,11 @@ func (s *LligneScanner) advance(width int, result rune) {
 
 func (s *LligneScanner) advanceIf(needed rune) bool {
 
-	if s.currentPos.charPos >= len(s.sourceCode) {
+	if s.currentPos >= len(s.sourceCode) {
 		return false
 	}
 
-	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos.charPos:])
+	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
 
 	if found != needed {
 		return false
@@ -123,11 +102,11 @@ func (s *LligneScanner) advanceIf(needed rune) bool {
 
 func (s *LligneScanner) advanceIfWhitespace() bool {
 
-	if s.currentPos.charPos >= len(s.sourceCode) {
+	if s.currentPos >= len(s.sourceCode) {
 		return false
 	}
 
-	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos.charPos:])
+	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
 
 	if !unicode.IsSpace(found) {
 		return false
@@ -143,31 +122,51 @@ func (s *LligneScanner) advanceIfWhitespace() bool {
 
 func (s *LligneScanner) newToken(tokenType LligneTokenType) LligneToken {
 	return LligneToken{
-		TokenType: tokenType,
-		Text:      s.sourceCode[s.markedPos.charPos:s.currentPos.charPos],
-		Origin:    s.originFromMark(),
+		TokenType:      tokenType,
+		Text:           s.sourceCode[s.markedPos:s.currentPos],
+		SourceStartPos: s.markedPos,
 	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *LligneScanner) originFromMark() *LligneOrigin {
-	return &LligneOrigin{
-		FileName: s.fileName,
-		Line:     s.markedPos.line,
-		Column:   s.markedPos.column,
+func (s *LligneScanner) oneOrTwoRuneToken(
+	oneRuneType LligneTokenType,
+	secondRune rune,
+	twoRuneType LligneTokenType,
+) LligneToken {
+
+	if s.advanceIf(secondRune) {
+		return s.newToken(twoRuneType)
 	}
+
+	return s.newToken(oneRuneType)
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (s *LligneScanner) peekRune() rune {
+
+	if s.currentPos >= len(s.sourceCode) {
+		return 0
+	}
+
+	result, _ := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
+
+	return result
+
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (s *LligneScanner) readRune() rune {
 
-	if s.currentPos.charPos >= len(s.sourceCode) {
+	if s.currentPos >= len(s.sourceCode) {
 		return 0
 	}
 
-	result, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos.charPos:])
+	result, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
 
 	s.advance(width, result)
 

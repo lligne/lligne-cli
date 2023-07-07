@@ -79,6 +79,8 @@ const (
 	TokenTypeUnrecognizedLiteral
 	TokenTypeUuidLiteral
 	TokenTypeVerticalBar
+
+	TokenType_Count
 )
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -232,15 +234,6 @@ func (tt LligneTokenType) String() string {
 	}
 
 	panic("Unhandled token type: '" + strconv.Itoa(int(tt)) + "'.")
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-// LligneToken is an abstract token occurring at line [line] and column [column] (both 1-based) in its source file.
-type LligneToken struct {
-	TokenType LligneTokenType
-	Text      string
-	Origin    *LligneOrigin
 }
 
 //---------------------------------------------------------------------------------------------------------------------

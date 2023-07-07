@@ -9,29 +9,26 @@ package scanning
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
 func TestLligneScanner(t *testing.T) {
 
-	expectToken := func(scanner *LligneScanner, tokenType LligneTokenType, text string, line int, column int) {
+	expectToken := func(scanner *LligneScanner, tokenType LligneTokenType, text string, startPos int) {
 		actualToken := scanner.ReadToken()
 
 		expectedToken := LligneToken{
-			TokenType: tokenType,
-			Text:      text,
-			Origin: &LligneOrigin{
-				FileName: "sample.lligne",
-				Line:     line,
-				Column:   column,
-			},
+			TokenType:      tokenType,
+			Text:           text,
+			SourceStartPos: startPos,
 		}
 
 		assert.Equal(t, expectedToken, actualToken)
 	}
 
-	expectTokenType := func(scanner *LligneScanner, tokenType LligneTokenType, line int, column int) {
-		expectToken(scanner, tokenType, tokenType.String(), line, column)
+	expectTokenType := func(scanner *LligneScanner, tokenType LligneTokenType, startPos int) {
+		expectToken(scanner, tokenType, tokenType.String(), startPos)
 	}
 
 	t.Run("a few punctuation tokens", func(t *testing.T) {
@@ -40,12 +37,31 @@ func TestLligneScanner(t *testing.T) {
 			"& &&\n *: , ",
 		)
 
-		expectTokenType(&scanner, TokenTypeAmpersand, 1, 1)
-		expectTokenType(&scanner, TokenTypeAmpersandAmpersand, 1, 3)
-		expectTokenType(&scanner, TokenTypeAsterisk, 2, 2)
-		expectTokenType(&scanner, TokenTypeColon, 2, 3)
-		expectTokenType(&scanner, TokenTypeComma, 2, 5)
-		expectToken(&scanner, TokenTypeEof, "", 2, 7)
+		expectTokenType(&scanner, TokenTypeAmpersand, 0)
+		expectTokenType(&scanner, TokenTypeAmpersandAmpersand, 2)
+		expectTokenType(&scanner, TokenTypeAsterisk, 6)
+		expectTokenType(&scanner, TokenTypeColon, 7)
+		expectTokenType(&scanner, TokenTypeComma, 9)
+		expectToken(&scanner, TokenTypeEof, "", 11)
+	})
+
+	t.Run("all fixed text tokens, one at a time", func(t *testing.T) {
+		for tokenType := TokenTypeEof; tokenType < TokenTypeAnd; /*TODO: TokenType_Count*/ tokenType += 1 {
+			sourceCode := tokenType.String()
+
+			// Skip tokens that can have different text for the same token type.
+			if strings.HasPrefix(sourceCode, "[") && strings.HasSuffix(sourceCode, "]") {
+				continue
+			}
+
+			scanner := NewLligneScanner(
+				"sample.lligne",
+				sourceCode,
+			)
+
+			expectTokenType(&scanner, tokenType, 0)
+			expectToken(&scanner, TokenTypeEof, "", len(sourceCode))
+		}
 	})
 
 }
