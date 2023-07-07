@@ -27,8 +27,6 @@ const (
 	TokenTypeCharLiteral
 	TokenTypeColon
 	TokenTypeComma
-	TokenTypeCompare
-	TokenTypeCompareReversed
 	TokenTypeDash
 	TokenTypeDateLiteral
 	TokenTypeDateTimeLiteral
@@ -104,10 +102,6 @@ func (tt LligneTokenType) String() string {
 		return ":"
 	case TokenTypeComma:
 		return ","
-	case TokenTypeCompare:
-		return "<=>"
-	case TokenTypeCompareReversed:
-		return ">=<"
 	case TokenTypeDash:
 		return "-"
 	case TokenTypeDot:
@@ -125,9 +119,9 @@ func (tt LligneTokenType) String() string {
 	case TokenTypeExclamationMark:
 		return "!"
 	case TokenTypeGreaterThan:
-		return "<"
+		return ">"
 	case TokenTypeGreaterThanOrEquals:
-		return "<="
+		return ">="
 	case TokenTypeLeftBrace:
 		return "{"
 	case TokenTypeLeftBracket:

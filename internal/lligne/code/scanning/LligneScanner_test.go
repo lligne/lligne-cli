@@ -45,8 +45,21 @@ func TestLligneScanner(t *testing.T) {
 		expectToken(&scanner, TokenTypeEof, "", 11)
 	})
 
+	t.Run("a few identifier tokens", func(t *testing.T) {
+		scanner := NewLligneScanner(
+			"sample.lligne",
+			"a bb c23_f _dfg",
+		)
+
+		expectToken(&scanner, TokenTypeIdentifier, "a", 0)
+		expectToken(&scanner, TokenTypeIdentifier, "bb", 2)
+		expectToken(&scanner, TokenTypeIdentifier, "c23_f", 5)
+		expectToken(&scanner, TokenTypeIdentifier, "_dfg", 11)
+		expectToken(&scanner, TokenTypeEof, "", 15)
+	})
+
 	t.Run("all fixed text tokens, one at a time", func(t *testing.T) {
-		for tokenType := TokenTypeEof; tokenType < TokenTypeAnd; /*TODO: TokenType_Count*/ tokenType += 1 {
+		for tokenType := TokenTypeEof; tokenType < TokenType_Count; tokenType += 1 {
 			sourceCode := tokenType.String()
 
 			// Skip tokens that can have different text for the same token type.

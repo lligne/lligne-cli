@@ -48,20 +48,59 @@ func (s *LligneScanner) ReadToken() LligneToken {
 
 	ch := s.readRune()
 
+	switch {
+	case isIdentifierStart(ch):
+		return s.scanIdentifierOrKeyword()
+	}
+
 	switch ch {
 	case '&':
 		return s.oneOrTwoRuneToken(TokenTypeAmpersand, '&', TokenTypeAmpersandAmpersand)
 	case '*':
-		return s.newToken(TokenTypeAsterisk)
+		return s.token(TokenTypeAsterisk)
 	case ':':
-		return s.newToken(TokenTypeColon)
+		return s.token(TokenTypeColon)
 	case ',':
-		return s.newToken(TokenTypeComma)
+		return s.token(TokenTypeComma)
+	case '-':
+		return s.oneOrTwoRuneToken(TokenTypeDash, '>', TokenTypeRightArrow)
+	case '.':
+		return s.oneToThreeRuneToken(TokenTypeDot, '.', TokenTypeDotDot, '.', TokenTypeDotDotDot)
+	case '=':
+		return s.scanAfterEquals()
+	case '!':
+		return s.oneOrTwoRuneToken(TokenTypeExclamationMark, '~', TokenTypeNotMatches)
+	case '<':
+		return s.oneOrTwoRuneToken(TokenTypeLessThan, '=', TokenTypeLessThanOrEquals)
+	case '>':
+		return s.oneOrTwoRuneToken(TokenTypeGreaterThan, '=', TokenTypeGreaterThanOrEquals)
+	case '{':
+		return s.token(TokenTypeLeftBrace)
+	case '[':
+		return s.token(TokenTypeLeftBracket)
+	case '(':
+		return s.token(TokenTypeLeftParenthesis)
+	case '+':
+		return s.token(TokenTypePlus)
+	case '?':
+		return s.oneOrTwoRuneToken(TokenTypeQuestionMark, ':', TokenTypeQuestionMarkColon)
+	case '}':
+		return s.token(TokenTypeRightBrace)
+	case ']':
+		return s.token(TokenTypeRightBracket)
+	case ')':
+		return s.token(TokenTypeRightParenthesis)
+	case ';':
+		return s.token(TokenTypeSemicolon)
+	case '/':
+		return s.token(TokenTypeSlash)
+	case '|':
+		return s.token(TokenTypeVerticalBar)
 	case 0:
-		return s.newToken(TokenTypeEof)
+		return s.token(TokenTypeEof)
 	}
 
-	return s.newToken(TokenTypeUnrecognizedChar)
+	return s.token(TokenTypeUnrecognizedChar)
 
 }
 
@@ -100,6 +139,26 @@ func (s *LligneScanner) advanceIf(needed rune) bool {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (s *LligneScanner) advanceIfIdentifierPart() bool {
+
+	if s.currentPos >= len(s.sourceCode) {
+		return false
+	}
+
+	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
+
+	if !isIdentifierPart(found) {
+		return false
+	}
+
+	s.advance(width, found)
+
+	return true
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (s *LligneScanner) advanceIfWhitespace() bool {
 
 	if s.currentPos >= len(s.sourceCode) {
@@ -120,12 +179,14 @@ func (s *LligneScanner) advanceIfWhitespace() bool {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *LligneScanner) newToken(tokenType LligneTokenType) LligneToken {
-	return LligneToken{
-		TokenType:      tokenType,
-		Text:           s.sourceCode[s.markedPos:s.currentPos],
-		SourceStartPos: s.markedPos,
-	}
+func isIdentifierPart(ch rune) bool {
+	return isIdentifierStart(ch) || '0' <= ch && ch <= '9' || ch >= utf8.RuneSelf && unicode.IsNumber(ch)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func isIdentifierStart(ch rune) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch >= utf8.RuneSelf && unicode.IsLetter(ch)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -137,24 +198,34 @@ func (s *LligneScanner) oneOrTwoRuneToken(
 ) LligneToken {
 
 	if s.advanceIf(secondRune) {
-		return s.newToken(twoRuneType)
+		return s.token(twoRuneType)
 	}
 
-	return s.newToken(oneRuneType)
+	return s.token(oneRuneType)
 
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *LligneScanner) peekRune() rune {
+func (s *LligneScanner) oneToThreeRuneToken(
+	oneRuneType LligneTokenType,
+	secondRune rune,
+	twoRuneType LligneTokenType,
+	thirdRune rune,
+	threeRuneType LligneTokenType,
+) LligneToken {
 
-	if s.currentPos >= len(s.sourceCode) {
-		return 0
+	if s.advanceIf(secondRune) {
+
+		if s.advanceIf(thirdRune) {
+			return s.token(threeRuneType)
+		}
+
+		return s.token(twoRuneType)
+
 	}
 
-	result, _ := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
-
-	return result
+	return s.token(oneRuneType)
 
 }
 
@@ -172,6 +243,70 @@ func (s *LligneScanner) readRune() rune {
 
 	return result
 
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (s *LligneScanner) scanAfterEquals() LligneToken {
+
+	if s.advanceIf('=') {
+
+		if s.advanceIf('=') {
+			return s.token(TokenTypeEqualsEqualsEquals)
+		}
+
+		return s.token(TokenTypeEqualsEquals)
+
+	}
+
+	if s.advanceIf('~') {
+		return s.token(TokenTypeMatches)
+	}
+
+	return s.token(TokenTypeEquals)
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (s *LligneScanner) scanIdentifierOrKeyword() LligneToken {
+
+	for s.advanceIfIdentifierPart() {
+	}
+
+	text := s.sourceCode[s.markedPos:s.currentPos]
+
+	switch text {
+	case "and":
+		return LligneToken{TokenTypeAnd, text, s.markedPos}
+	case "as":
+		return LligneToken{TokenTypeAs, text, s.markedPos}
+	case "is":
+		return LligneToken{TokenTypeIs, text, s.markedPos}
+	case "in":
+		return LligneToken{TokenTypeIn, text, s.markedPos}
+	case "not":
+		return LligneToken{TokenTypeNot, text, s.markedPos}
+	case "of":
+		return LligneToken{TokenTypeOf, text, s.markedPos}
+	case "or":
+		return LligneToken{TokenTypeOr, text, s.markedPos}
+	case "to":
+		return LligneToken{TokenTypeTo, text, s.markedPos}
+	default:
+		return LligneToken{TokenTypeIdentifier, text, s.markedPos}
+	}
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (s *LligneScanner) token(tokenType LligneTokenType) LligneToken {
+	return LligneToken{
+		TokenType:      tokenType,
+		Text:           s.sourceCode[s.markedPos:s.currentPos],
+		SourceStartPos: s.markedPos,
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------
