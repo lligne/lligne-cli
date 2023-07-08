@@ -8,9 +8,16 @@
 package scanning
 
 import (
+	"strings"
 	"unicode"
 	"unicode/utf8"
 )
+
+//---------------------------------------------------------------------------------------------------------------------
+
+type ILligneScanner interface {
+	ReadToken() LligneToken
+}
 
 //---------------------------------------------------------------------------------------------------------------------
 
@@ -27,10 +34,10 @@ type LligneScanner struct {
 //---------------------------------------------------------------------------------------------------------------------
 
 // NewLligneScanner allocates a new scanner for given sourceCode from the given fileName.
-func NewLligneScanner(sourceCode string) LligneScanner {
+func NewLligneScanner(sourceCode string) ILligneScanner {
 
 	// Start out the scan position.
-	s := LligneScanner{
+	s := &LligneScanner{
 		sourceCode: sourceCode,
 		currentPos: 0,
 		markedPos:  0,
@@ -89,7 +96,7 @@ func (s *LligneScanner) ReadToken() LligneToken {
 	case '*':
 		return s.token(TokenTypeAsterisk)
 	case '`':
-		return s.scanToEndOfLine(TokenTypeBackTickedString)
+		return s.scanBackTickedString()
 	case ':':
 		return s.token(TokenTypeColon)
 	case ',':
@@ -258,10 +265,103 @@ func (s *LligneScanner) scanAfterSlash() LligneToken {
 
 	if s.nextRune == '/' {
 		s.advance()
-		return s.scanToEndOfLine(TokenTypeDocumentation)
+		return s.scanDocumentation()
 	}
 
 	return s.token(TokenTypeSlash)
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// scanBackTickedString consumes a multiline back-ticked string.
+func (s *LligneScanner) scanBackTickedString() LligneToken {
+
+	text := strings.Builder{}
+	mark := s.markedPos
+
+	for {
+
+		// Consume to the end of the line.
+		for s.nextRune != '\n' && s.nextRune != 0 {
+			s.advance()
+		}
+
+		// Accumulate this line and always a new line character.
+		text.WriteString(s.sourceCode[s.markedPos:s.currentPos])
+		text.WriteRune('\n')
+
+		// Quit if hit the end of input.
+		if s.nextRune == 0 {
+			break
+		}
+
+		s.advance()
+
+		// Ignore whitespace
+		for s.nextRune != '\n' && unicode.IsSpace(s.nextRune) {
+			s.advance()
+		}
+
+		// Quit after seeing something other than another back-ticked string on the subsequent line.
+		if s.nextRune != '`' {
+			break
+		}
+
+		// Mark the start of the next line and consume the back tick
+		s.markedPos = s.currentPos
+		s.advance()
+
+	}
+
+	return LligneToken{TokenTypeBackTickedString, text.String(), mark}
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// scanDocumentation consumes a multiline comment.
+func (s *LligneScanner) scanDocumentation() LligneToken {
+
+	text := strings.Builder{}
+	mark := s.markedPos
+
+	for {
+
+		// Consume to the end of the line.
+		for s.nextRune != '\n' && s.nextRune != 0 {
+			s.advance()
+		}
+
+		// Accumulate this line and always a new line character.
+		text.WriteString(s.sourceCode[s.markedPos:s.currentPos])
+		text.WriteRune('\n')
+
+		// Quit if hit the end of input.
+		if s.nextRune == 0 {
+			break
+		}
+
+		s.advance()
+
+		// Ignore whitespace
+		for s.nextRune != '\n' && unicode.IsSpace(s.nextRune) {
+			s.advance()
+		}
+
+		// Quit after seeing something other than another back-ticked string on the subsequent line.
+		if s.nextRune != '/' || s.sourceCode[s.currentPos+1] != '/' {
+			break
+		}
+
+		// Mark the start of the next line and consume the "//"
+		s.markedPos = s.currentPos
+		s.advance()
+		s.advance()
+
+	}
+
+	return LligneToken{TokenTypeDocumentation, text.String(), mark}
 
 }
 
@@ -343,20 +443,6 @@ func (s *LligneScanner) scanSingleQuotedString() LligneToken {
 			s.advance()
 		}
 	}
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-// scanToEndOfLine scans a token of given tokenType that continues to the first new line character after the
-// opening delimiter has been consumed.
-func (s *LligneScanner) scanToEndOfLine(tokenType LligneTokenType) LligneToken {
-
-	for s.nextRune != '\n' && s.nextRune != 0 {
-		s.advance()
-	}
-
-	return s.token(tokenType)
 
 }
 
