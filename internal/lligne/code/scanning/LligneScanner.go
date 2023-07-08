@@ -51,6 +51,8 @@ func (s *LligneScanner) ReadToken() LligneToken {
 	switch {
 	case isIdentifierStart(ch):
 		return s.scanIdentifierOrKeyword()
+	case isDigit(ch):
+		return s.scanNumber()
 	}
 
 	switch ch {
@@ -58,6 +60,8 @@ func (s *LligneScanner) ReadToken() LligneToken {
 		return s.oneOrTwoRuneToken(TokenTypeAmpersand, '&', TokenTypeAmpersandAmpersand)
 	case '*':
 		return s.token(TokenTypeAsterisk)
+	case '`':
+		return s.scanToEndOfLine(TokenTypeBackTickedString)
 	case ':':
 		return s.token(TokenTypeColon)
 	case ',':
@@ -93,7 +97,9 @@ func (s *LligneScanner) ReadToken() LligneToken {
 	case ';':
 		return s.token(TokenTypeSemicolon)
 	case '/':
-		return s.token(TokenTypeSlash)
+		return s.scanAfterSlash()
+	case '"':
+		return s.scanStringLiteral()
 	case '|':
 		return s.token(TokenTypeVerticalBar)
 	case 0:
@@ -159,6 +165,46 @@ func (s *LligneScanner) advanceIfIdentifierPart() bool {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (s *LligneScanner) advanceIfNot(unwanted rune) bool {
+
+	if s.currentPos >= len(s.sourceCode) {
+		return false
+	}
+
+	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
+
+	if found == unwanted {
+		return false
+	}
+
+	s.advance(width, found)
+
+	return true
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (s *LligneScanner) advanceIfDigit() bool {
+
+	if s.currentPos >= len(s.sourceCode) {
+		return false
+	}
+
+	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
+
+	if !isDigit(found) {
+		return false
+	}
+
+	s.advance(width, found)
+
+	return true
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (s *LligneScanner) advanceIfWhitespace() bool {
 
 	if s.currentPos >= len(s.sourceCode) {
@@ -179,8 +225,34 @@ func (s *LligneScanner) advanceIfWhitespace() bool {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (s *LligneScanner) advanceOnLineIfNot(unwanted rune) bool {
+
+	if s.currentPos >= len(s.sourceCode) {
+		return false
+	}
+
+	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
+
+	if found == unwanted || found == '\n' {
+		return false
+	}
+
+	s.advance(width, found)
+
+	return true
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func isDigit(ch rune) bool {
+	return '0' <= ch && ch <= '9' || ch >= utf8.RuneSelf && unicode.IsNumber(ch)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func isIdentifierPart(ch rune) bool {
-	return isIdentifierStart(ch) || '0' <= ch && ch <= '9' || ch >= utf8.RuneSelf && unicode.IsNumber(ch)
+	return isIdentifierStart(ch) || isDigit(ch)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -269,6 +341,18 @@ func (s *LligneScanner) scanAfterEquals() LligneToken {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (s *LligneScanner) scanAfterSlash() LligneToken {
+
+	if s.advanceIf('/') {
+		return s.scanToEndOfLine(TokenTypeDocumentation)
+	}
+
+	return s.token(TokenTypeSlash)
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (s *LligneScanner) scanIdentifierOrKeyword() LligneToken {
 
 	for s.advanceIfIdentifierPart() {
@@ -296,6 +380,43 @@ func (s *LligneScanner) scanIdentifierOrKeyword() LligneToken {
 	default:
 		return LligneToken{TokenTypeIdentifier, text, s.markedPos}
 	}
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (s *LligneScanner) scanToEndOfLine(tokenType LligneTokenType) LligneToken {
+
+	for s.advanceIfNot('\n') {
+	}
+
+	return s.token(tokenType)
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (s *LligneScanner) scanNumber() LligneToken {
+
+	for s.advanceIfDigit() {
+	}
+
+	return s.token(TokenTypeIntegerLiteral)
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (s *LligneScanner) scanStringLiteral() LligneToken {
+
+	for s.advanceOnLineIfNot('"') {
+	}
+
+	if s.advanceIf('"') {
+		return s.token(TokenTypeStringLiteral)
+	}
+
+	return s.token(TokenTypeUnclosedString)
 
 }
 
