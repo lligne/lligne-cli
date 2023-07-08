@@ -16,22 +16,48 @@ import (
 
 // LligneScanner converts a string of Lligne source code into tokens.
 type LligneScanner struct {
-	fileName   string
-	sourceCode string
-	currentPos int
-	markedPos  int
+	sourceCode    string
+	markedPos     int
+	currentPos    int
+	nextRune      rune
+	nextRuneWidth int
+	keywords      map[string]LligneTokenType
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 // NewLligneScanner allocates a new scanner for given sourceCode from the given fileName.
-func NewLligneScanner(fileName string, sourceCode string) LligneScanner {
-	return LligneScanner{
-		fileName:   fileName,
+func NewLligneScanner(sourceCode string) LligneScanner {
+
+	// Start out the scan position.
+	s := LligneScanner{
 		sourceCode: sourceCode,
 		currentPos: 0,
 		markedPos:  0,
 	}
+
+	// Read the first rune.
+	if len(s.sourceCode) == 0 {
+		s.nextRune = 0
+		s.nextRuneWidth = 0
+	} else {
+		s.nextRune, s.nextRuneWidth = utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
+	}
+
+	// Define keywords.
+	s.keywords = map[string]LligneTokenType{
+		TokenTypeAnd.String(): TokenTypeAnd,
+		TokenTypeAs.String():  TokenTypeAs,
+		TokenTypeIs.String():  TokenTypeIs,
+		TokenTypeIn.String():  TokenTypeIn,
+		TokenTypeNot.String(): TokenTypeNot,
+		TokenTypeOf.String():  TokenTypeOf,
+		TokenTypeOr.String():  TokenTypeOr,
+		TokenTypeTo.String():  TokenTypeTo,
+	}
+
+	return s
+
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -40,13 +66,15 @@ func NewLligneScanner(fileName string, sourceCode string) LligneScanner {
 func (s *LligneScanner) ReadToken() LligneToken {
 
 	// Ignore whitespace
-	for s.advanceIfWhitespace() {
+	for unicode.IsSpace(s.nextRune) {
+		s.advance()
 	}
 
 	// Mark the start of the token
 	s.markedPos = s.currentPos
 
-	ch := s.readRune()
+	ch := s.nextRune
+	s.advance()
 
 	switch {
 	case isIdentifierStart(ch):
@@ -99,7 +127,9 @@ func (s *LligneScanner) ReadToken() LligneToken {
 	case '/':
 		return s.scanAfterSlash()
 	case '"':
-		return s.scanStringLiteral()
+		return s.scanDoubleQuotedString()
+	case '\'':
+		return s.scanSingleQuotedString()
 	case '|':
 		return s.token(TokenTypeVerticalBar)
 	case 0:
@@ -113,163 +143,52 @@ func (s *LligneScanner) ReadToken() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *LligneScanner) advance(width int, result rune) {
+// advance consumes one rune and stages the next one in the scanner.
+func (s *LligneScanner) advance() {
 
-	if result == '\n' {
-		// TODO: track line break positions
-	}
-
-	s.currentPos += width
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (s *LligneScanner) advanceIf(needed rune) bool {
+	s.currentPos += s.nextRuneWidth
 
 	if s.currentPos >= len(s.sourceCode) {
-		return false
+		s.nextRune = 0
+		s.nextRuneWidth = 0
+	} else {
+		s.nextRune, s.nextRuneWidth = utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
 	}
-
-	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
-
-	if found != needed {
-		return false
-	}
-
-	s.advance(width, found)
-
-	return true
 
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *LligneScanner) advanceIfIdentifierPart() bool {
-
-	if s.currentPos >= len(s.sourceCode) {
-		return false
-	}
-
-	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
-
-	if !isIdentifierPart(found) {
-		return false
-	}
-
-	s.advance(width, found)
-
-	return true
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (s *LligneScanner) advanceIfNot(unwanted rune) bool {
-
-	if s.currentPos >= len(s.sourceCode) {
-		return false
-	}
-
-	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
-
-	if found == unwanted {
-		return false
-	}
-
-	s.advance(width, found)
-
-	return true
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (s *LligneScanner) advanceIfDigit() bool {
-
-	if s.currentPos >= len(s.sourceCode) {
-		return false
-	}
-
-	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
-
-	if !isDigit(found) {
-		return false
-	}
-
-	s.advance(width, found)
-
-	return true
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (s *LligneScanner) advanceIfWhitespace() bool {
-
-	if s.currentPos >= len(s.sourceCode) {
-		return false
-	}
-
-	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
-
-	if !unicode.IsSpace(found) {
-		return false
-	}
-
-	s.advance(width, found)
-
-	return true
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (s *LligneScanner) advanceOnLineIfNot(unwanted rune) bool {
-
-	if s.currentPos >= len(s.sourceCode) {
-		return false
-	}
-
-	found, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
-
-	if found == unwanted || found == '\n' {
-		return false
-	}
-
-	s.advance(width, found)
-
-	return true
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
+// isDigit determines whether a rune is a number.
 func isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9' || ch >= utf8.RuneSelf && unicode.IsNumber(ch)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// isIdentifierPart determines whether a given rune could be the second or later character of an identifier.
 func isIdentifierPart(ch rune) bool {
 	return isIdentifierStart(ch) || isDigit(ch)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// isIdentifierStart determines whether a given rune could be the opening character of an identifier.
 func isIdentifierStart(ch rune) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch >= utf8.RuneSelf && unicode.IsLetter(ch)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// oneOrTwoRuneToken scans a sequence of runes that could be one or two characters in length.
 func (s *LligneScanner) oneOrTwoRuneToken(
 	oneRuneType LligneTokenType,
 	secondRune rune,
 	twoRuneType LligneTokenType,
 ) LligneToken {
 
-	if s.advanceIf(secondRune) {
+	if s.nextRune == secondRune {
+		s.advance()
 		return s.token(twoRuneType)
 	}
 
@@ -279,6 +198,7 @@ func (s *LligneScanner) oneOrTwoRuneToken(
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// oneToThreeRuneToken scans a sequence of runes that could be one, two, or three characters in length.
 func (s *LligneScanner) oneToThreeRuneToken(
 	oneRuneType LligneTokenType,
 	secondRune rune,
@@ -287,9 +207,12 @@ func (s *LligneScanner) oneToThreeRuneToken(
 	threeRuneType LligneTokenType,
 ) LligneToken {
 
-	if s.advanceIf(secondRune) {
+	if s.nextRune == secondRune {
 
-		if s.advanceIf(thirdRune) {
+		s.advance()
+
+		if s.nextRune == thirdRune {
+			s.advance()
 			return s.token(threeRuneType)
 		}
 
@@ -303,27 +226,15 @@ func (s *LligneScanner) oneToThreeRuneToken(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *LligneScanner) readRune() rune {
-
-	if s.currentPos >= len(s.sourceCode) {
-		return 0
-	}
-
-	result, width := utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
-
-	s.advance(width, result)
-
-	return result
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
+// scanAfterEquals scans one of: '=', '==', '===', '=~'.
 func (s *LligneScanner) scanAfterEquals() LligneToken {
 
-	if s.advanceIf('=') {
+	if s.nextRune == '=' {
 
-		if s.advanceIf('=') {
+		s.advance()
+
+		if s.nextRune == '=' {
+			s.advance()
 			return s.token(TokenTypeEqualsEqualsEquals)
 		}
 
@@ -331,7 +242,8 @@ func (s *LligneScanner) scanAfterEquals() LligneToken {
 
 	}
 
-	if s.advanceIf('~') {
+	if s.nextRune == '~' {
+		s.advance()
 		return s.token(TokenTypeMatches)
 	}
 
@@ -341,9 +253,11 @@ func (s *LligneScanner) scanAfterEquals() LligneToken {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// scanAfterSlash scans either just the slash or else a comment extending to the end of the line.
 func (s *LligneScanner) scanAfterSlash() LligneToken {
 
-	if s.advanceIf('/') {
+	if s.nextRune == '/' {
+		s.advance()
 		return s.scanToEndOfLine(TokenTypeDocumentation)
 	}
 
@@ -353,41 +267,93 @@ func (s *LligneScanner) scanAfterSlash() LligneToken {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *LligneScanner) scanIdentifierOrKeyword() LligneToken {
+// scanDoubleQuotedString scans the remainder of a string literal after the initial double quote character has been consumed.
+func (s *LligneScanner) scanDoubleQuotedString() LligneToken {
 
-	for s.advanceIfIdentifierPart() {
-	}
-
-	text := s.sourceCode[s.markedPos:s.currentPos]
-
-	switch text {
-	case "and":
-		return LligneToken{TokenTypeAnd, text, s.markedPos}
-	case "as":
-		return LligneToken{TokenTypeAs, text, s.markedPos}
-	case "is":
-		return LligneToken{TokenTypeIs, text, s.markedPos}
-	case "in":
-		return LligneToken{TokenTypeIn, text, s.markedPos}
-	case "not":
-		return LligneToken{TokenTypeNot, text, s.markedPos}
-	case "of":
-		return LligneToken{TokenTypeOf, text, s.markedPos}
-	case "or":
-		return LligneToken{TokenTypeOr, text, s.markedPos}
-	case "to":
-		return LligneToken{TokenTypeTo, text, s.markedPos}
-	default:
-		return LligneToken{TokenTypeIdentifier, text, s.markedPos}
+	for {
+		switch s.nextRune {
+		case '"':
+			s.advance()
+			return s.token(TokenTypeDoubleQuotedString)
+		case '\\':
+			s.advance()
+			// TODO: handle escape sequences properly
+			s.advance()
+		case '\n':
+			return s.token(TokenTypeUnclosedDoubleQuotedString)
+		default:
+			s.advance()
+		}
 	}
 
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// scanIdentifierOrKeyword scans the remainder of an identifier after the opening letter has been consumed.
+func (s *LligneScanner) scanIdentifierOrKeyword() LligneToken {
+
+	for isIdentifierPart(s.nextRune) {
+		s.advance()
+	}
+
+	text := s.sourceCode[s.markedPos:s.currentPos]
+
+	tokenType, isKeyword := s.keywords[text]
+	if isKeyword {
+		return LligneToken{tokenType, text, s.markedPos}
+	}
+
+	return LligneToken{TokenTypeIdentifier, text, s.markedPos}
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// scanNumber scans a numeric literal after the opening digit has been consumed.
+func (s *LligneScanner) scanNumber() LligneToken {
+
+	for isDigit(s.nextRune) {
+		s.advance()
+	}
+
+	// TODO: also floating point literals
+
+	return s.token(TokenTypeIntegerLiteral)
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// scanSingleQuotedString scans the remainder of a string literal after the initial single quote character has been consumed.
+func (s *LligneScanner) scanSingleQuotedString() LligneToken {
+
+	for {
+		switch s.nextRune {
+		case '\'':
+			s.advance()
+			return s.token(TokenTypeSingleQuotedString)
+		case '\\':
+			s.advance()
+			// TODO: handle escape sequences properly
+			s.advance()
+		case '\n':
+			return s.token(TokenTypeUnclosedSingleQuotedString)
+		default:
+			s.advance()
+		}
+	}
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// scanToEndOfLine scans a token of given tokenType that continues to the first new line character after the
+// opening delimiter has been consumed.
 func (s *LligneScanner) scanToEndOfLine(tokenType LligneTokenType) LligneToken {
 
-	for s.advanceIfNot('\n') {
+	for s.nextRune != '\n' && s.nextRune != 0 {
+		s.advance()
 	}
 
 	return s.token(tokenType)
@@ -396,32 +362,7 @@ func (s *LligneScanner) scanToEndOfLine(tokenType LligneTokenType) LligneToken {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *LligneScanner) scanNumber() LligneToken {
-
-	for s.advanceIfDigit() {
-	}
-
-	return s.token(TokenTypeIntegerLiteral)
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (s *LligneScanner) scanStringLiteral() LligneToken {
-
-	for s.advanceOnLineIfNot('"') {
-	}
-
-	if s.advanceIf('"') {
-		return s.token(TokenTypeStringLiteral)
-	}
-
-	return s.token(TokenTypeUnclosedString)
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
+// Function token builds a new token of given type with text from the marked position to the current position.
 func (s *LligneScanner) token(tokenType LligneTokenType) LligneToken {
 	return LligneToken{
 		TokenType:      tokenType,

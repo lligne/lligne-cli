@@ -33,7 +33,6 @@ func TestLligneScanner(t *testing.T) {
 
 	t.Run("a few punctuation tokens", func(t *testing.T) {
 		scanner := NewLligneScanner(
-			"sample.lligne",
 			"& &&\n *: , ",
 		)
 
@@ -47,7 +46,6 @@ func TestLligneScanner(t *testing.T) {
 
 	t.Run("a few identifier tokens", func(t *testing.T) {
 		scanner := NewLligneScanner(
-			"sample.lligne",
 			"a bb c23_f _dfg",
 		)
 
@@ -60,7 +58,6 @@ func TestLligneScanner(t *testing.T) {
 
 	t.Run("a few numbers", func(t *testing.T) {
 		scanner := NewLligneScanner(
-			"sample.lligne",
 			"123 4\n(99000) 5",
 		)
 
@@ -73,17 +70,29 @@ func TestLligneScanner(t *testing.T) {
 		expectToken(&scanner, TokenTypeEof, "", 15)
 	})
 
-	t.Run("a few strings", func(t *testing.T) {
+	t.Run("a few double quoted strings", func(t *testing.T) {
 		scanner := NewLligneScanner(
-			"sample.lligne",
 			`"abc" "xyz" "bad
  "start over"`,
 		)
 
-		expectToken(&scanner, TokenTypeStringLiteral, `"abc"`, 0)
-		expectToken(&scanner, TokenTypeStringLiteral, `"xyz"`, 6)
-		expectToken(&scanner, TokenTypeUnclosedString, `"bad`, 12)
-		expectToken(&scanner, TokenTypeStringLiteral, `"start over"`, 18)
+		expectToken(&scanner, TokenTypeDoubleQuotedString, `"abc"`, 0)
+		expectToken(&scanner, TokenTypeDoubleQuotedString, `"xyz"`, 6)
+		expectToken(&scanner, TokenTypeUnclosedDoubleQuotedString, `"bad`, 12)
+		expectToken(&scanner, TokenTypeDoubleQuotedString, `"start over"`, 18)
+		expectToken(&scanner, TokenTypeEof, "", 30)
+	})
+
+	t.Run("a few single quoted strings", func(t *testing.T) {
+		scanner := NewLligneScanner(
+			`'abc' 'xyz' 'bad
+ 'start over'`,
+		)
+
+		expectToken(&scanner, TokenTypeSingleQuotedString, `'abc'`, 0)
+		expectToken(&scanner, TokenTypeSingleQuotedString, `'xyz'`, 6)
+		expectToken(&scanner, TokenTypeUnclosedSingleQuotedString, `'bad`, 12)
+		expectToken(&scanner, TokenTypeSingleQuotedString, `'start over'`, 18)
 		expectToken(&scanner, TokenTypeEof, "", 30)
 	})
 
@@ -97,7 +106,6 @@ func TestLligneScanner(t *testing.T) {
 			}
 
 			scanner := NewLligneScanner(
-				"sample.lligne",
 				sourceCode,
 			)
 
@@ -108,7 +116,6 @@ func TestLligneScanner(t *testing.T) {
 
 	t.Run("a few back-ticked string lines", func(t *testing.T) {
 		scanner := NewLligneScanner(
-			"sample.lligne",
 			"`abc 123\n`  - one\n`  - two\n`",
 		)
 
@@ -121,7 +128,6 @@ func TestLligneScanner(t *testing.T) {
 
 	t.Run("a few documentation lines", func(t *testing.T) {
 		scanner := NewLligneScanner(
-			"sample.lligne",
 			"// abc 123\n//  - one\n//two\n//\n//",
 		)
 

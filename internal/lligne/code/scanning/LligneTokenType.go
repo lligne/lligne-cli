@@ -18,19 +18,14 @@ type LligneTokenType int
 
 const (
 	TokenTypeEof LligneTokenType = iota
+
+	// Symbols
 	TokenTypeAmpersand
 	TokenTypeAmpersandAmpersand
-	TokenTypeAnd
-	TokenTypeAs
 	TokenTypeAsterisk
-	TokenTypeBackTickedString
-	TokenTypeCharLiteral
 	TokenTypeColon
 	TokenTypeComma
 	TokenTypeDash
-	TokenTypeDateLiteral
-	TokenTypeDateTimeLiteral
-	TokenTypeDocumentation
 	TokenTypeDot
 	TokenTypeDotDot
 	TokenTypeDotDotDot
@@ -40,24 +35,13 @@ const (
 	TokenTypeExclamationMark
 	TokenTypeGreaterThan
 	TokenTypeGreaterThanOrEquals
-	TokenTypeIdentifier
-	TokenTypeIntegerLiteral
-	TokenTypeIn
-	TokenTypeIpAddressV4
-	TokenTypeIpAddressV6
-	TokenTypeIs
-	TokenTypeLeadingDocumentation
 	TokenTypeLeftBrace
 	TokenTypeLeftBracket
 	TokenTypeLeftParenthesis
 	TokenTypeLessThan
 	TokenTypeLessThanOrEquals
 	TokenTypeMatches
-	TokenTypeMultilineString
-	TokenTypeNot
 	TokenTypeNotMatches
-	TokenTypeOf
-	TokenTypeOr
 	TokenTypePlus
 	TokenTypeQuestionMark
 	TokenTypeQuestionMarkColon
@@ -67,16 +51,36 @@ const (
 	TokenTypeRightParenthesis
 	TokenTypeSemicolon
 	TokenTypeSlash
-	TokenTypeStringLiteral
-	TokenTypeSynthDocument
-	TokenTypeTo
-	TokenTypeTrailingDocumentation
-	TokenTypeUnclosedLiteral
-	TokenTypeUnclosedString
-	TokenTypeUnrecognizedChar
-	TokenTypeUnrecognizedLiteral
-	TokenTypeUuidLiteral
 	TokenTypeVerticalBar
+
+	// Keywords
+	TokenTypeAnd
+	TokenTypeAs
+	TokenTypeIn
+	TokenTypeIs
+	TokenTypeNot
+	TokenTypeOf
+	TokenTypeOr
+	TokenTypeTo
+
+	// Others
+	TokenTypeBackTickedString
+	TokenTypeDocumentation
+	TokenTypeDoubleQuotedString
+	TokenTypeIdentifier
+	TokenTypeIntegerLiteral
+	TokenTypeSingleQuotedString
+
+	// Errors
+	TokenTypeUnclosedDoubleQuotedString
+	TokenTypeUnclosedSingleQuotedString
+	TokenTypeUnrecognizedChar
+
+	// Derived token types from postprocessing
+	TokenTypeLeadingDocumentation
+	TokenTypeMultilineString
+	TokenTypeSynthDocument
+	TokenTypeTrailingDocumentation
 
 	TokenType_Count
 )
@@ -175,55 +179,37 @@ func (tt LligneTokenType) String() string {
 	case TokenTypeTo:
 		return "to"
 
-	// Identifiers
-	case TokenTypeIdentifier:
-		return "[identifier]"
-
-	// Numeric Literals
-	case TokenTypeIntegerLiteral:
-		return "[integer literal]"
-
-	// String Literals
+	// Others
 	case TokenTypeBackTickedString:
 		return "[back-ticked string]"
-	case TokenTypeMultilineString:
-		return "[multiline string]"
-	case TokenTypeStringLiteral:
-		return "[string literal]"
-
-	// Other Literals
-	case TokenTypeCharLiteral:
-		return "[character literal]"
-	case TokenTypeDateLiteral:
-		return "[date literal]"
-	case TokenTypeDateTimeLiteral:
-		return "[date-time literal]"
-	case TokenTypeIpAddressV4:
-		return "[IP address V4 literal]"
-	case TokenTypeIpAddressV6:
-		return "[IP address V6 literal]"
-	case TokenTypeUuidLiteral:
-		return "[UUID literal]"
-
-	// Documentation
 	case TokenTypeDocumentation:
 		return "[documentation]"
+	case TokenTypeDoubleQuotedString:
+		return "[string literal]"
+	case TokenTypeIdentifier:
+		return "[identifier]"
+	case TokenTypeIntegerLiteral:
+		return "[integer literal]"
+	case TokenTypeSingleQuotedString:
+		return "[character literal]"
+
+	// Documentation
 	case TokenTypeLeadingDocumentation:
 		return "[leading documentation]"
+	case TokenTypeMultilineString:
+		return "[multiline string]"
 	case TokenTypeSynthDocument:
 		return "[synthetic documentation operator]"
 	case TokenTypeTrailingDocumentation:
 		return "[trailing documentation]"
 
 	// Errors
-	case TokenTypeUnclosedLiteral:
+	case TokenTypeUnclosedSingleQuotedString:
 		return "[error - literal extends past end of line]"
-	case TokenTypeUnclosedString:
+	case TokenTypeUnclosedDoubleQuotedString:
 		return "[error - string extends past end of line]"
 	case TokenTypeUnrecognizedChar:
 		return "[error - unrecognized character]"
-	case TokenTypeUnrecognizedLiteral:
-		return "[error - unrecognized literal]"
 
 	}
 
