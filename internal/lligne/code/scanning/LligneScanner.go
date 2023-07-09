@@ -22,7 +22,7 @@ type ILligneScanner interface {
 //---------------------------------------------------------------------------------------------------------------------
 
 // LligneScanner converts a string of Lligne source code into tokens.
-type LligneScanner struct {
+type lligneScanner struct {
 	sourceCode    string
 	markedPos     int
 	currentPos    int
@@ -37,7 +37,7 @@ type LligneScanner struct {
 func NewLligneScanner(sourceCode string) ILligneScanner {
 
 	// Start out the scan position.
-	s := &LligneScanner{
+	s := &lligneScanner{
 		sourceCode: sourceCode,
 		currentPos: 0,
 		markedPos:  0,
@@ -70,7 +70,7 @@ func NewLligneScanner(sourceCode string) ILligneScanner {
 //---------------------------------------------------------------------------------------------------------------------
 
 // ReadToken returns the next token from the scanner.
-func (s *LligneScanner) ReadToken() LligneToken {
+func (s *lligneScanner) ReadToken() LligneToken {
 
 	// Ignore whitespace
 	for unicode.IsSpace(s.nextRune) {
@@ -151,7 +151,7 @@ func (s *LligneScanner) ReadToken() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // advance consumes one rune and stages the next one in the scanner.
-func (s *LligneScanner) advance() {
+func (s *lligneScanner) advance() {
 
 	s.currentPos += s.nextRuneWidth
 
@@ -188,7 +188,7 @@ func isIdentifierStart(ch rune) bool {
 //---------------------------------------------------------------------------------------------------------------------
 
 // oneOrTwoRuneToken scans a sequence of runes that could be one or two characters in length.
-func (s *LligneScanner) oneOrTwoRuneToken(
+func (s *lligneScanner) oneOrTwoRuneToken(
 	oneRuneType LligneTokenType,
 	secondRune rune,
 	twoRuneType LligneTokenType,
@@ -206,7 +206,7 @@ func (s *LligneScanner) oneOrTwoRuneToken(
 //---------------------------------------------------------------------------------------------------------------------
 
 // oneToThreeRuneToken scans a sequence of runes that could be one, two, or three characters in length.
-func (s *LligneScanner) oneToThreeRuneToken(
+func (s *lligneScanner) oneToThreeRuneToken(
 	oneRuneType LligneTokenType,
 	secondRune rune,
 	twoRuneType LligneTokenType,
@@ -234,7 +234,7 @@ func (s *LligneScanner) oneToThreeRuneToken(
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanAfterEquals scans one of: '=', '==', '===', '=~'.
-func (s *LligneScanner) scanAfterEquals() LligneToken {
+func (s *lligneScanner) scanAfterEquals() LligneToken {
 
 	if s.nextRune == '=' {
 
@@ -261,7 +261,7 @@ func (s *LligneScanner) scanAfterEquals() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanAfterSlash scans either just the slash or else a comment extending to the end of the line.
-func (s *LligneScanner) scanAfterSlash() LligneToken {
+func (s *lligneScanner) scanAfterSlash() LligneToken {
 
 	if s.nextRune == '/' {
 		s.advance()
@@ -275,7 +275,7 @@ func (s *LligneScanner) scanAfterSlash() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanBackTickedString consumes a multiline back-ticked string.
-func (s *LligneScanner) scanBackTickedString() LligneToken {
+func (s *lligneScanner) scanBackTickedString() LligneToken {
 
 	text := strings.Builder{}
 	mark := s.markedPos
@@ -321,7 +321,7 @@ func (s *LligneScanner) scanBackTickedString() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanDocumentation consumes a multiline comment.
-func (s *LligneScanner) scanDocumentation() LligneToken {
+func (s *lligneScanner) scanDocumentation() LligneToken {
 
 	text := strings.Builder{}
 	mark := s.markedPos
@@ -368,7 +368,7 @@ func (s *LligneScanner) scanDocumentation() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanDoubleQuotedString scans the remainder of a string literal after the initial double quote character has been consumed.
-func (s *LligneScanner) scanDoubleQuotedString() LligneToken {
+func (s *lligneScanner) scanDoubleQuotedString() LligneToken {
 
 	for {
 		switch s.nextRune {
@@ -391,7 +391,7 @@ func (s *LligneScanner) scanDoubleQuotedString() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanIdentifierOrKeyword scans the remainder of an identifier after the opening letter has been consumed.
-func (s *LligneScanner) scanIdentifierOrKeyword() LligneToken {
+func (s *lligneScanner) scanIdentifierOrKeyword() LligneToken {
 
 	for isIdentifierPart(s.nextRune) {
 		s.advance()
@@ -411,7 +411,7 @@ func (s *LligneScanner) scanIdentifierOrKeyword() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanNumber scans a numeric literal after the opening digit has been consumed.
-func (s *LligneScanner) scanNumber() LligneToken {
+func (s *lligneScanner) scanNumber() LligneToken {
 
 	for isDigit(s.nextRune) {
 		s.advance()
@@ -426,7 +426,7 @@ func (s *LligneScanner) scanNumber() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanSingleQuotedString scans the remainder of a string literal after the initial single quote character has been consumed.
-func (s *LligneScanner) scanSingleQuotedString() LligneToken {
+func (s *lligneScanner) scanSingleQuotedString() LligneToken {
 
 	for {
 		switch s.nextRune {
@@ -449,7 +449,7 @@ func (s *LligneScanner) scanSingleQuotedString() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // Function token builds a new token of given type with text from the marked position to the current position.
-func (s *LligneScanner) token(tokenType LligneTokenType) LligneToken {
+func (s *lligneScanner) token(tokenType LligneTokenType) LligneToken {
 	return LligneToken{
 		TokenType:      tokenType,
 		Text:           s.sourceCode[s.markedPos:s.currentPos],
