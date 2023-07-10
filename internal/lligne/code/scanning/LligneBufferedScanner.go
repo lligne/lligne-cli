@@ -9,10 +9,10 @@ package scanning
 
 // ILligneBufferedScanner allows reading tokens with one token of lookahead.
 type ILligneBufferedScanner interface {
+	ILligneScanner
 	AdvanceTokenIfType(tokenType LligneTokenType) bool
 	PeekToken() LligneToken
 	PeekTokenIsType(tokenType LligneTokenType) bool
-	ReadToken() LligneToken
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -43,6 +43,13 @@ func (s *lligneBufferedScanner) AdvanceTokenIfType(tokenType LligneTokenType) bo
 		return true
 	}
 	return false
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// GetOrigin determines a token origin from the inner scanner.
+func (s *lligneBufferedScanner) GetOrigin(sourcePos int) LligneOrigin {
+	return s.scanner.GetOrigin(sourcePos)
 }
 
 //---------------------------------------------------------------------------------------------------------------------

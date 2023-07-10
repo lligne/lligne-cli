@@ -50,6 +50,13 @@ func NewLligneDocumentationHandlingScanner(sourceCode string, scanner ILligneSca
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// GetOrigin determines a token origin from the inner scanner.
+func (s *lligneDocumentationHandlingScanner) GetOrigin(sourcePos int) LligneOrigin {
+	return s.scanner.GetOrigin(sourcePos)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 // ReadToken returns the next token after doing the work of converting documentation tokens.
 func (s *lligneDocumentationHandlingScanner) ReadToken() LligneToken {
 

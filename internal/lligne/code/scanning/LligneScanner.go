@@ -17,6 +17,7 @@ import (
 
 // ILligneScanner represents the ability to read a sequence of tokens.
 type ILligneScanner interface {
+	ILligneTokenOriginTracker
 	ReadToken() LligneToken
 }
 
@@ -24,12 +25,13 @@ type ILligneScanner interface {
 
 // LligneScanner converts a string of Lligne source code into tokens.
 type lligneScanner struct {
-	sourceCode    string
-	markedPos     int
-	currentPos    int
-	nextRune      rune
-	nextRuneWidth int
-	keywords      map[string]LligneTokenType
+	sourceCode         string
+	markedPos          int
+	currentPos         int
+	nextRune           rune
+	nextRuneWidth      int
+	tokenOriginTracker LligneTokenOriginTracker
+	keywords           map[string]LligneTokenType
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -39,9 +41,10 @@ func NewLligneScanner(sourceCode string) ILligneScanner {
 
 	// Start out the scan position.
 	s := &lligneScanner{
-		sourceCode: sourceCode,
-		currentPos: 0,
-		markedPos:  0,
+		sourceCode:         sourceCode,
+		currentPos:         0,
+		markedPos:          0,
+		tokenOriginTracker: NewLligneTokenOriginTracker("todo.lligne"),
 	}
 
 	// Read the first rune.
@@ -66,6 +69,13 @@ func NewLligneScanner(sourceCode string) ILligneScanner {
 
 	return s
 
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// GetOrigin determines a token origin.
+func (s *lligneScanner) GetOrigin(sourcePos int) LligneOrigin {
+	return s.tokenOriginTracker.GetOrigin(sourcePos)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -157,6 +167,9 @@ func (s *lligneScanner) ReadToken() LligneToken {
 // advance consumes one rune and stages the next one in the scanner.
 func (s *lligneScanner) advance() {
 
+	if s.nextRune == '\n' {
+		s.tokenOriginTracker.AppendNewLinePosition(s.currentPos)
+	}
 	s.currentPos += s.nextRuneWidth
 
 	if s.currentPos >= len(s.sourceCode) {
