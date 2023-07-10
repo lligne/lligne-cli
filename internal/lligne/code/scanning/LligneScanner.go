@@ -15,6 +15,7 @@ import (
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// ILligneScanner represents the ability to read a sequence of tokens.
 type ILligneScanner interface {
 	ReadToken() LligneToken
 }
@@ -80,9 +81,11 @@ func (s *lligneScanner) ReadToken() LligneToken {
 	// Mark the start of the token
 	s.markedPos = s.currentPos
 
+	// Consume the next character.
 	ch := s.nextRune
 	s.advance()
 
+	// Handle character ranges.
 	switch {
 	case isIdentifierStart(ch):
 		return s.scanIdentifierOrKeyword()
@@ -90,6 +93,7 @@ func (s *lligneScanner) ReadToken() LligneToken {
 		return s.scanNumber()
 	}
 
+	// Handle individual characters.
 	switch ch {
 	case '&':
 		return s.oneOrTwoRuneToken(TokenTypeAmpersand, '&', TokenTypeAmpersandAmpersand)

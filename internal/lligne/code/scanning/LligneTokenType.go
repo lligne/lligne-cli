@@ -76,9 +76,8 @@ const (
 	TokenTypeUnclosedSingleQuotedString
 	TokenTypeUnrecognizedChar
 
-	// Derived token types from postprocessing
+	// Synthetic token types from postprocessing
 	TokenTypeLeadingDocumentation
-	TokenTypeMultilineString
 	TokenTypeSynthDocument
 	TokenTypeTrailingDocumentation
 
@@ -196,8 +195,6 @@ func (tt LligneTokenType) String() string {
 	// Documentation
 	case TokenTypeLeadingDocumentation:
 		return "[leading documentation]"
-	case TokenTypeMultilineString:
-		return "[multiline string]"
 	case TokenTypeSynthDocument:
 		return "[synthetic documentation operator]"
 	case TokenTypeTrailingDocumentation:

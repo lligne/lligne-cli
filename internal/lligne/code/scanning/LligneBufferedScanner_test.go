@@ -1,5 +1,5 @@
 //
-// # Tests of LligneScanner.
+// # Tests of LligneBufferedScanner.
 //
 // (C) Copyright 2023 Martin E. Nordberg III
 // Apache 2.0 License
@@ -12,9 +12,9 @@ import (
 	"testing"
 )
 
-func TestLligneScannerBuffer(t *testing.T) {
+func TestLligneBufferedScanner(t *testing.T) {
 
-	expectToken := func(scanner ILligneScannerBuffer, tokenType LligneTokenType, text string, startPos int) {
+	expectToken := func(scanner ILligneBufferedScanner, tokenType LligneTokenType, text string, startPos int) {
 		expectedToken := LligneToken{
 			TokenType:      tokenType,
 			Text:           text,
@@ -29,12 +29,12 @@ func TestLligneScannerBuffer(t *testing.T) {
 		assert.True(t, scanner.AdvanceTokenIfType(tokenType))
 	}
 
-	expectTokenType := func(scanner ILligneScannerBuffer, tokenType LligneTokenType, startPos int) {
+	expectTokenType := func(scanner ILligneBufferedScanner, tokenType LligneTokenType, startPos int) {
 		expectToken(scanner, tokenType, tokenType.String(), startPos)
 	}
 
 	t.Run("a few punctuation tokens", func(t *testing.T) {
-		scanner := NewLligneScannerBuffer(NewLligneScanner(
+		scanner := NewLligneBufferedScanner(NewLligneScanner(
 			"& &&\n *: , ",
 		))
 
@@ -47,7 +47,7 @@ func TestLligneScannerBuffer(t *testing.T) {
 	})
 
 	t.Run("a few identifier tokens", func(t *testing.T) {
-		scanner := NewLligneScannerBuffer(NewLligneScanner(
+		scanner := NewLligneBufferedScanner(NewLligneScanner(
 			"a bb c23_f _dfg",
 		))
 
@@ -59,7 +59,7 @@ func TestLligneScannerBuffer(t *testing.T) {
 	})
 
 	t.Run("a few numbers", func(t *testing.T) {
-		scanner := NewLligneScannerBuffer(NewLligneScanner(
+		scanner := NewLligneBufferedScanner(NewLligneScanner(
 			"123 4\n(99000) 5",
 		))
 
@@ -73,7 +73,7 @@ func TestLligneScannerBuffer(t *testing.T) {
 	})
 
 	t.Run("a few double quoted strings", func(t *testing.T) {
-		scanner := NewLligneScannerBuffer(NewLligneScanner(
+		scanner := NewLligneBufferedScanner(NewLligneScanner(
 			`"abc" "xyz" "bad
  "start over"`,
 		))
@@ -86,7 +86,7 @@ func TestLligneScannerBuffer(t *testing.T) {
 	})
 
 	t.Run("a few single quoted strings", func(t *testing.T) {
-		scanner := NewLligneScannerBuffer(NewLligneScanner(
+		scanner := NewLligneBufferedScanner(NewLligneScanner(
 			`'abc' 'xyz' 'bad
  'start over'`,
 		))
@@ -99,7 +99,7 @@ func TestLligneScannerBuffer(t *testing.T) {
 	})
 
 	t.Run("a few back-ticked string lines", func(t *testing.T) {
-		scanner := NewLligneScannerBuffer(NewLligneScanner(
+		scanner := NewLligneBufferedScanner(NewLligneScanner(
 			"`abc 123\n`  - one\n  `  - two\n\n  `another\n\n  `one more\n `and the end",
 		))
 
@@ -110,7 +110,7 @@ func TestLligneScannerBuffer(t *testing.T) {
 	})
 
 	t.Run("a few documentation lines", func(t *testing.T) {
-		scanner := NewLligneScannerBuffer(NewLligneScanner(
+		scanner := NewLligneBufferedScanner(NewLligneScanner(
 			"// abc 123\n//  - one\n//two\n\n//\n//",
 		))
 

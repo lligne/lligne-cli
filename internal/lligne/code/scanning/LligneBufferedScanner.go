@@ -7,7 +7,8 @@ package scanning
 
 //---------------------------------------------------------------------------------------------------------------------
 
-type ILligneScannerBuffer interface {
+// ILligneBufferedScanner allows reading tokens with one token of lookahead.
+type ILligneBufferedScanner interface {
 	AdvanceTokenIfType(tokenType LligneTokenType) bool
 	PeekToken() LligneToken
 	PeekTokenIsType(tokenType LligneTokenType) bool
@@ -16,17 +17,17 @@ type ILligneScannerBuffer interface {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-// LligneScanner converts a string of Lligne source code into tokens.
-type lligneScannerBuffer struct {
+// LligneBufferedScanner converts a string of Lligne source code into tokens with one token of lookahead.
+type lligneBufferedScanner struct {
 	scanner   ILligneScanner
 	nextToken LligneToken
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-// NewLligneScanner allocates a new scanner for given sourceCode from the given fileName.
-func NewLligneScannerBuffer(scanner ILligneScanner) ILligneScannerBuffer {
-	return &lligneScannerBuffer{
+// NewLligneBufferedScanner allocates a new buffered scanner that wraps a given inner scanner.
+func NewLligneBufferedScanner(scanner ILligneScanner) ILligneBufferedScanner {
+	return &lligneBufferedScanner{
 		scanner:   scanner,
 		nextToken: scanner.ReadToken(),
 	}
@@ -34,7 +35,9 @@ func NewLligneScannerBuffer(scanner ILligneScanner) ILligneScannerBuffer {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *lligneScannerBuffer) AdvanceTokenIfType(tokenType LligneTokenType) bool {
+// AdvanceTokenIfType consumes one token if it has the given type. It ignores the token itself
+// and returns a flag for whether the token was consumed.
+func (s *lligneBufferedScanner) AdvanceTokenIfType(tokenType LligneTokenType) bool {
 	if s.nextToken.TokenType == tokenType {
 		s.nextToken = s.scanner.ReadToken()
 		return true
@@ -44,19 +47,22 @@ func (s *lligneScannerBuffer) AdvanceTokenIfType(tokenType LligneTokenType) bool
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *lligneScannerBuffer) PeekToken() LligneToken {
+// PeekToken returns the lookahead token.
+func (s *lligneBufferedScanner) PeekToken() LligneToken {
 	return s.nextToken
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *lligneScannerBuffer) PeekTokenIsType(tokenType LligneTokenType) bool {
+// PeekTokenIsType determines whether the lookahead token has given type.
+func (s *lligneBufferedScanner) PeekTokenIsType(tokenType LligneTokenType) bool {
 	return s.nextToken.TokenType == tokenType
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *lligneScannerBuffer) ReadToken() LligneToken {
+// ReadToken consumes and returns the current token then fills in the next lookahead token.
+func (s *lligneBufferedScanner) ReadToken() LligneToken {
 	result := s.nextToken
 	s.nextToken = s.scanner.ReadToken()
 	return result

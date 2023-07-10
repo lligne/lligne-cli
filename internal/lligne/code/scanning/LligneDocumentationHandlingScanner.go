@@ -11,6 +11,8 @@ import "strings"
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// lligneDocumentationHandlingScanner wraps a given inner scanner to convert documentation tokens to
+// leading or trailing documentation plus synthetic documentation operator tokens.
 type lligneDocumentationHandlingScanner struct {
 	sourceCode      string
 	scanner         ILligneScanner
@@ -20,6 +22,8 @@ type lligneDocumentationHandlingScanner struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// NewLligneDocumentationHandlingScanner constructs a new documentation handling scanner making use of
+// the given inner scanner and using the given source code to check whether tokens are on the same line.
 func NewLligneDocumentationHandlingScanner(sourceCode string, scanner ILligneScanner) ILligneScanner {
 
 	// Allocate the handling scanner, delegating to the given scanner.
@@ -46,6 +50,7 @@ func NewLligneDocumentationHandlingScanner(sourceCode string, scanner ILligneSca
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// ReadToken returns the next token after doing the work of converting documentation tokens.
 func (s *lligneDocumentationHandlingScanner) ReadToken() LligneToken {
 
 	// If needed, read the next token from the inner scanner.
@@ -60,18 +65,18 @@ func (s *lligneDocumentationHandlingScanner) ReadToken() LligneToken {
 		if s.tokenAhead[0].TokenType != TokenTypeVerticalBar &&
 			s.tokensOnSameLine(s.tokenAhead[0].SourceStartPos, s.tokenAhead[1].SourceStartPos) {
 
-			// Add a synthetic documentation operator before the trailing documentation.
-			s.tokenAhead[1] = LligneToken{
-				TokenTypeSynthDocument,
-				" ",
-				s.tokenAhead[0].SourceStartPos,
-			}
-
 			// Convert to trailing documentation after other tokens on the same line except '|'.
 			s.tokenAhead[2] = LligneToken{
 				TokenTypeTrailingDocumentation,
 				s.tokenAhead[1].Text,
 				s.tokenAhead[1].SourceStartPos,
+			}
+
+			// Add a synthetic documentation operator before the trailing documentation.
+			s.tokenAhead[1] = LligneToken{
+				TokenTypeSynthDocument,
+				" ",
+				s.tokenAhead[2].SourceStartPos,
 			}
 
 			// Reorder trailing documentation as if it came before a comma or semicolon.
@@ -92,7 +97,7 @@ func (s *lligneDocumentationHandlingScanner) ReadToken() LligneToken {
 			}
 
 			// Add a synthetic documentation operator.
-			s.tokenAhead[2] = LligneToken{TokenTypeSynthDocument, " ", s.tokenAhead[0].SourceStartPos}
+			s.tokenAhead[2] = LligneToken{TokenTypeSynthDocument, " ", s.tokenAhead[1].SourceStartPos}
 
 		}
 
