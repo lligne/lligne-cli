@@ -23,19 +23,6 @@ type ILligneScanner interface {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-// LligneScanner converts a string of Lligne source code into tokens.
-type lligneScanner struct {
-	sourceCode         string
-	markedPos          int
-	currentPos         int
-	nextRune           rune
-	nextRuneWidth      int
-	tokenOriginTracker LligneTokenOriginTracker
-	keywords           map[string]LligneTokenType
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
 // NewLligneScanner allocates a new scanner for given sourceCode from the given fileName.
 func NewLligneScanner(sourceCode string) ILligneScanner {
 
@@ -69,6 +56,19 @@ func NewLligneScanner(sourceCode string) ILligneScanner {
 
 	return s
 
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// LligneScanner converts a string of Lligne source code into tokens.
+type lligneScanner struct {
+	sourceCode         string
+	markedPos          int
+	currentPos         int
+	nextRune           rune
+	nextRuneWidth      int
+	tokenOriginTracker LligneTokenOriginTracker
+	keywords           map[string]LligneTokenType
 }
 
 //---------------------------------------------------------------------------------------------------------------------

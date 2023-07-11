@@ -12,6 +12,8 @@ import (
 	"testing"
 )
 
+//---------------------------------------------------------------------------------------------------------------------
+
 func TestLligneBufferedScanner(t *testing.T) {
 
 	expectToken := func(scanner ILligneBufferedScanner, tokenType LligneTokenType, text string, startPos int, line int, column int) {
@@ -124,3 +126,5 @@ func TestLligneBufferedScanner(t *testing.T) {
 	})
 
 }
+
+//---------------------------------------------------------------------------------------------------------------------

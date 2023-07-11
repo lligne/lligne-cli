@@ -13,6 +13,8 @@ import (
 	"testing"
 )
 
+//---------------------------------------------------------------------------------------------------------------------
+
 func TestLligneScanner(t *testing.T) {
 
 	expectToken := func(scanner ILligneScanner, tokenType LligneTokenType, text string, startPos int) {
@@ -136,3 +138,5 @@ func TestLligneScanner(t *testing.T) {
 	})
 
 }
+
+//---------------------------------------------------------------------------------------------------------------------
