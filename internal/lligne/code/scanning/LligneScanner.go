@@ -42,18 +42,6 @@ func NewLligneScanner(sourceCode string) ILligneScanner {
 		s.nextRune, s.nextRuneWidth = utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
 	}
 
-	// Define keywords.
-	s.keywords = map[string]LligneTokenType{
-		TokenTypeAnd.String(): TokenTypeAnd,
-		TokenTypeAs.String():  TokenTypeAs,
-		TokenTypeIs.String():  TokenTypeIs,
-		TokenTypeIn.String():  TokenTypeIn,
-		TokenTypeNot.String(): TokenTypeNot,
-		TokenTypeOf.String():  TokenTypeOf,
-		TokenTypeOr.String():  TokenTypeOr,
-		TokenTypeTo.String():  TokenTypeTo,
-	}
-
 	return s
 
 }
@@ -68,7 +56,6 @@ type lligneScanner struct {
 	nextRune           rune
 	nextRuneWidth      int
 	tokenOriginTracker LligneTokenOriginTracker
-	keywords           map[string]LligneTokenType
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -416,7 +403,7 @@ func (s *lligneScanner) scanIdentifierOrKeyword() LligneToken {
 
 	text := s.sourceCode[s.markedPos:s.currentPos]
 
-	tokenType, isKeyword := s.keywords[text]
+	tokenType, isKeyword := keywords[text]
 	if isKeyword {
 		return LligneToken{tokenType, text, s.markedPos}
 	}
@@ -472,6 +459,19 @@ func (s *lligneScanner) token(tokenType LligneTokenType) LligneToken {
 		Text:           s.sourceCode[s.markedPos:s.currentPos],
 		SourceStartPos: s.markedPos,
 	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+var keywords = map[string]LligneTokenType{
+	TokenTypeAnd.String(): TokenTypeAnd,
+	TokenTypeAs.String():  TokenTypeAs,
+	TokenTypeIs.String():  TokenTypeIs,
+	TokenTypeIn.String():  TokenTypeIn,
+	TokenTypeNot.String(): TokenTypeNot,
+	TokenTypeOf.String():  TokenTypeOf,
+	TokenTypeOr.String():  TokenTypeOr,
+	TokenTypeTo.String():  TokenTypeTo,
 }
 
 //---------------------------------------------------------------------------------------------------------------------
