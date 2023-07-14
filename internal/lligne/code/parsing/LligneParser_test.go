@@ -53,6 +53,10 @@ func TestLligneParser(t *testing.T) {
 		check("// line one\n // line two\nq", "( (leadingdoc\n// line one\n// line two\n) (identifier q))")
 	})
 
+	t.Run("trailing documentation", func(t *testing.T) {
+		check("q // line one\n // line two\n", "( (identifier q) (trailingdoc\n// line one\n// line two\n))")
+	})
+
 	t.Run("addition", func(t *testing.T) {
 		check("x + 1", `(+ (identifier x) (int 1))`)
 		check(" 3 + y", `(+ (int 3) (identifier y))`)
@@ -72,25 +76,25 @@ func TestLligneParser(t *testing.T) {
 			{"1 * 2", "(* (int 1) (int 2))"},
 			{"x + 3 * g", "(+ (identifier x) (* (int 3) (identifier g)))"},
 			{"a + b / 2 - c", "(- (+ (identifier a) (/ (identifier b) (int 2))) (identifier c))"},
-			//{"-a", "(- (identifier a))"},
-			//{"-2 * a - b * -r", "(- (* (- (int 2)) (identifier a)) (* (identifier b) (- (identifier r))))"},
+			{"-a", "(prefix - (identifier a))"},
+			{"-2 * a - b * -r", "(- (* (prefix - (int 2)) (identifier a)) (* (identifier b) (prefix - (identifier r))))"},
 			{"a.b.c", "(. (identifier a) (identifier b) (identifier c))"},
 			{"x.y + z.q", "(+ (. (identifier x) (identifier y)) (. (identifier z) (identifier q)))"},
 			{"\"s\"", "(string \"s\")"},
 			{"\"string tied in a knot\"", "(string \"string tied in a knot\")"},
 			{"'c'", "(string 'c')"},
 
-			//{"(x + 5)", "(parenthesized (+ (identifier x) (int 5)))"},
-			//{"((x + 5) / 3)", "(parenthesized (/ (parenthesized (+ (identifier x) (int 5))) (int 3)))"},
+			{"(x + 5)", "(parenthesized (+ (identifier x) (int 5)))"},
+			{"((x + 5) / 3)", "(parenthesized (/ (parenthesized (+ (identifier x) (int 5))) (int 3)))"},
 
-			//{"()", "(parenthesized )"},
-			//{"(x: int && 5)", "(parenthesized (: (identifier x) (&& (identifier int) (int 5))))"},
-			//{"(x: int && 5, y: string && \"s\")", "(parenthesized (: (identifier x) (&& (identifier int) (int 5))) (: (identifier y) (&& (identifier string) (stringliteral \"s\"))))"},
+			{"()", "(parenthesized)"},
+			{"(x: int && 5)", "(parenthesized (: (identifier x) (&& (identifier int) (int 5))))"},
+			{"(x: int && 5, y: string && \"s\")", "(parenthesized (: (identifier x) (&& (identifier int) (int 5))) (: (identifier y) (&& (identifier string) (string \"s\"))))"},
 
 			{"a and b", "(and (identifier a) (identifier b))"},
 			{"a and b or c", "(or (and (identifier a) (identifier b)) (identifier c))"},
-			//{"a and not b", "(and (identifier a) (not (identifier b)))"},
-			//{"not a or b", "(or (not (identifier a)) (identifier b))"},
+			{"a and not b", "(and (identifier a) (prefix not (identifier b)))"},
+			{"not a or b", "(or (prefix not (identifier a)) (identifier b))"},
 
 			{"1 == 2", "(== (int 1) (int 2))"},
 			{"1 + 1 == 2 / 1", "(== (+ (int 1) (int 1)) (/ (int 2) (int 1)))"},

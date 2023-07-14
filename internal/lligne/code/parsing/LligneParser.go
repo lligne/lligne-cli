@@ -11,7 +11,7 @@ import (
 	"strconv"
 )
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 type ILligneParser interface {
 	ParseExpression() model.ILligneExpression
@@ -25,7 +25,7 @@ func NewLligneParser(scanner scanning.ILligneBufferedScanner) ILligneParser {
 	}
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 type lligneParser struct {
 	scanner scanning.ILligneBufferedScanner
@@ -126,8 +126,8 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 	case scanning.TokenTypeBackTickedString:
 		return &model.LligneMultilineStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
 
-	//	case LlaceTokenType.DASH:
-	//	return this.#parsePrefixOperationExpression(token.origin, token.type, LlaceUnaryOperator.ArithmeticNegation)
+	case scanning.TokenTypeDash:
+		return p.parsePrefixOperationExpression(token, model.PrefixOperatorNegation)
 
 	case scanning.TokenTypeDoubleQuotedString:
 		return &model.LligneStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
@@ -144,21 +144,18 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 	case scanning.TokenTypeSingleQuotedString:
 		return &model.LligneStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
 
-		//	case LlaceTokenType.LEFT_BRACKET:
-		//	return this.#parseArrayLiteral(token.origin)
-		//
-		//	case LlaceTokenType.LEFT_PARENTHESIS:
-		//	return this.#parseParenthesizedExpression(token.origin, LlaceTokenType.RIGHT_PARENTHESIS)
-		//
-		//	case LlaceTokenType.NOT:
-		//	return this.#parsePrefixOperationExpression(token.origin, token.type, LlaceUnaryOperator.LogicalNegation)
-		//
-		//	case LlaceTokenType.TRAILING_DOCUMENTATION: {
-		//	const rawLines = token.text.split("\n")
-		//	const lines = rawLines.map(line => line.trim()).filter(line => line.length > 0)
-		//	return new LlaceTrailingDocumentationExpr(token.origin, lines)
-		//	}
-		//
+	//	case LlaceTokenType.LEFT_BRACKET:
+	//	return this.#parseArrayLiteral(token.origin)
+
+	case scanning.TokenTypeLeftParenthesis:
+		return p.parseParenthesizedExpression(token, scanning.TokenTypeRightParenthesis)
+
+	case scanning.TokenTypeNot:
+		return p.parsePrefixOperationExpression(token, model.PrefixOperatorLogicalNot)
+
+	case scanning.TokenTypeTrailingDocumentation:
+		return &model.LligneTrailingDocumentationExpr{SourcePos: token.SourceStartPos, Text: token.Text}
+
 		//	default:
 		//	this.expectedType(
 		//	LlaceTokenType.CHAR_LITERAL,
@@ -176,27 +173,71 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (p *lligneParser) parseParenthesizedExpression(
+	token scanning.LligneToken,
+	endingTokenType scanning.LligneTokenType,
+) model.ILligneExpression {
+
+	var items []model.ILligneExpression
+
+	for !p.scanner.PeekTokenIsType(endingTokenType) {
+		// Parse one expression.
+		items = append(items, p.parseExprBindingPower(0))
+
+		if !p.scanner.AdvanceTokenIfType(scanning.TokenTypeComma) {
+			break
+		}
+	}
+
+	if !p.scanner.AdvanceTokenIfType(endingTokenType) {
+		panic("Expected " + endingTokenType.String())
+	}
+
+	return &model.LligneParenthesizedExpr{
+		SourcePos: token.SourceStartPos,
+		Items:     items,
+	}
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (p *lligneParser) parsePrefixOperationExpression(
+	token scanning.LligneToken,
+	operator model.LlignePrefixOperator,
+) model.ILligneExpression {
+	rightBindingPower := prefixBindingPowers[token.TokenType].Power
+	rhs := p.parseExprBindingPower(rightBindingPower)
+	return &model.LlignePrefixOperationExpr{
+		SourcePos: token.SourceStartPos,
+		Operator:  operator,
+		Operand:   rhs,
+	}
+}
+
+//=====================================================================================================================
+
 type infixBindingPower struct {
 	Left     int
 	Right    int
 	Operator model.LligneInfixOperator
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 type prefixBindingPower struct {
 	Power    int
 	Operator model.LlignePrefixOperator
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 type postfixBindingPower struct {
 	Power    int
 	Operator model.LlignePostfixOperator
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 var prefixBindingPowers = make(map[scanning.LligneTokenType]prefixBindingPower)
 
@@ -288,4 +329,4 @@ func init() {
 
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================

@@ -5,7 +5,7 @@
 
 package scanning
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 // ILligneBufferedScanner allows reading tokens with one token of lookahead.
 type ILligneBufferedScanner interface {
@@ -17,20 +17,20 @@ type ILligneBufferedScanner interface {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-// LligneBufferedScanner converts a string of Lligne source code into tokens with one token of lookahead.
-type lligneBufferedScanner struct {
-	scanner   ILligneScanner
-	nextToken LligneToken
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
 // NewLligneBufferedScanner allocates a new buffered scanner that wraps a given inner scanner.
 func NewLligneBufferedScanner(scanner ILligneScanner) ILligneBufferedScanner {
 	return &lligneBufferedScanner{
 		scanner:   scanner,
 		nextToken: scanner.ReadToken(),
 	}
+}
+
+//=====================================================================================================================
+
+// LligneBufferedScanner converts a string of Lligne source code into tokens with one token of lookahead.
+type lligneBufferedScanner struct {
+	scanner   ILligneScanner
+	nextToken LligneToken
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -75,4 +75,4 @@ func (s *lligneBufferedScanner) ReadToken() LligneToken {
 	return result
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================

@@ -9,7 +9,7 @@ package scanning
 
 import "strings"
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 // lligneDocumentationHandlingScanner wraps a given inner scanner to convert documentation tokens to
 // leading or trailing documentation plus synthetic documentation operator tokens.
@@ -129,4 +129,4 @@ func (s *lligneDocumentationHandlingScanner) tokensOnSameLine(token1StartPos int
 	return strings.IndexByte(s.sourceCode[token1StartPos:token2StartPos], '\n') < 0
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================

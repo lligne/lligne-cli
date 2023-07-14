@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 // ILligneExpression is the interface to an expression AST node.
 type ILligneExpression interface {
@@ -20,7 +20,7 @@ type ILligneExpression interface {
 	TypeCode() LligneExprType
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 // LligneExprType is an enumeration of Lligne expression types.
 type LligneExprType int
@@ -31,10 +31,13 @@ const (
 	ExprTypeIntegerLiteral
 	ExprTypeLeadingDocumentation
 	ExprTypeMultilineStringLiteral
+	ExprTypeParenthesized
+	ExprTypePrefixOperation
 	ExprTypeStringLiteral
+	ExprTypeTrailingDocumentation
 )
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 // LligneInfixOperator is an enumeration of Lligne's binary operators.
 type LligneInfixOperator int
@@ -68,32 +71,9 @@ const (
 	InfixOperatorUnion
 )
 
-//---------------------------------------------------------------------------------------------------------------------
-
-// LlignePrefixOperator is an enumeration of Lligne's prefix operators.
-type LlignePrefixOperator int
-
-const (
-	PrefixOperatorNone LlignePrefixOperator = iota
-	PrefixOperatorLogicalNot
-	PrefixOperatorNegation
-)
-
-//---------------------------------------------------------------------------------------------------------------------
-
-// LlignePostfixOperator is an enumeration of Lligne's prefix operators.
-type LlignePostfixOperator int
-
-const (
-	PostfixOperatorNone LlignePostfixOperator = iota
-	PostfixOperatorFunctionCall
-	PostfixOperatorIndex
-	PostfixOperatorOptional
-)
-
 // ---------------------------------------------------------------------------------------------------------------------
 
-// TextOfTokenType returns a string describing a Lligne token type.
+// String returns a string representing the code of an operator.
 func (op LligneInfixOperator) String() string {
 
 	switch op {
@@ -151,10 +131,49 @@ func (op LligneInfixOperator) String() string {
 
 	}
 
-	panic("Unhandled binary operator: '" + strconv.Itoa(int(op)) + "'.")
+	panic("Unhandled infix operator: '" + strconv.Itoa(int(op)) + "'.")
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
+
+// LlignePrefixOperator is an enumeration of Lligne's prefix operators.
+type LlignePrefixOperator int
+
+const (
+	PrefixOperatorNone LlignePrefixOperator = iota
+	PrefixOperatorLogicalNot
+	PrefixOperatorNegation
+)
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+// String returns a string representing the code of an operator.
+func (op LlignePrefixOperator) String() string {
+
+	switch op {
+
+	case PrefixOperatorLogicalNot:
+		return "not "
+	case PrefixOperatorNegation:
+		return "-"
+	}
+
+	panic("Unhandled prefix operator: '" + strconv.Itoa(int(op)) + "'.")
+}
+
+//=====================================================================================================================
+
+// LlignePostfixOperator is an enumeration of Lligne's prefix operators.
+type LlignePostfixOperator int
+
+const (
+	PostfixOperatorNone LlignePostfixOperator = iota
+	PostfixOperatorFunctionCall
+	PostfixOperatorIndex
+	PostfixOperatorOptional
+)
+
+//=====================================================================================================================
 
 // LligneIdentifierExpr represents a single identifier.
 type LligneIdentifierExpr struct {
@@ -174,7 +193,7 @@ func (e *LligneIdentifierExpr) TypeCode() LligneExprType {
 	return ExprTypeIdentifier
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 // LligneInfixOperationExpr represents an infix operation.
 type LligneInfixOperationExpr struct {
@@ -204,7 +223,7 @@ func (e *LligneInfixOperationExpr) TypeCode() LligneExprType {
 	return ExprTypeInfixOperation
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 // LligneIntegerLiteralExpr represents a single integer literal.
 type LligneIntegerLiteralExpr struct {
@@ -224,7 +243,7 @@ func (e *LligneIntegerLiteralExpr) TypeCode() LligneExprType {
 	return ExprTypeIntegerLiteral
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
 // LligneLeadingDocumentationExpr represents lines of leading documentation.
 type LligneLeadingDocumentationExpr struct {
@@ -244,9 +263,9 @@ func (e *LligneLeadingDocumentationExpr) TypeCode() LligneExprType {
 	return ExprTypeLeadingDocumentation
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
-// LligneMultilineStringLiteralExpr represents a single integer literal.
+// LligneMultilineStringLiteralExpr represents a multiline (back-ticked) string literal.
 type LligneMultilineStringLiteralExpr struct {
 	SourcePos int
 	Text      string
@@ -264,9 +283,59 @@ func (e *LligneMultilineStringLiteralExpr) TypeCode() LligneExprType {
 	return ExprTypeMultilineStringLiteral
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
-// LligneStringLiteralExpr represents a single integer literal.
+// LligneParenthesizedExpr represents a parenthesized expression or comma-separated sequence of expressions.
+type LligneParenthesizedExpr struct {
+	SourcePos int
+	Items     []ILligneExpression
+}
+
+func (e *LligneParenthesizedExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
+	return tracker.GetOrigin(e.SourcePos)
+}
+
+func (e *LligneParenthesizedExpr) SExpression() string {
+	result := "(parenthesized"
+
+	for _, item := range e.Items {
+		result += " "
+		result += item.SExpression()
+	}
+
+	result += ")"
+
+	return result
+}
+
+func (e *LligneParenthesizedExpr) TypeCode() LligneExprType {
+	return ExprTypeParenthesized
+}
+
+//=====================================================================================================================
+
+// LlignePrefixOperationExpr represents a prefix operation.
+type LlignePrefixOperationExpr struct {
+	SourcePos int
+	Operator  LlignePrefixOperator
+	Operand   ILligneExpression
+}
+
+func (e *LlignePrefixOperationExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
+	return tracker.GetOrigin(e.SourcePos)
+}
+
+func (e *LlignePrefixOperationExpr) SExpression() string {
+	return "(prefix " + strings.TrimSpace(e.Operator.String()) + " " + e.Operand.SExpression() + ")"
+}
+
+func (e *LlignePrefixOperationExpr) TypeCode() LligneExprType {
+	return ExprTypePrefixOperation
+}
+
+//=====================================================================================================================
+
+// LligneStringLiteralExpr represents a single string literal.
 type LligneStringLiteralExpr struct {
 	SourcePos int
 	Text      string
@@ -284,4 +353,24 @@ func (e *LligneStringLiteralExpr) TypeCode() LligneExprType {
 	return ExprTypeStringLiteral
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
+
+// LligneTrailingDocumentationExpr represents lines of trailing documentation.
+type LligneTrailingDocumentationExpr struct {
+	SourcePos int
+	Text      string
+}
+
+func (e *LligneTrailingDocumentationExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
+	return tracker.GetOrigin(e.SourcePos)
+}
+
+func (e *LligneTrailingDocumentationExpr) SExpression() string {
+	return "(trailingdoc\n" + e.Text + ")"
+}
+
+func (e *LligneTrailingDocumentationExpr) TypeCode() LligneExprType {
+	return ExprTypeTrailingDocumentation
+}
+
+//=====================================================================================================================
