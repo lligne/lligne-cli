@@ -126,6 +126,9 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 	case scanning.TokenTypeBackTickedString:
 		return &model.LligneMultilineStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
 
+	case scanning.TokenTypeLeftBrace:
+		return p.parseParenthesizedExpression(token, scanning.TokenTypeRightBrace)
+
 	case scanning.TokenTypeDash:
 		return p.parsePrefixOperationExpression(token, model.PrefixOperatorNegation)
 
@@ -144,8 +147,8 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 	case scanning.TokenTypeSingleQuotedString:
 		return &model.LligneStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
 
-	//	case LlaceTokenType.LEFT_BRACKET:
-	//	return this.#parseArrayLiteral(token.origin)
+	case scanning.TokenTypeLeftBracket:
+		return p.parseSequenceLiteral(token)
 
 	case scanning.TokenTypeLeftParenthesis:
 		return p.parseParenthesizedExpression(token, scanning.TokenTypeRightParenthesis)
@@ -194,8 +197,9 @@ func (p *lligneParser) parseParenthesizedExpression(
 	}
 
 	return &model.LligneParenthesizedExpr{
-		SourcePos: token.SourceStartPos,
-		Items:     items,
+		SourcePos:  token.SourceStartPos,
+		UsesBraces: token.TokenType == scanning.TokenTypeLeftBrace,
+		Items:      items,
 	}
 
 }
@@ -213,6 +217,38 @@ func (p *lligneParser) parsePrefixOperationExpression(
 		Operator:  operator,
 		Operand:   rhs,
 	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (p *lligneParser) parseSequenceLiteral(token scanning.LligneToken) model.ILligneExpression {
+
+	var items []model.ILligneExpression
+
+	if p.scanner.AdvanceTokenIfType(scanning.TokenTypeRightBracket) {
+		return &model.LligneSequenceLiteralExpr{SourcePos: token.SourceStartPos, Elements: items}
+	}
+
+	for !p.scanner.PeekTokenIsType(scanning.TokenTypeRightBracket) {
+		// Parse one expression.
+		items = append(items, p.parseExprBindingPower(0))
+
+		if !p.scanner.AdvanceTokenIfType(scanning.TokenTypeComma) {
+			break
+		}
+	}
+
+	if !p.scanner.AdvanceTokenIfType(scanning.TokenTypeRightBracket) {
+		panic("Expected " + scanning.TokenTypeRightBracket.String())
+	}
+
+	return &model.LligneSequenceLiteralExpr{
+		SourcePos: token.SourceStartPos,
+		Elements:  items,
+	}
+
+	return &model.LligneSequenceLiteralExpr{}
+
 }
 
 //=====================================================================================================================

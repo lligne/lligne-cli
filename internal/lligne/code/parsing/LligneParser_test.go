@@ -31,8 +31,8 @@ func TestLligneParser(t *testing.T) {
 	}
 
 	t.Run("identifier literals", func(t *testing.T) {
-		check("abc", "(identifier abc)")
-		check("\n  d  \n", "(identifier d)")
+		check("abc", "(id abc)")
+		check("\n  d  \n", "(id d)")
 	})
 
 	t.Run("integer literals", func(t *testing.T) {
@@ -50,16 +50,16 @@ func TestLligneParser(t *testing.T) {
 	})
 
 	t.Run("leading documentation", func(t *testing.T) {
-		check("// line one\n // line two\nq", "( (leadingdoc\n// line one\n// line two\n) (identifier q))")
+		check("// line one\n // line two\nq", "( (leadingdoc\n// line one\n// line two\n) (id q))")
 	})
 
 	t.Run("trailing documentation", func(t *testing.T) {
-		check("q // line one\n // line two\n", "( (identifier q) (trailingdoc\n// line one\n// line two\n))")
+		check("q // line one\n // line two\n", "( (id q) (trailingdoc\n// line one\n// line two\n))")
 	})
 
 	t.Run("addition", func(t *testing.T) {
-		check("x + 1", `(+ (identifier x) (int 1))`)
-		check(" 3 + y", `(+ (int 3) (identifier y))`)
+		check("x + 1", `(+ (id x) (int 1))`)
+		check(" 3 + y", `(+ (int 3) (id y))`)
 	})
 
 	t.Run("table of expressions", func(t *testing.T) {
@@ -69,32 +69,40 @@ func TestLligneParser(t *testing.T) {
 		}
 
 		tests := []parseOutcome{
-			{"x + 1", "(+ (identifier x) (int 1))"},
-			{"q - 4", "(- (identifier q) (int 4))"},
-			{"a - b + 3", "(+ (- (identifier a) (identifier b)) (int 3))"},
-			{"a + b + 3", "(+ (identifier a) (identifier b) (int 3))"},
+			{"x + 1", "(+ (id x) (int 1))"},
+			{"q - 4", "(- (id q) (int 4))"},
+			{"a - b + 3", "(+ (- (id a) (id b)) (int 3))"},
+			{"a + b + 3", "(+ (id a) (id b) (int 3))"},
 			{"1 * 2", "(* (int 1) (int 2))"},
-			{"x + 3 * g", "(+ (identifier x) (* (int 3) (identifier g)))"},
-			{"a + b / 2 - c", "(- (+ (identifier a) (/ (identifier b) (int 2))) (identifier c))"},
-			{"-a", "(prefix - (identifier a))"},
-			{"-2 * a - b * -r", "(- (* (prefix - (int 2)) (identifier a)) (* (identifier b) (prefix - (identifier r))))"},
-			{"a.b.c", "(. (identifier a) (identifier b) (identifier c))"},
-			{"x.y + z.q", "(+ (. (identifier x) (identifier y)) (. (identifier z) (identifier q)))"},
+			{"x + 3 * g", "(+ (id x) (* (int 3) (id g)))"},
+			{"a + b / 2 - c", "(- (+ (id a) (/ (id b) (int 2))) (id c))"},
+			{"-a", "(prefix - (id a))"},
+			{"-2 * a - b * -r", "(- (* (prefix - (int 2)) (id a)) (* (id b) (prefix - (id r))))"},
+			{"a.b.c", "(. (id a) (id b) (id c))"},
+			{"x.y + z.q", "(+ (. (id x) (id y)) (. (id z) (id q)))"},
 			{"\"s\"", "(string \"s\")"},
 			{"\"string tied in a knot\"", "(string \"string tied in a knot\")"},
 			{"'c'", "(string 'c')"},
 
-			{"(x + 5)", "(parenthesized (+ (identifier x) (int 5)))"},
-			{"((x + 5) / 3)", "(parenthesized (/ (parenthesized (+ (identifier x) (int 5))) (int 3)))"},
+			{"(x + 5)", "(parenthesized () (+ (id x) (int 5)))"},
+			{"((x + 5) / 3)", "(parenthesized () (/ (parenthesized () (+ (id x) (int 5))) (int 3)))"},
 
-			{"()", "(parenthesized)"},
-			{"(x: int && 5)", "(parenthesized (: (identifier x) (&& (identifier int) (int 5))))"},
-			{"(x: int && 5, y: string && \"s\")", "(parenthesized (: (identifier x) (&& (identifier int) (int 5))) (: (identifier y) (&& (identifier string) (string \"s\"))))"},
+			{"()", "(parenthesized ())"},
+			{"(x: int && 5)", "(parenthesized () (: (id x) (&& (id int) (int 5))))"},
+			{"(x: int && 5, y: string && \"s\")", "(parenthesized () (: (id x) (&& (id int) (int 5))) (: (id y) (&& (id string) (string \"s\"))))"},
+			{"(1, 2, 3, 4, 5)", "(parenthesized () (int 1) (int 2) (int 3) (int 4) (int 5))"},
 
-			{"a and b", "(and (identifier a) (identifier b))"},
-			{"a and b or c", "(or (and (identifier a) (identifier b)) (identifier c))"},
-			{"a and not b", "(and (identifier a) (prefix not (identifier b)))"},
-			{"not a or b", "(or (prefix not (identifier a)) (identifier b))"},
+			{"{}", "(parenthesized {})"},
+			{"{x: int && 5}", "(parenthesized {} (: (id x) (&& (id int) (int 5))))"},
+			{"{x: int && 5, y: string && \"s\"}", "(parenthesized {} (: (id x) (&& (id int) (int 5))) (: (id y) (&& (id string) (string \"s\"))))"},
+			{"{1, 2, 3, 4, 5}", "(parenthesized {} (int 1) (int 2) (int 3) (int 4) (int 5))"},
+
+			{"[1, 2, 3, 4, 5]", "(sequence (int 1) (int 2) (int 3) (int 4) (int 5))"},
+
+			{"a and b", "(and (id a) (id b))"},
+			{"a and b or c", "(or (and (id a) (id b)) (id c))"},
+			{"a and not b", "(and (id a) (prefix not (id b)))"},
+			{"not a or b", "(or (prefix not (id a)) (id b))"},
 
 			{"1 == 2", "(== (int 1) (int 2))"},
 			{"1 + 1 == 2 / 1", "(== (+ (int 1) (int 1)) (/ (int 2) (int 1)))"},
@@ -102,16 +110,16 @@ func TestLligneParser(t *testing.T) {
 			{"1 + 1 <= 2 / 1", "(<= (+ (int 1) (int 1)) (/ (int 2) (int 1)))"},
 			{"1 + 1 >= 2 / 1", "(>= (+ (int 1) (int 1)) (/ (int 2) (int 1)))"},
 
-			{"x =~ y", "(=~ (identifier x) (identifier y))"},
-			{"x !~ y", "(!~ (identifier x) (identifier y))"},
+			{"x =~ y", "(=~ (id x) (id y))"},
+			{"x !~ y", "(!~ (id x) (id y))"},
 
-			//{"f(x: 0)", "(call (identifier f) (parenthesized (: (identifier x) (int 0))))"},
-			//{"(a: f(x: 0))", "(parenthesized (: (identifier a) (call (identifier f) (parenthesized (: (identifier x) (int 0))))))"},
+			//{"f(x: 0)", "(call (id f) (parenthesized (: (id x) (int 0))))"},
+			//{"(a: f(x: 0))", "(parenthesized (: (id a) (call (id f) (parenthesized (: (id x) (int 0))))))"},
 
 			{"1..9", "(.. (int 1) (int 9))"},
-			{"x in 1..9", "(in (identifier x) (.. (int 1) (int 9)))"},
+			{"x in 1..9", "(in (id x) (.. (int 1) (int 9)))"},
 
-			{"x is Widget", "(is (identifier x) (identifier Widget))"},
+			{"x is Widget", "(is (id x) (id Widget))"},
 		}
 
 		for _, test := range tests {

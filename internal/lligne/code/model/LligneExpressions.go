@@ -33,6 +33,7 @@ const (
 	ExprTypeMultilineStringLiteral
 	ExprTypeParenthesized
 	ExprTypePrefixOperation
+	ExprTypeSequenceLiteral
 	ExprTypeStringLiteral
 	ExprTypeTrailingDocumentation
 )
@@ -186,7 +187,7 @@ func (e *LligneIdentifierExpr) GetOrigin(tracker scanning.ILligneTokenOriginTrac
 }
 
 func (e *LligneIdentifierExpr) SExpression() string {
-	return "(identifier " + e.Name + ")"
+	return "(id " + e.Name + ")"
 }
 
 func (e *LligneIdentifierExpr) TypeCode() LligneExprType {
@@ -287,8 +288,9 @@ func (e *LligneMultilineStringLiteralExpr) TypeCode() LligneExprType {
 
 // LligneParenthesizedExpr represents a parenthesized expression or comma-separated sequence of expressions.
 type LligneParenthesizedExpr struct {
-	SourcePos int
-	Items     []ILligneExpression
+	SourcePos  int
+	UsesBraces bool
+	Items      []ILligneExpression
 }
 
 func (e *LligneParenthesizedExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
@@ -296,7 +298,13 @@ func (e *LligneParenthesizedExpr) GetOrigin(tracker scanning.ILligneTokenOriginT
 }
 
 func (e *LligneParenthesizedExpr) SExpression() string {
-	result := "(parenthesized"
+	var result string
+
+	if e.UsesBraces {
+		result = "(parenthesized {}"
+	} else {
+		result = "(parenthesized ()"
+	}
 
 	for _, item := range e.Items {
 		result += " "
@@ -331,6 +339,35 @@ func (e *LlignePrefixOperationExpr) SExpression() string {
 
 func (e *LlignePrefixOperationExpr) TypeCode() LligneExprType {
 	return ExprTypePrefixOperation
+}
+
+//=====================================================================================================================
+
+// LligneSequenceLiteralExpr represents a parenthesized expression or comma-separated sequence of expressions.
+type LligneSequenceLiteralExpr struct {
+	SourcePos int
+	Elements  []ILligneExpression
+}
+
+func (e *LligneSequenceLiteralExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
+	return tracker.GetOrigin(e.SourcePos)
+}
+
+func (e *LligneSequenceLiteralExpr) SExpression() string {
+	result := "(sequence"
+
+	for _, element := range e.Elements {
+		result += " "
+		result += element.SExpression()
+	}
+
+	result += ")"
+
+	return result
+}
+
+func (e *LligneSequenceLiteralExpr) TypeCode() LligneExprType {
+	return ExprTypeSequenceLiteral
 }
 
 //=====================================================================================================================
