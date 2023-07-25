@@ -15,6 +15,7 @@ import (
 
 type ILligneParser interface {
 	ParseExpression() model.ILligneExpression
+	ParseParenthesizedItems() model.ILligneExpression
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -35,6 +36,14 @@ type lligneParser struct {
 
 func (p *lligneParser) ParseExpression() model.ILligneExpression {
 	return p.parseExprBindingPower(0)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// ParseParenthesizedItems parses a non-empty sequence of code expected to be the items within a record literal, e.g.
+// the top level of a file.
+func (p *lligneParser) ParseParenthesizedItems() model.ILligneExpression {
+	return p.parseParenthesizedExpression(p.scanner.PeekToken(), scanning.TokenTypeEof)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -72,22 +81,22 @@ func (p *lligneParser) parseExprBindingPower(minBindingPower int) model.ILligneE
 		// Look ahead for an operator continuing the expression
 		opToken := p.scanner.PeekToken()
 
-		//// Handle postfix operators ...
-		//pBindingPower := postfixBindingPower.get(opToken.TokenType)
-		//
-		//if pBindingPower != nil {
-		//
-		//	if pBindingPower < minBindingPower {
-		//		break
-		//	}
-		//
-		//	p.scanner.ReadToken()
-		//
-		//	lhs = p.ParsePostfixExpression(opToken, lhs)
-		//
-		//	continue
-		//
-		//}
+		// Handle postfix operators ...
+		pBindingPower := postfixBindingPowers[opToken.TokenType]
+
+		if pBindingPower.Operator != model.PostfixOperatorNone {
+
+			if pBindingPower.Power < minBindingPower {
+				break
+			}
+
+			p.scanner.ReadToken()
+
+			lhs = p.parsePostfixExpression(opToken, lhs)
+
+			continue
+
+		}
 
 		// Handle infix operators ...
 		bindingPower := infixBindingPowers[opToken.TokenType]
@@ -126,9 +135,6 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 	case scanning.TokenTypeBackTickedString:
 		return &model.LligneMultilineStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
 
-	case scanning.TokenTypeLeftBrace:
-		return p.parseParenthesizedExpression(token, scanning.TokenTypeRightBrace)
-
 	case scanning.TokenTypeDash:
 		return p.parsePrefixOperationExpression(token, model.PrefixOperatorNegation)
 
@@ -144,8 +150,8 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 	case scanning.TokenTypeLeadingDocumentation:
 		return &model.LligneLeadingDocumentationExpr{SourcePos: token.SourceStartPos, Text: token.Text}
 
-	case scanning.TokenTypeSingleQuotedString:
-		return &model.LligneStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
+	case scanning.TokenTypeLeftBrace:
+		return p.parseParenthesizedExpression(token, scanning.TokenTypeRightBrace)
 
 	case scanning.TokenTypeLeftBracket:
 		return p.parseSequenceLiteral(token)
@@ -155,6 +161,9 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 
 	case scanning.TokenTypeNot:
 		return p.parsePrefixOperationExpression(token, model.PrefixOperatorLogicalNot)
+
+	case scanning.TokenTypeSingleQuotedString:
+		return &model.LligneStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
 
 	case scanning.TokenTypeTrailingDocumentation:
 		return &model.LligneTrailingDocumentationExpr{SourcePos: token.SourceStartPos, Text: token.Text}
@@ -201,6 +210,32 @@ func (p *lligneParser) parseParenthesizedExpression(
 		UsesBraces: token.TokenType == scanning.TokenTypeLeftBrace,
 		Items:      items,
 	}
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (p *lligneParser) parsePostfixExpression(opToken scanning.LligneToken, lhs model.ILligneExpression) model.ILligneExpression {
+
+	switch opToken.TokenType {
+
+	case scanning.TokenTypeLeftParenthesis:
+		args := p.parseParenthesizedExpression(opToken, scanning.TokenTypeRightParenthesis)
+		return &model.LligneFunctionCallExpr{
+			SourcePos:         opToken.SourceStartPos,
+			FunctionReference: lhs,
+			Argument:          args,
+		}
+
+	case scanning.TokenTypeQuestionMark:
+		return &model.LligneOptionalExpr{
+			SourcePos: opToken.SourceStartPos,
+			Operand:   lhs,
+		}
+
+	}
+
+	panic("Unfinished parsing code: '" + strconv.Itoa(int(opToken.TokenType)) + "'.")
 
 }
 
@@ -286,7 +321,7 @@ func init() {
 	level := 1
 	infixBindingPowers[scanning.TokenTypeColon] = infixBindingPower{level, level + 1, model.InfixOperatorQualify}
 	infixBindingPowers[scanning.TokenTypeEquals] = infixBindingPower{level, level + 1, model.InfixOperatorIntersectAssignValue}
-	infixBindingPowers[scanning.TokenTypeQuestionMark] = infixBindingPower{level, level + 1, model.InfixOperatorIntersectDefaultValue}
+	infixBindingPowers[scanning.TokenTypeQuestionMarkColon] = infixBindingPower{level, level + 1, model.InfixOperatorIntersectDefaultValue}
 
 	level += 2
 
@@ -299,6 +334,11 @@ func init() {
 	level += 2
 
 	infixBindingPowers[scanning.TokenTypeAmpersand] = infixBindingPower{level, level + 1, model.InfixOperatorIntersect}
+
+	level += 2
+
+	infixBindingPowers[scanning.TokenTypeWhen] = infixBindingPower{level, level + 1, model.InfixOperatorWhen}
+	infixBindingPowers[scanning.TokenTypeWhere] = infixBindingPower{level, level + 1, model.InfixOperatorWhere}
 
 	level += 2
 

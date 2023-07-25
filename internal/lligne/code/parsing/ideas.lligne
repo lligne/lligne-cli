@@ -1,0 +1,9 @@
+
+
+{
+    x : array(of:int)
+}
+
+f: (n: int) -> int =
+    1            when n == 0
+    | n * (n-1)  when n > 0

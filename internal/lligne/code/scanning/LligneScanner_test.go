@@ -33,6 +33,14 @@ func TestLligneScanner(t *testing.T) {
 		expectToken(scanner, tokenType, tokenType.String(), startPos)
 	}
 
+	t.Run("empty string", func(t *testing.T) {
+		scanner := NewLligneScanner(
+			"",
+		)
+
+		expectToken(scanner, TokenTypeEof, "", 0)
+	})
+
 	t.Run("a few punctuation tokens", func(t *testing.T) {
 		scanner := NewLligneScanner(
 			"& &&\n *: , ",

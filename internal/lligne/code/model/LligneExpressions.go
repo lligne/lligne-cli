@@ -26,11 +26,14 @@ type ILligneExpression interface {
 type LligneExprType int
 
 const (
-	ExprTypeIdentifier LligneExprType = iota
+	ExprTypeUndefined LligneExprType = iota
+	ExprTypeFunctionCall
+	ExprTypeIdentifier
 	ExprTypeInfixOperation
 	ExprTypeIntegerLiteral
 	ExprTypeLeadingDocumentation
 	ExprTypeMultilineStringLiteral
+	ExprTypeOptional
 	ExprTypeParenthesized
 	ExprTypePrefixOperation
 	ExprTypeSequenceLiteral
@@ -70,6 +73,8 @@ const (
 	InfixOperatorRange
 	InfixOperatorSubtract
 	InfixOperatorUnion
+	InfixOperatorWhen
+	InfixOperatorWhere
 )
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -129,6 +134,10 @@ func (op LligneInfixOperator) String() string {
 		return " - "
 	case InfixOperatorUnion:
 		return " | "
+	case InfixOperatorWhen:
+		return " when "
+	case InfixOperatorWhere:
+		return " where "
 
 	}
 
@@ -173,6 +182,39 @@ const (
 	PostfixOperatorIndex
 	PostfixOperatorOptional
 )
+
+//=====================================================================================================================
+
+// LligneFunctionCallExpr represents a function call (a function name followed by a parenthesized expression).
+type LligneFunctionCallExpr struct {
+	SourcePos         int
+	FunctionReference ILligneExpression
+	Argument          ILligneExpression
+}
+
+func (e *LligneFunctionCallExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
+	return tracker.GetOrigin(e.SourcePos)
+}
+
+func (e *LligneFunctionCallExpr) SExpression() string {
+	var result string
+
+	result = "(call "
+
+	result += e.FunctionReference.SExpression()
+
+	result += " "
+
+	result += e.Argument.SExpression()
+
+	result += ")"
+
+	return result
+}
+
+func (e *LligneFunctionCallExpr) TypeCode() LligneExprType {
+	return ExprTypeFunctionCall
+}
 
 //=====================================================================================================================
 
@@ -282,6 +324,34 @@ func (e *LligneMultilineStringLiteralExpr) SExpression() string {
 
 func (e *LligneMultilineStringLiteralExpr) TypeCode() LligneExprType {
 	return ExprTypeMultilineStringLiteral
+}
+
+//=====================================================================================================================
+
+// LligneOptionalExpr represents a parenthesized expression or comma-separated sequence of expressions.
+type LligneOptionalExpr struct {
+	SourcePos int
+	Operand   ILligneExpression
+}
+
+func (e *LligneOptionalExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
+	return tracker.GetOrigin(e.SourcePos)
+}
+
+func (e *LligneOptionalExpr) SExpression() string {
+	var result string
+
+	result = "(optional "
+
+	result += e.Operand.SExpression()
+
+	result += ")"
+
+	return result
+}
+
+func (e *LligneOptionalExpr) TypeCode() LligneExprType {
+	return ExprTypeOptional
 }
 
 //=====================================================================================================================

@@ -62,6 +62,8 @@ const (
 	TokenTypeOf
 	TokenTypeOr
 	TokenTypeTo
+	TokenTypeWhen
+	TokenTypeWhere
 
 	// Others
 	TokenTypeBackTickedString
@@ -177,6 +179,10 @@ func (tt LligneTokenType) String() string {
 		return "or"
 	case TokenTypeTo:
 		return "to"
+	case TokenTypeWhen:
+		return "when"
+	case TokenTypeWhere:
+		return "where"
 
 	// Others
 	case TokenTypeBackTickedString:
