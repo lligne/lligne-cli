@@ -84,19 +84,19 @@ func TestLligneParser(t *testing.T) {
 			{"\"string tied in a knot\"", "(string \"string tied in a knot\")"},
 			{"'c'", "(string 'c')"},
 
-			{"(x + 5)", "(parenthesized () (+ (id x) (int 5)))"},
-			{"((x + 5) / 3)", "(parenthesized () (/ (parenthesized () (+ (id x) (int 5))) (int 3)))"},
+			{"(x + 5)", "(parenthesized \"()\" (+ (id x) (int 5)))"},
+			{"((x + 5) / 3)", "(parenthesized \"()\" (/ (parenthesized \"()\" (+ (id x) (int 5))) (int 3)))"},
 
-			{"()", "(parenthesized ())"},
-			{"(x: int && 5)", "(parenthesized () (: (id x) (&& (id int) (int 5))))"},
-			{"(x: int && 5, y: string && \"s\")", "(parenthesized () (: (id x) (&& (id int) (int 5))) (: (id y) (&& (id string) (string \"s\"))))"},
-			{"(1, 2, 3, 4, 5)", "(parenthesized () (int 1) (int 2) (int 3) (int 4) (int 5))"},
+			{"()", "(parenthesized \"()\")"},
+			{"(x: int && 5)", "(parenthesized \"()\" (: (id x) (&& (id int) (int 5))))"},
+			{"(x: int && 5, y: string && \"s\")", "(parenthesized \"()\" (: (id x) (&& (id int) (int 5))) (: (id y) (&& (id string) (string \"s\"))))"},
+			{"(1, 2, 3, 4, 5)", "(parenthesized \"()\" (int 1) (int 2) (int 3) (int 4) (int 5))"},
 
-			{"{}", "(parenthesized {})"},
-			{"{x: int && 5}", "(parenthesized {} (: (id x) (&& (id int) (int 5))))"},
-			{"{x: int && 5, y: string && \"s\"}", "(parenthesized {} (: (id x) (&& (id int) (int 5))) (: (id y) (&& (id string) (string \"s\"))))"},
-			{"{x: int ?: 5, y: string ?: \"s\"}", "(parenthesized {} (?: (: (id x) (id int)) (int 5)) (?: (: (id y) (id string)) (string \"s\")))"},
-			{"{1, 2, 3, 4, 5}", "(parenthesized {} (int 1) (int 2) (int 3) (int 4) (int 5))"},
+			{"{}", "(parenthesized \"{}\")"},
+			{"{x: int && 5}", "(parenthesized \"{}\" (: (id x) (&& (id int) (int 5))))"},
+			{"{x: int && 5, y: string && \"s\"}", "(parenthesized \"{}\" (: (id x) (&& (id int) (int 5))) (: (id y) (&& (id string) (string \"s\"))))"},
+			{"{x: int ?: 5, y: string ?: \"s\"}", "(parenthesized \"{}\" (?: (: (id x) (id int)) (int 5)) (?: (: (id y) (id string)) (string \"s\")))"},
+			{"{1, 2, 3, 4, 5}", "(parenthesized \"{}\" (int 1) (int 2) (int 3) (int 4) (int 5))"},
 
 			{"[]", "(sequence)"},
 			{"[1, 2, 3, 4, 5]", "(sequence (int 1) (int 2) (int 3) (int 4) (int 5))"},
@@ -118,18 +118,18 @@ func TestLligneParser(t *testing.T) {
 			{"int?", "(optional (id int))"},
 			{"float | int?", "(| (id float) (optional (id int)))"},
 
-			{"f(x: 0)", "(call (id f) (parenthesized () (: (id x) (int 0))))"},
-			{"(a: f(x: 0))", "(parenthesized () (: (id a) (call (id f) (parenthesized () (: (id x) (int 0))))))"},
+			{"f(x: 0)", "(call (id f) (parenthesized \"()\" (: (id x) (int 0))))"},
+			{"(a: f(x: 0))", "(parenthesized \"()\" (: (id a) (call (id f) (parenthesized \"()\" (: (id x) (int 0))))))"},
 
 			{"1..9", "(.. (int 1) (int 9))"},
 			{"x in 1..9", "(in (id x) (.. (int 1) (int 9)))"},
 
 			{"x is Widget", "(is (id x) (id Widget))"},
 
-			{"1 when n == 0\n| n * (n-1) when n > 0", "(| (when (int 1) (== (id n) (int 0))) (when (* (id n) (parenthesized () (- (id n) (int 1)))) (> (id n) (int 0))))"},
-			{"f: (n: int) -> int = 1 when n == 0\n| n * (n-1) when n > 0", "(= (: (id f) (-> (parenthesized () (: (id n) (id int))) (id int))) (| (when (int 1) (== (id n) (int 0))) (when (* (id n) (parenthesized () (- (id n) (int 1)))) (> (id n) (int 0)))))"},
+			{"1 when n == 0\n| n * f(n-1) when n > 0", "(| (when (int 1) (== (id n) (int 0))) (when (* (id n) (call (id f) (parenthesized \"()\" (- (id n) (int 1))))) (> (id n) (int 0))))"},
+			{"f: (n: int) -> int = 1 when n == 0\n| n * f(n-1) when n > 0", "(= (: (id f) (-> (parenthesized \"()\" (: (id n) (id int))) (id int))) (| (when (int 1) (== (id n) (int 0))) (when (* (id n) (call (id f) (parenthesized \"()\" (- (id n) (int 1))))) (> (id n) (int 0)))))"},
 
-			{"x = y + z where {y: 3, z: 5}", "(= (id x) (where (+ (id y) (id z)) (parenthesized {} (: (id y) (int 3)) (: (id z) (int 5)))))"},
+			{"x = y + z where {y: 3, z: 5}", "(= (id x) (where (+ (id y) (id z)) (parenthesized \"{}\" (: (id y) (int 3)) (: (id z) (int 5)))))"},
 		}
 
 		for _, test := range tests {

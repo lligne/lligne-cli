@@ -26,8 +26,7 @@ type ILligneExpression interface {
 type LligneExprType int
 
 const (
-	ExprTypeUndefined LligneExprType = iota
-	ExprTypeFunctionCall
+	ExprTypeFunctionCall LligneExprType = 1 + iota
 	ExprTypeIdentifier
 	ExprTypeInfixOperation
 	ExprTypeIntegerLiteral
@@ -146,12 +145,22 @@ func (op LligneInfixOperator) String() string {
 
 //=====================================================================================================================
 
+// ParenExprDelimiters is an enumeration of start/stop delimiters for parenthesized expressions.
+type ParenExprDelimiters int
+
+const (
+	ParenExprDelimitersParentheses ParenExprDelimiters = 1 + iota
+	ParenExprDelimitersBraces
+	ParenExprDelimitersWholeFile
+)
+
+//=====================================================================================================================
+
 // LlignePrefixOperator is an enumeration of Lligne's prefix operators.
 type LlignePrefixOperator int
 
 const (
-	PrefixOperatorNone LlignePrefixOperator = iota
-	PrefixOperatorLogicalNot
+	PrefixOperatorLogicalNot LlignePrefixOperator = 1 + iota
 	PrefixOperatorNegation
 )
 
@@ -359,7 +368,7 @@ func (e *LligneOptionalExpr) TypeCode() LligneExprType {
 // LligneParenthesizedExpr represents a parenthesized expression or comma-separated sequence of expressions.
 type LligneParenthesizedExpr struct {
 	SourcePos  int
-	UsesBraces bool
+	Delimiters ParenExprDelimiters
 	Items      []ILligneExpression
 }
 
@@ -370,10 +379,13 @@ func (e *LligneParenthesizedExpr) GetOrigin(tracker scanning.ILligneTokenOriginT
 func (e *LligneParenthesizedExpr) SExpression() string {
 	var result string
 
-	if e.UsesBraces {
-		result = "(parenthesized {}"
-	} else {
-		result = "(parenthesized ()"
+	switch e.Delimiters {
+	case ParenExprDelimitersParentheses:
+		result = "(parenthesized \"()\""
+	case ParenExprDelimitersBraces:
+		result = "(parenthesized \"{}\""
+	case ParenExprDelimitersWholeFile:
+		result = "(parenthesized \"\""
 	}
 
 	for _, item := range e.Items {

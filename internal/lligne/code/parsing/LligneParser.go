@@ -205,9 +205,19 @@ func (p *lligneParser) parseParenthesizedExpression(
 		panic("Expected " + endingTokenType.String())
 	}
 
+	var delimiters model.ParenExprDelimiters
+	switch endingTokenType {
+	case scanning.TokenTypeEof:
+		delimiters = model.ParenExprDelimitersWholeFile
+	case scanning.TokenTypeRightBrace:
+		delimiters = model.ParenExprDelimitersBraces
+	case scanning.TokenTypeRightParenthesis:
+		delimiters = model.ParenExprDelimitersParentheses
+	}
+
 	return &model.LligneParenthesizedExpr{
 		SourcePos:  token.SourceStartPos,
-		UsesBraces: token.TokenType == scanning.TokenTypeLeftBrace,
+		Delimiters: delimiters,
 		Items:      items,
 	}
 
@@ -319,6 +329,7 @@ var postfixBindingPowers = make(map[scanning.LligneTokenType]postfixBindingPower
 func init() {
 
 	level := 1
+
 	infixBindingPowers[scanning.TokenTypeColon] = infixBindingPower{level, level + 1, model.InfixOperatorQualify}
 	infixBindingPowers[scanning.TokenTypeEquals] = infixBindingPower{level, level + 1, model.InfixOperatorIntersectAssignValue}
 	infixBindingPowers[scanning.TokenTypeQuestionMarkColon] = infixBindingPower{level, level + 1, model.InfixOperatorIntersectDefaultValue}

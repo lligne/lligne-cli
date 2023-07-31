@@ -5,5 +5,7 @@
 }
 
 f: (n: int) -> int =
-    1            when n == 0
-    | n * (n-1)  when n > 0
+    1             when n == 0
+    | n * f(n-1)  when n > 0
+
+array: (of: type) -> type
