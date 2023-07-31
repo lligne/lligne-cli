@@ -27,7 +27,7 @@ func TestLligneParser(t *testing.T) {
 		parser := NewLligneParser(scanner)
 		model := parser.ParseExpression()
 
-		assert.Equal(t, sExpression, model.SExpression())
+		assert.Equal(t, sExpression, model.SExpression(), "For source code: "+sourceCode)
 	}
 
 	t.Run("identifier literals", func(t *testing.T) {

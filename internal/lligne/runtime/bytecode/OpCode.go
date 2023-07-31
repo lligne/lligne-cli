@@ -17,9 +17,13 @@ const (
 
 	// Integers
 	OpCodeInt64Add
+	OpCodeInt64Divide
 	OpCodeInt64LoadInt16
 	OpCodeInt64LoadOne
 	OpCodeInt64LoadZero
+	OpCodeInt64Multiply
+	OpCodeInt64Negate
+	OpCodeInt64Subtract
 )
 
 //=====================================================================================================================
