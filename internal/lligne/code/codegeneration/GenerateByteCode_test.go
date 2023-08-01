@@ -17,7 +17,55 @@ import (
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func TestGenerateByteCode(t *testing.T) {
+func TestGenerateBoolByteCode(t *testing.T) {
+
+	checkBool := func(sourceCode string, expected bool) {
+		scanner := scanning.NewLligneBufferedScanner(
+			scanning.NewLligneDocumentationHandlingScanner(
+				sourceCode,
+				scanning.NewLligneScanner(sourceCode),
+			),
+		)
+		parser := parsing.NewLligneParser(scanner)
+		model := parser.ParseExpression()
+
+		codeBlock := GenerateByteCode(model)
+
+		//disassembler := &bytecode.Disassembler{}
+		//codeBlock.Execute(disassembler)
+		//print(disassembler.GetOutput())
+
+		interpreter := &bytecode.Interpreter{}
+
+		codeBlock.Execute(interpreter)
+
+		actual := interpreter.BoolGetResult()
+
+		assert.Equal(t, expected, actual, "For source code: "+sourceCode)
+	}
+
+	t.Run("Boolean expression evaluations", func(t *testing.T) {
+		type exprOutcome struct {
+			sourceCode    string
+			expectedValue bool
+		}
+
+		tests := []exprOutcome{
+			{"true", true},
+			{"false", false},
+			{"true and false", false},
+			{"true and true", true},
+		}
+		for _, test := range tests {
+			checkBool(test.sourceCode, test.expectedValue)
+		}
+	})
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func TestGenerateInt64ByteCode(t *testing.T) {
 
 	checkInt64 := func(sourceCode string, expected int64) {
 		scanner := scanning.NewLligneBufferedScanner(
@@ -70,6 +118,7 @@ func TestGenerateByteCode(t *testing.T) {
 			checkInt64(test.sourceCode, test.expectedValue)
 		}
 	})
+
 }
 
 //---------------------------------------------------------------------------------------------------------------------

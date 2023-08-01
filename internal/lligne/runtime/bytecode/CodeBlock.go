@@ -8,6 +8,10 @@ package bytecode
 //=====================================================================================================================
 
 type ICodeBlockExecutor interface {
+	BoolAnd()
+	BoolLoadFalse()
+	BoolLoadTrue()
+	BoolOr()
 	Int64Add()
 	Int64Divide()
 	Int64LoadInt16(operand int16)
@@ -50,6 +54,15 @@ func (cb *CodeBlock) Execute(executor ICodeBlockExecutor) InterpretResult {
 
 		switch opCode {
 
+		case OpCodeBoolAnd:
+			executor.BoolAnd()
+		case OpCodeBoolLoadFalse:
+			executor.BoolLoadFalse()
+		case OpCodeBoolLoadTrue:
+			executor.BoolLoadTrue()
+		case OpCodeBoolOr:
+			executor.BoolOr()
+
 		case OpCodeInt64Add:
 			executor.Int64Add()
 		case OpCodeInt64Divide:
@@ -79,6 +92,30 @@ func (cb *CodeBlock) Execute(executor ICodeBlockExecutor) InterpretResult {
 
 	}
 
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) BoolAnd() {
+	cb.codes = append(cb.codes, OpCodeBoolAnd)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) BoolLoadFalse() {
+	cb.codes = append(cb.codes, OpCodeBoolLoadFalse)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) BoolLoadTrue() {
+	cb.codes = append(cb.codes, OpCodeBoolLoadTrue)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) BoolOr() {
+	cb.codes = append(cb.codes, OpCodeBoolOr)
 }
 
 //---------------------------------------------------------------------------------------------------------------------

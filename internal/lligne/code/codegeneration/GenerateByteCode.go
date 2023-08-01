@@ -29,6 +29,14 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.ILligneExpre
 
 	switch expression.TypeCode() {
 
+	case model.ExprTypeBooleanLiteral:
+		expr := expression.(*model.LligneBooleanLiteralExpr)
+		if expr.Value {
+			codeBlock.BoolLoadTrue()
+		} else {
+			codeBlock.BoolLoadFalse()
+		}
+
 	case model.ExprTypeInfixOperation:
 		expr := expression.(*model.LligneInfixOperationExpr)
 		buildCodeBlock(codeBlock, expr.Operands[0])
@@ -39,6 +47,10 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.ILligneExpre
 				codeBlock.Int64Add()
 			case model.InfixOperatorDivide:
 				codeBlock.Int64Divide()
+			case model.InfixOperatorLogicAnd:
+				codeBlock.BoolAnd()
+			case model.InfixOperatorLogicOr:
+				codeBlock.BoolOr()
 			case model.InfixOperatorMultiply:
 				codeBlock.Int64Multiply()
 			case model.InfixOperatorSubtract:

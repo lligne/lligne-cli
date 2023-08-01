@@ -141,6 +141,9 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 	case scanning.TokenTypeDoubleQuotedString:
 		return &model.LligneStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
 
+	case scanning.TokenTypeFalse:
+		return &model.LligneBooleanLiteralExpr{SourcePos: token.SourceStartPos, Value: false}
+
 	case scanning.TokenTypeIdentifier:
 		return &model.LligneIdentifierExpr{SourcePos: token.SourceStartPos, Name: token.Text}
 
@@ -167,6 +170,9 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 
 	case scanning.TokenTypeTrailingDocumentation:
 		return &model.LligneTrailingDocumentationExpr{SourcePos: token.SourceStartPos, Text: token.Text}
+
+	case scanning.TokenTypeTrue:
+		return &model.LligneBooleanLiteralExpr{SourcePos: token.SourceStartPos, Value: true}
 
 		//	default:
 		//	this.expectedType(

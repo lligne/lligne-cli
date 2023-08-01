@@ -26,7 +26,8 @@ type ILligneExpression interface {
 type LligneExprType int
 
 const (
-	ExprTypeFunctionCall LligneExprType = 1 + iota
+	ExprTypeBooleanLiteral LligneExprType = 1 + iota
+	ExprTypeFunctionCall
 	ExprTypeIdentifier
 	ExprTypeInfixOperation
 	ExprTypeIntegerLiteral
@@ -223,6 +224,29 @@ func (e *LligneFunctionCallExpr) SExpression() string {
 
 func (e *LligneFunctionCallExpr) TypeCode() LligneExprType {
 	return ExprTypeFunctionCall
+}
+
+//=====================================================================================================================
+
+// LligneBooleanLiteralExpr represents a single boolean literal.
+type LligneBooleanLiteralExpr struct {
+	SourcePos int
+	Value     bool
+}
+
+func (e *LligneBooleanLiteralExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
+	return tracker.GetOrigin(e.SourcePos)
+}
+
+func (e *LligneBooleanLiteralExpr) SExpression() string {
+	if e.Value {
+		return "(bool true)"
+	}
+	return "(bool false)"
+}
+
+func (e *LligneBooleanLiteralExpr) TypeCode() LligneExprType {
+	return ExprTypeBooleanLiteral
 }
 
 //=====================================================================================================================

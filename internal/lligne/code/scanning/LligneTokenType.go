@@ -56,12 +56,14 @@ const (
 	// Keywords
 	TokenTypeAnd
 	TokenTypeAs
+	TokenTypeFalse
 	TokenTypeIn
 	TokenTypeIs
 	TokenTypeNot
 	TokenTypeOf
 	TokenTypeOr
 	TokenTypeTo
+	TokenTypeTrue
 	TokenTypeWhen
 	TokenTypeWhere
 
@@ -167,6 +169,8 @@ func (tt LligneTokenType) String() string {
 		return "and"
 	case TokenTypeAs:
 		return "as"
+	case TokenTypeFalse:
+		return "false"
 	case TokenTypeIn:
 		return "in"
 	case TokenTypeIs:
@@ -179,6 +183,8 @@ func (tt LligneTokenType) String() string {
 		return "or"
 	case TokenTypeTo:
 		return "to"
+	case TokenTypeTrue:
+		return "true"
 	case TokenTypeWhen:
 		return "when"
 	case TokenTypeWhere:

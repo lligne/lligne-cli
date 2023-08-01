@@ -145,6 +145,16 @@ func TestLligneScanner(t *testing.T) {
 		expectToken(scanner, TokenTypeEof, "", 33)
 	})
 
+	t.Run("boolean literals", func(t *testing.T) {
+		scanner := NewLligneScanner(
+			"true false",
+		)
+
+		expectToken(scanner, TokenTypeTrue, "true", 0)
+		expectToken(scanner, TokenTypeFalse, "false", 5)
+		expectToken(scanner, TokenTypeEof, "", 10)
+	})
+
 }
 
 //---------------------------------------------------------------------------------------------------------------------

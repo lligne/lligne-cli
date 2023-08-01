@@ -101,6 +101,7 @@ func TestLligneParser(t *testing.T) {
 			{"[]", "(sequence)"},
 			{"[1, 2, 3, 4, 5]", "(sequence (int 1) (int 2) (int 3) (int 4) (int 5))"},
 
+			{"true and false", "(and (bool true) (bool false))"},
 			{"a and b", "(and (id a) (id b))"},
 			{"a and b or c", "(or (and (id a) (id b)) (id c))"},
 			{"a and not b", "(and (id a) (prefix not (id b)))"},

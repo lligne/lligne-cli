@@ -466,12 +466,14 @@ func (s *lligneScanner) token(tokenType LligneTokenType) LligneToken {
 var keywords = map[string]LligneTokenType{
 	TokenTypeAnd.String():   TokenTypeAnd,
 	TokenTypeAs.String():    TokenTypeAs,
+	TokenTypeFalse.String(): TokenTypeFalse,
 	TokenTypeIs.String():    TokenTypeIs,
 	TokenTypeIn.String():    TokenTypeIn,
 	TokenTypeNot.String():   TokenTypeNot,
 	TokenTypeOf.String():    TokenTypeOf,
 	TokenTypeOr.String():    TokenTypeOr,
 	TokenTypeTo.String():    TokenTypeTo,
+	TokenTypeTrue.String():  TokenTypeTrue,
 	TokenTypeWhen.String():  TokenTypeWhen,
 	TokenTypeWhere.String(): TokenTypeWhere,
 }
