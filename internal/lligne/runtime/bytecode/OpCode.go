@@ -19,11 +19,17 @@ const (
 	OpCodeBoolAnd
 	OpCodeBoolLoadFalse
 	OpCodeBoolLoadTrue
+	OpCodeBoolNot
 	OpCodeBoolOr
 
 	// 64 Bit Integers
 	OpCodeInt64Add
 	OpCodeInt64Divide
+	OpCodeInt64Equals
+	OpCodeInt64GreaterThan
+	OpCodeInt64GreaterThanOrEquals
+	OpCodeInt64LessThan
+	OpCodeInt64LessThanOrEquals
 	OpCodeInt64LoadInt16
 	OpCodeInt64LoadOne
 	OpCodeInt64LoadZero

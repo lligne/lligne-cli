@@ -375,7 +375,7 @@ func init() {
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeEqualsEquals] = infixBindingPower{level, level + 1, model.InfixOperatorEquality}
+	infixBindingPowers[scanning.TokenTypeEqualsEquals] = infixBindingPower{level, level + 1, model.InfixOperatorEquals}
 	infixBindingPowers[scanning.TokenTypeGreaterThan] = infixBindingPower{level, level + 1, model.InfixOperatorGreaterThan}
 	infixBindingPowers[scanning.TokenTypeGreaterThanOrEquals] = infixBindingPower{level, level + 1, model.InfixOperatorGreaterThanOrEquals}
 	infixBindingPowers[scanning.TokenTypeLessThan] = infixBindingPower{level, level + 1, model.InfixOperatorLessThan}

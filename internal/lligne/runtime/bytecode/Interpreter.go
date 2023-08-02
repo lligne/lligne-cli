@@ -55,6 +55,16 @@ func (n *Interpreter) BoolLoadTrue() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (n *Interpreter) BoolNot() {
+	if n.valueStack[n.valueStackLast] == 0 {
+		n.valueStack[n.valueStackLast] = true64
+	} else {
+		n.valueStack[n.valueStackLast] = 0
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (n *Interpreter) BoolOr() {
 	n.valueStackSize = n.valueStackLast
 	n.valueStackLast -= 1
@@ -85,6 +95,76 @@ func (n *Interpreter) Int64Divide() {
 	rhs := int64(n.valueStack[n.valueStackSize])
 	lhs := int64(n.valueStack[n.valueStackLast])
 	n.valueStack[n.valueStackLast] = uint64(lhs / rhs)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (n *Interpreter) Int64Equals() {
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := int64(n.valueStack[n.valueStackSize])
+	lhs := int64(n.valueStack[n.valueStackLast])
+	if lhs == rhs {
+		n.valueStack[n.valueStackLast] = true64
+	} else {
+		n.valueStack[n.valueStackLast] = 0
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (n *Interpreter) Int64GreaterThan() {
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := int64(n.valueStack[n.valueStackSize])
+	lhs := int64(n.valueStack[n.valueStackLast])
+	if lhs > rhs {
+		n.valueStack[n.valueStackLast] = true64
+	} else {
+		n.valueStack[n.valueStackLast] = 0
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (n *Interpreter) Int64GreaterThanOrEquals() {
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := int64(n.valueStack[n.valueStackSize])
+	lhs := int64(n.valueStack[n.valueStackLast])
+	if lhs >= rhs {
+		n.valueStack[n.valueStackLast] = true64
+	} else {
+		n.valueStack[n.valueStackLast] = 0
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (n *Interpreter) Int64LessThan() {
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := int64(n.valueStack[n.valueStackSize])
+	lhs := int64(n.valueStack[n.valueStackLast])
+	if lhs < rhs {
+		n.valueStack[n.valueStackLast] = true64
+	} else {
+		n.valueStack[n.valueStackLast] = 0
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (n *Interpreter) Int64LessThanOrEquals() {
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := int64(n.valueStack[n.valueStackSize])
+	lhs := int64(n.valueStack[n.valueStackLast])
+	if lhs <= rhs {
+		n.valueStack[n.valueStackLast] = true64
+	} else {
+		n.valueStack[n.valueStackLast] = 0
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------

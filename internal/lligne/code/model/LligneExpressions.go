@@ -51,7 +51,7 @@ const (
 	InfixOperatorAdd
 	InfixOperatorDivide
 	InfixOperatorDocument
-	InfixOperatorEquality
+	InfixOperatorEquals
 	InfixOperatorFieldReference
 	InfixOperatorFunctionCall
 	InfixOperatorGreaterThan
@@ -90,7 +90,7 @@ func (op LligneInfixOperator) String() string {
 		return " / "
 	case InfixOperatorDocument:
 		return " "
-	case InfixOperatorEquality:
+	case InfixOperatorEquals:
 		return " == "
 	case InfixOperatorFieldReference:
 		return "."

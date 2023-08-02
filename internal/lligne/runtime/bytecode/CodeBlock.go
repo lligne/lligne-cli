@@ -11,9 +11,15 @@ type ICodeBlockExecutor interface {
 	BoolAnd()
 	BoolLoadFalse()
 	BoolLoadTrue()
+	BoolNot()
 	BoolOr()
 	Int64Add()
 	Int64Divide()
+	Int64Equals()
+	Int64GreaterThan()
+	Int64GreaterThanOrEquals()
+	Int64LessThan()
+	Int64LessThanOrEquals()
 	Int64LoadInt16(operand int16)
 	Int64LoadOne()
 	Int64LoadZero()
@@ -60,6 +66,8 @@ func (cb *CodeBlock) Execute(executor ICodeBlockExecutor) InterpretResult {
 			executor.BoolLoadFalse()
 		case OpCodeBoolLoadTrue:
 			executor.BoolLoadTrue()
+		case OpCodeBoolNot:
+			executor.BoolNot()
 		case OpCodeBoolOr:
 			executor.BoolOr()
 
@@ -67,6 +75,16 @@ func (cb *CodeBlock) Execute(executor ICodeBlockExecutor) InterpretResult {
 			executor.Int64Add()
 		case OpCodeInt64Divide:
 			executor.Int64Divide()
+		case OpCodeInt64Equals:
+			executor.Int64Equals()
+		case OpCodeInt64GreaterThan:
+			executor.Int64GreaterThan()
+		case OpCodeInt64GreaterThanOrEquals:
+			executor.Int64GreaterThanOrEquals()
+		case OpCodeInt64LessThan:
+			executor.Int64LessThan()
+		case OpCodeInt64LessThanOrEquals:
+			executor.Int64LessThanOrEquals()
 		case OpCodeInt64LoadInt16:
 			value := int16(cb.codes[ip])
 			ip += 1
@@ -114,6 +132,12 @@ func (cb *CodeBlock) BoolLoadTrue() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) BoolNot() {
+	cb.codes = append(cb.codes, OpCodeBoolNot)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) BoolOr() {
 	cb.codes = append(cb.codes, OpCodeBoolOr)
 }
@@ -128,6 +152,36 @@ func (cb *CodeBlock) Int64Add() {
 
 func (cb *CodeBlock) Int64Divide() {
 	cb.codes = append(cb.codes, OpCodeInt64Divide)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64Equals() {
+	cb.codes = append(cb.codes, OpCodeInt64Equals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64GreaterThan() {
+	cb.codes = append(cb.codes, OpCodeInt64GreaterThan)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64GreaterThanOrEquals() {
+	cb.codes = append(cb.codes, OpCodeInt64GreaterThanOrEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64LessThan() {
+	cb.codes = append(cb.codes, OpCodeInt64LessThan)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64LessThanOrEquals() {
+	cb.codes = append(cb.codes, OpCodeInt64LessThanOrEquals)
 }
 
 //---------------------------------------------------------------------------------------------------------------------

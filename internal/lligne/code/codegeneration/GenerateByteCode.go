@@ -47,6 +47,16 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.ILligneExpre
 				codeBlock.Int64Add()
 			case model.InfixOperatorDivide:
 				codeBlock.Int64Divide()
+			case model.InfixOperatorEquals:
+				codeBlock.Int64Equals()
+			case model.InfixOperatorGreaterThan:
+				codeBlock.Int64GreaterThan()
+			case model.InfixOperatorGreaterThanOrEquals:
+				codeBlock.Int64GreaterThanOrEquals()
+			case model.InfixOperatorLessThan:
+				codeBlock.Int64LessThan()
+			case model.InfixOperatorLessThanOrEquals:
+				codeBlock.Int64LessThanOrEquals()
 			case model.InfixOperatorLogicAnd:
 				codeBlock.BoolAnd()
 			case model.InfixOperatorLogicOr:
@@ -84,6 +94,8 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.ILligneExpre
 		expr := expression.(*model.LlignePrefixOperationExpr)
 		buildCodeBlock(codeBlock, expr.Operand)
 		switch expr.Operator {
+		case model.PrefixOperatorLogicalNot:
+			codeBlock.BoolNot()
 		case model.PrefixOperatorNegation:
 			codeBlock.Int64Negate()
 		default:

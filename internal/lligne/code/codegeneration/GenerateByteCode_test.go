@@ -55,6 +55,17 @@ func TestGenerateBoolByteCode(t *testing.T) {
 			{"false", false},
 			{"true and false", false},
 			{"true and true", true},
+			{"not true", false},
+			{"not false", true},
+			{"true and not false", true},
+
+			{"2 == 1 + 1", true},
+			{"2 <= 1 + 1", true},
+			{"2 >= 1 + 1", true},
+			{"1 <= 1 + 1", true},
+			{"3 >= 1 + 1", true},
+			{"1 < 1 + 1", true},
+			{"3 > 1 + 1", true},
 		}
 		for _, test := range tests {
 			checkBool(test.sourceCode, test.expectedValue)
