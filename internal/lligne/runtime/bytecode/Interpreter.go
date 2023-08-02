@@ -8,104 +8,139 @@ package bytecode
 //=====================================================================================================================
 
 type Interpreter struct {
-	stack ValueStack
+	valueStack     [1000]uint64
+	valueStackSize int
+	valueStackLast int
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
+const true64 uint64 = 0xFFFFFFFFFFFFFFFF
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (n *Interpreter) BoolAnd() {
-	rhs := n.stack.PopBool()
-	lhs := n.stack.PopBool()
-	n.stack.PushBool(lhs && rhs)
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := n.valueStack[n.valueStackSize] != 0
+	lhs := n.valueStack[n.valueStackLast] != 0
+	if lhs && rhs {
+		n.valueStack[n.valueStackLast] = true64
+	} else {
+		n.valueStack[n.valueStackLast] = 0
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) BoolGetResult() bool {
-	return n.stack.PeekBool()
+	return n.valueStack[n.valueStackLast] != 0
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) BoolLoadFalse() {
-	n.stack.PushBool(false)
+	n.valueStackLast = n.valueStackSize
+	n.valueStackSize += 1
+	n.valueStack[n.valueStackLast] = 0
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) BoolLoadTrue() {
-	n.stack.PushBool(true)
+	n.valueStackLast = n.valueStackSize
+	n.valueStackSize += 1
+	n.valueStack[n.valueStackLast] = true64
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) BoolOr() {
-	rhs := n.stack.PopBool()
-	lhs := n.stack.PopBool()
-	n.stack.PushBool(lhs || rhs)
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := n.valueStack[n.valueStackSize] != 0
+	lhs := n.valueStack[n.valueStackLast] != 0
+	if lhs || rhs {
+		n.valueStack[n.valueStackLast] = true64
+	} else {
+		n.valueStack[n.valueStackLast] = 0
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) Int64Add() {
-	rhs := n.stack.PopInt64()
-	lhs := n.stack.PopInt64()
-	n.stack.PushInt64(lhs + rhs)
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := int64(n.valueStack[n.valueStackSize])
+	lhs := int64(n.valueStack[n.valueStackLast])
+	n.valueStack[n.valueStackLast] = uint64(lhs + rhs)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) Int64Divide() {
-	rhs := n.stack.PopInt64()
-	lhs := n.stack.PopInt64()
-	n.stack.PushInt64(lhs / rhs)
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := int64(n.valueStack[n.valueStackSize])
+	lhs := int64(n.valueStack[n.valueStackLast])
+	n.valueStack[n.valueStackLast] = uint64(lhs / rhs)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) Int64GetResult() int64 {
-	return n.stack.PeekInt64()
+	return int64(n.valueStack[n.valueStackLast])
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) Int64LoadInt16(operand int16) {
-	n.stack.PushInt64(int64(operand))
+	n.valueStackLast = n.valueStackSize
+	n.valueStackSize += 1
+	n.valueStack[n.valueStackLast] = uint64(int64(operand))
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) Int64LoadOne() {
-	n.stack.PushInt64(1)
+	n.valueStackLast = n.valueStackSize
+	n.valueStackSize += 1
+	n.valueStack[n.valueStackLast] = 1
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) Int64LoadZero() {
-	n.stack.PushInt64(0)
+	n.valueStackLast = n.valueStackSize
+	n.valueStackSize += 1
+	n.valueStack[n.valueStackLast] = 0
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) Int64Multiply() {
-	rhs := n.stack.PopInt64()
-	lhs := n.stack.PopInt64()
-	n.stack.PushInt64(lhs * rhs)
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := int64(n.valueStack[n.valueStackSize])
+	lhs := int64(n.valueStack[n.valueStackLast])
+	n.valueStack[n.valueStackLast] = uint64(lhs * rhs)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) Int64Negate() {
-	operand := n.stack.PopInt64()
-	n.stack.PushInt64(-operand)
+	n.valueStack[n.valueStackLast] = uint64(-int64(n.valueStack[n.valueStackLast]))
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) Int64Subtract() {
-	rhs := n.stack.PopInt64()
-	lhs := n.stack.PopInt64()
-	n.stack.PushInt64(lhs - rhs)
+	n.valueStackSize = n.valueStackLast
+	n.valueStackLast -= 1
+	rhs := int64(n.valueStack[n.valueStackSize])
+	lhs := int64(n.valueStack[n.valueStackLast])
+	n.valueStack[n.valueStackLast] = uint64(lhs - rhs)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
