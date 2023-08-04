@@ -8,230 +8,201 @@ package bytecode
 //=====================================================================================================================
 
 type Interpreter struct {
-	valueStack     [1000]uint64
-	valueStackSize int
-	valueStackLast int
+	// TODO: Nothing needed?
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+
+func (n *Interpreter) BoolGetResult(machine *Machine) bool {
+	return machine.Stack[machine.Top] != 0
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (n *Interpreter) Execute(machine *Machine, code *CodeBlock) {
+
+	machine.IP = 0
+
+	for machine.IsRunning {
+
+		opCode := code.OpCodes[machine.IP]
+		machine.IP += 1
+
+		dispatch[opCode](machine, code)
+
+	}
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (n *Interpreter) Int64GetResult(machine *Machine) int64 {
+	return int64(machine.Stack[machine.Top])
+}
+
+//=====================================================================================================================
 
 const true64 uint64 = 0xFFFFFFFFFFFFFFFF
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (n *Interpreter) BoolAnd() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := n.valueStack[n.valueStackSize] != 0
-	lhs := n.valueStack[n.valueStackLast] != 0
-	if lhs && rhs {
-		n.valueStack[n.valueStackLast] = true64
-	} else {
-		n.valueStack[n.valueStackLast] = 0
+var dispatch [20]func(*Machine, *CodeBlock)
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func init() {
+
+	dispatch[OpCodeBoolAnd] = func(m *Machine, c *CodeBlock) {
+		rhs := m.Stack[m.Top] != 0
+		m.Top -= 1
+		lhs := m.Stack[m.Top] != 0
+		if lhs && rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
 	}
-}
 
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) BoolGetResult() bool {
-	return n.valueStack[n.valueStackLast] != 0
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) BoolLoadFalse() {
-	n.valueStackLast = n.valueStackSize
-	n.valueStackSize += 1
-	n.valueStack[n.valueStackLast] = 0
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) BoolLoadTrue() {
-	n.valueStackLast = n.valueStackSize
-	n.valueStackSize += 1
-	n.valueStack[n.valueStackLast] = true64
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) BoolNot() {
-	if n.valueStack[n.valueStackLast] == 0 {
-		n.valueStack[n.valueStackLast] = true64
-	} else {
-		n.valueStack[n.valueStackLast] = 0
+	dispatch[OpCodeBoolLoadFalse] = func(m *Machine, c *CodeBlock) {
+		m.Top += 1
+		m.Stack[m.Top] = 0
 	}
-}
 
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) BoolOr() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := n.valueStack[n.valueStackSize] != 0
-	lhs := n.valueStack[n.valueStackLast] != 0
-	if lhs || rhs {
-		n.valueStack[n.valueStackLast] = true64
-	} else {
-		n.valueStack[n.valueStackLast] = 0
+	dispatch[OpCodeBoolLoadTrue] = func(m *Machine, c *CodeBlock) {
+		m.Top += 1
+		m.Stack[m.Top] = true64
 	}
-}
 
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) Int64Add() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := int64(n.valueStack[n.valueStackSize])
-	lhs := int64(n.valueStack[n.valueStackLast])
-	n.valueStack[n.valueStackLast] = uint64(lhs + rhs)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) Int64Divide() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := int64(n.valueStack[n.valueStackSize])
-	lhs := int64(n.valueStack[n.valueStackLast])
-	n.valueStack[n.valueStackLast] = uint64(lhs / rhs)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) Int64Equals() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := int64(n.valueStack[n.valueStackSize])
-	lhs := int64(n.valueStack[n.valueStackLast])
-	if lhs == rhs {
-		n.valueStack[n.valueStackLast] = true64
-	} else {
-		n.valueStack[n.valueStackLast] = 0
+	dispatch[OpCodeBoolNot] = func(m *Machine, c *CodeBlock) {
+		if m.Stack[m.Top] == 0 {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
 	}
-}
 
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) Int64GreaterThan() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := int64(n.valueStack[n.valueStackSize])
-	lhs := int64(n.valueStack[n.valueStackLast])
-	if lhs > rhs {
-		n.valueStack[n.valueStackLast] = true64
-	} else {
-		n.valueStack[n.valueStackLast] = 0
+	dispatch[OpCodeBoolOr] = func(m *Machine, c *CodeBlock) {
+		rhs := m.Stack[m.Top] != 0
+		m.Top -= 1
+		lhs := m.Stack[m.Top] != 0
+		if lhs || rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
 	}
-}
 
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) Int64GreaterThanOrEquals() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := int64(n.valueStack[n.valueStackSize])
-	lhs := int64(n.valueStack[n.valueStackLast])
-	if lhs >= rhs {
-		n.valueStack[n.valueStackLast] = true64
-	} else {
-		n.valueStack[n.valueStackLast] = 0
+	dispatch[OpCodeInt64Add] = func(m *Machine, c *CodeBlock) {
+		rhs := int64(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := int64(m.Stack[m.Top])
+		m.Stack[m.Top] = uint64(lhs + rhs)
 	}
-}
 
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) Int64LessThan() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := int64(n.valueStack[n.valueStackSize])
-	lhs := int64(n.valueStack[n.valueStackLast])
-	if lhs < rhs {
-		n.valueStack[n.valueStackLast] = true64
-	} else {
-		n.valueStack[n.valueStackLast] = 0
+	dispatch[OpCodeInt64Divide] = func(m *Machine, c *CodeBlock) {
+		rhs := int64(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := int64(m.Stack[m.Top])
+		m.Stack[m.Top] = uint64(lhs / rhs)
 	}
-}
 
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) Int64LessThanOrEquals() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := int64(n.valueStack[n.valueStackSize])
-	lhs := int64(n.valueStack[n.valueStackLast])
-	if lhs <= rhs {
-		n.valueStack[n.valueStackLast] = true64
-	} else {
-		n.valueStack[n.valueStackLast] = 0
+	dispatch[OpCodeInt64Equals] = func(m *Machine, c *CodeBlock) {
+		rhs := int64(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := int64(m.Stack[m.Top])
+		if lhs == rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
 	}
-}
 
-//---------------------------------------------------------------------------------------------------------------------
+	dispatch[OpCodeInt64GreaterThan] = func(m *Machine, c *CodeBlock) {
+		rhs := int64(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := int64(m.Stack[m.Top])
+		if lhs > rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
 
-func (n *Interpreter) Int64GetResult() int64 {
-	return int64(n.valueStack[n.valueStackLast])
-}
+	dispatch[OpCodeInt64GreaterThanOrEquals] = func(m *Machine, c *CodeBlock) {
+		rhs := int64(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := int64(m.Stack[m.Top])
+		if lhs >= rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
 
-//---------------------------------------------------------------------------------------------------------------------
+	dispatch[OpCodeInt64LessThan] = func(m *Machine, c *CodeBlock) {
+		rhs := int64(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := int64(m.Stack[m.Top])
+		if lhs < rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
 
-func (n *Interpreter) Int64LoadInt16(operand int16) {
-	n.valueStackLast = n.valueStackSize
-	n.valueStackSize += 1
-	n.valueStack[n.valueStackLast] = uint64(int64(operand))
-}
+	dispatch[OpCodeInt64LessThanOrEquals] = func(m *Machine, c *CodeBlock) {
+		rhs := int64(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := int64(m.Stack[m.Top])
+		if lhs <= rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
 
-//---------------------------------------------------------------------------------------------------------------------
+	dispatch[OpCodeInt64LoadInt16] = func(m *Machine, c *CodeBlock) {
+		m.Top += 1
+		m.Stack[m.Top] = uint64(c.OpCodes[m.IP])
+		m.IP += 1
+	}
 
-func (n *Interpreter) Int64LoadOne() {
-	n.valueStackLast = n.valueStackSize
-	n.valueStackSize += 1
-	n.valueStack[n.valueStackLast] = 1
-}
+	dispatch[OpCodeInt64LoadOne] = func(m *Machine, c *CodeBlock) {
+		m.Top += 1
+		m.Stack[m.Top] = 1
+	}
 
-//---------------------------------------------------------------------------------------------------------------------
+	dispatch[OpCodeInt64LoadZero] = func(m *Machine, c *CodeBlock) {
+		m.Top += 1
+		m.Stack[m.Top] = 0
+	}
 
-func (n *Interpreter) Int64LoadZero() {
-	n.valueStackLast = n.valueStackSize
-	n.valueStackSize += 1
-	n.valueStack[n.valueStackLast] = 0
-}
+	dispatch[OpCodeInt64Multiply] = func(m *Machine, c *CodeBlock) {
+		rhs := int64(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := int64(m.Stack[m.Top])
+		m.Stack[m.Top] = uint64(lhs * rhs)
+	}
 
-//---------------------------------------------------------------------------------------------------------------------
+	dispatch[OpCodeInt64Negate] = func(m *Machine, c *CodeBlock) {
+		m.Stack[m.Top] = uint64(-int64(m.Stack[m.Top]))
+	}
 
-func (n *Interpreter) Int64Multiply() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := int64(n.valueStack[n.valueStackSize])
-	lhs := int64(n.valueStack[n.valueStackLast])
-	n.valueStack[n.valueStackLast] = uint64(lhs * rhs)
-}
+	dispatch[OpCodeInt64Subtract] = func(m *Machine, c *CodeBlock) {
+		rhs := int64(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := int64(m.Stack[m.Top])
+		m.Stack[m.Top] = uint64(lhs - rhs)
+	}
 
-//---------------------------------------------------------------------------------------------------------------------
+	dispatch[OpCodeNoOp] = func(m *Machine, c *CodeBlock) {
+		// do nothing
+	}
 
-func (n *Interpreter) Int64Negate() {
-	n.valueStack[n.valueStackLast] = uint64(-int64(n.valueStack[n.valueStackLast]))
-}
+	dispatch[OpCodeReturn] = func(m *Machine, c *CodeBlock) {
+		m.IsRunning = false
+	}
 
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) Int64Subtract() {
-	n.valueStackSize = n.valueStackLast
-	n.valueStackLast -= 1
-	rhs := int64(n.valueStack[n.valueStackSize])
-	lhs := int64(n.valueStack[n.valueStackLast])
-	n.valueStack[n.valueStackLast] = uint64(lhs - rhs)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) NoOp() {
-	// no operation
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (n *Interpreter) Return() {
 }
 
 //=====================================================================================================================

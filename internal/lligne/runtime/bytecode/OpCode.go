@@ -7,11 +7,8 @@ package bytecode
 
 //=====================================================================================================================
 
-// LligneOpCode is an enumeration of Lligne operation codes.
-type LligneOpCode uint16
-
 const (
-	OpCodeNoOp LligneOpCode = iota
+	OpCodeNoOp uint16 = iota
 
 	OpCodeReturn
 

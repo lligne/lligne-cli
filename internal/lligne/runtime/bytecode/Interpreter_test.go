@@ -16,8 +16,9 @@ import (
 
 func TestInterpreter(t *testing.T) {
 
-	t.Run("simple output", func(t *testing.T) {
+	t.Run("simple exercise", func(t *testing.T) {
 		codeBlock := &CodeBlock{}
+		machine := NewMachine()
 		interpreter := &Interpreter{}
 
 		codeBlock.Int64LoadInt16(2)
@@ -30,9 +31,9 @@ func TestInterpreter(t *testing.T) {
 
 		codeBlock.Return()
 
-		codeBlock.Execute(interpreter)
+		interpreter.Execute(machine, codeBlock)
 
-		actual := interpreter.Int64GetResult()
+		actual := interpreter.Int64GetResult(machine)
 		expected := int64(6)
 
 		assert.Equal(t, expected, actual)

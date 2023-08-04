@@ -19,7 +19,7 @@ type LligneTokenType int
 const (
 	TokenTypeEof LligneTokenType = iota
 
-	// Symbols
+	// Punctuation
 	TokenTypeAmpersand
 	TokenTypeAmpersandAmpersand
 	TokenTypeAsterisk

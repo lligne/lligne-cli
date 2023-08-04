@@ -5,232 +5,219 @@
 
 package bytecode
 
-//=====================================================================================================================
-
-type ICodeBlockExecutor interface {
-	BoolAnd()
-	BoolLoadFalse()
-	BoolLoadTrue()
-	BoolNot()
-	BoolOr()
-	Int64Add()
-	Int64Divide()
-	Int64Equals()
-	Int64GreaterThan()
-	Int64GreaterThanOrEquals()
-	Int64LessThan()
-	Int64LessThanOrEquals()
-	Int64LoadInt16(operand int16)
-	Int64LoadOne()
-	Int64LoadZero()
-	Int64Multiply()
-	Int64Negate()
-	Int64Subtract()
-	NoOp()
-	Return()
-}
-
-//=====================================================================================================================
-
-// InterpretResult is the status after executing a bytecode operation.
-type InterpretResult uint8
-
-const (
-	InterpretResultOk InterpretResult = 1 + iota
-
-	InterpretResultError
+import (
+	"fmt"
+	"strings"
 )
 
 //=====================================================================================================================
 
 type CodeBlock struct {
-	codes []LligneOpCode
+	OpCodes []uint16
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (cb *CodeBlock) Execute(executor ICodeBlockExecutor) InterpretResult {
+func (cb *CodeBlock) BoolAnd() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeBoolAnd)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) BoolLoadFalse() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeBoolLoadFalse)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) BoolLoadTrue() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeBoolLoadTrue)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) BoolNot() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeBoolNot)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) BoolOr() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeBoolOr)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64Add() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Add)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64Divide() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Divide)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64Equals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Equals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64GreaterThan() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64GreaterThan)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64GreaterThanOrEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64GreaterThanOrEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64LessThan() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64LessThan)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64LessThanOrEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64LessThanOrEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64LoadInt16(operand int16) {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64LoadInt16)
+	cb.OpCodes = append(cb.OpCodes, uint16(operand))
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64LoadOne() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64LoadOne)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64LoadZero() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64LoadZero)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64Multiply() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Multiply)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64Negate() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Negate)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64Subtract() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Subtract)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) NoOp() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeNoOp)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Return() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeReturn)
+}
+
+//=====================================================================================================================
+
+func (cb *CodeBlock) Disassemble() string {
+
+	output := &strings.Builder{}
+	var line int
 
 	ip := 0
 
 	for {
 
-		opCode := cb.codes[ip]
+		opCode := cb.OpCodes[ip]
 		ip += 1
+		line += 1
 
 		switch opCode {
 
 		case OpCodeBoolAnd:
-			executor.BoolAnd()
+			write(output, line, "BOOL_AND")
 		case OpCodeBoolLoadFalse:
-			executor.BoolLoadFalse()
+			write(output, line, "BOOL_LOAD_FALSE")
 		case OpCodeBoolLoadTrue:
-			executor.BoolLoadTrue()
+			write(output, line, "BOOL_LOAD_TRUE")
 		case OpCodeBoolNot:
-			executor.BoolNot()
+			write(output, line, "BOOL_NOT")
 		case OpCodeBoolOr:
-			executor.BoolOr()
+			write(output, line, "BOOL_OR")
 
 		case OpCodeInt64Add:
-			executor.Int64Add()
+			write(output, line, "INT64_ADD")
 		case OpCodeInt64Divide:
-			executor.Int64Divide()
+			write(output, line, "INT64_DIVIDE")
 		case OpCodeInt64Equals:
-			executor.Int64Equals()
+			write(output, line, "INT64_EQUALS")
 		case OpCodeInt64GreaterThan:
-			executor.Int64GreaterThan()
+			write(output, line, "INT64_GREATER")
 		case OpCodeInt64GreaterThanOrEquals:
-			executor.Int64GreaterThanOrEquals()
+			write(output, line, "INT64_NOT_LESS")
 		case OpCodeInt64LessThan:
-			executor.Int64LessThan()
+			write(output, line, "INT64_LESS")
 		case OpCodeInt64LessThanOrEquals:
-			executor.Int64LessThanOrEquals()
+			write(output, line, "INT64_NOT_GREATER")
 		case OpCodeInt64LoadInt16:
-			value := int16(cb.codes[ip])
+			value := int16(cb.OpCodes[ip])
 			ip += 1
-			executor.Int64LoadInt16(value)
+			writeInt16(output, line, "INT64_LOAD_INT16", value)
 		case OpCodeInt64LoadOne:
-			executor.Int64LoadOne()
+			write(output, line, "INT64_LOAD_ONE")
 		case OpCodeInt64LoadZero:
-			executor.Int64LoadZero()
+			write(output, line, "INT64_LOAD_ZERO")
 		case OpCodeInt64Multiply:
-			executor.Int64Multiply()
+			write(output, line, "INT64_MULTIPLY")
 		case OpCodeInt64Negate:
-			executor.Int64Negate()
+			write(output, line, "INT64_NEGATE")
 		case OpCodeInt64Subtract:
-			executor.Int64Subtract()
+			write(output, line, "INT64_SUBTRACT")
 
 		case OpCodeNoOp:
-			executor.NoOp()
+			write(output, line, "NO_OP")
 
 		case OpCodeReturn:
-			executor.Return()
-			return InterpretResultOk
+			write(output, line, "RETURN")
+			return output.String() + "\n"
 		}
 
 	}
 
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
 
-func (cb *CodeBlock) BoolAnd() {
-	cb.codes = append(cb.codes, OpCodeBoolAnd)
+func write(output *strings.Builder, line int, opCode string) {
+	output.WriteString("\n")
+	output.WriteString(fmt.Sprintf("%4d  %s", line, opCode))
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (cb *CodeBlock) BoolLoadFalse() {
-	cb.codes = append(cb.codes, OpCodeBoolLoadFalse)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) BoolLoadTrue() {
-	cb.codes = append(cb.codes, OpCodeBoolLoadTrue)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) BoolNot() {
-	cb.codes = append(cb.codes, OpCodeBoolNot)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) BoolOr() {
-	cb.codes = append(cb.codes, OpCodeBoolOr)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64Add() {
-	cb.codes = append(cb.codes, OpCodeInt64Add)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64Divide() {
-	cb.codes = append(cb.codes, OpCodeInt64Divide)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64Equals() {
-	cb.codes = append(cb.codes, OpCodeInt64Equals)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64GreaterThan() {
-	cb.codes = append(cb.codes, OpCodeInt64GreaterThan)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64GreaterThanOrEquals() {
-	cb.codes = append(cb.codes, OpCodeInt64GreaterThanOrEquals)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64LessThan() {
-	cb.codes = append(cb.codes, OpCodeInt64LessThan)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64LessThanOrEquals() {
-	cb.codes = append(cb.codes, OpCodeInt64LessThanOrEquals)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64LoadInt16(operand int16) {
-	cb.codes = append(cb.codes, OpCodeInt64LoadInt16)
-	cb.codes = append(cb.codes, LligneOpCode(operand))
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64LoadOne() {
-	cb.codes = append(cb.codes, OpCodeInt64LoadOne)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64LoadZero() {
-	cb.codes = append(cb.codes, OpCodeInt64LoadZero)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64Multiply() {
-	cb.codes = append(cb.codes, OpCodeInt64Multiply)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64Negate() {
-	cb.codes = append(cb.codes, OpCodeInt64Negate)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Int64Subtract() {
-	cb.codes = append(cb.codes, OpCodeInt64Subtract)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) NoOp() {
-	cb.codes = append(cb.codes, OpCodeNoOp)
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (cb *CodeBlock) Return() {
-	cb.codes = append(cb.codes, OpCodeReturn)
+func writeInt16(output *strings.Builder, line int, opCode string, operand int16) {
+	output.WriteString("\n")
+	output.WriteString(fmt.Sprintf("%4d  %-20s %6d", line, opCode, operand))
 }
 
 //=====================================================================================================================

@@ -36,10 +36,11 @@ func TestGenerateBoolByteCode(t *testing.T) {
 		//print(disassembler.GetOutput())
 
 		interpreter := &bytecode.Interpreter{}
+		machine := bytecode.NewMachine()
 
-		codeBlock.Execute(interpreter)
+		interpreter.Execute(machine, codeBlock)
 
-		actual := interpreter.BoolGetResult()
+		actual := interpreter.BoolGetResult(machine)
 
 		assert.Equal(t, expected, actual, "For source code: "+sourceCode)
 	}
@@ -95,10 +96,11 @@ func TestGenerateInt64ByteCode(t *testing.T) {
 		//print(disassembler.GetOutput())
 
 		interpreter := &bytecode.Interpreter{}
+		machine := bytecode.NewMachine()
 
-		codeBlock.Execute(interpreter)
+		interpreter.Execute(machine, codeBlock)
 
-		actual := interpreter.Int64GetResult()
+		actual := interpreter.Int64GetResult(machine)
 
 		assert.Equal(t, expected, actual, "For source code: "+sourceCode)
 	}
