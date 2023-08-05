@@ -40,6 +40,7 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.Int64Subtract()
 
 		codeBlock.Return()
+		codeBlock.Stop()
 
 		actual := codeBlock.Disassemble()
 
@@ -64,6 +65,7 @@ func TestCodeBlockDisassembly(t *testing.T) {
   17  INT64_NEGATE
   18  INT64_SUBTRACT
   19  RETURN
+  20  STOP
 `
 
 		assert.Equal(t, expected, actual)

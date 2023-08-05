@@ -17,6 +17,7 @@ import (
 type ILligneExpression interface {
 	GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin
 	SExpression() string
+	SourcePos() int
 	TypeCode() LligneExprType
 }
 
@@ -195,47 +196,40 @@ const (
 
 //=====================================================================================================================
 
-// LligneFunctionCallExpr represents a function call (a function name followed by a parenthesized expression).
-type LligneFunctionCallExpr struct {
-	SourcePos         int
-	FunctionReference ILligneExpression
-	Argument          ILligneExpression
+// LligneExpression represents any expression
+type LligneExpression struct {
+	sourcePos int
+	typeCode  LligneExprType
 }
 
-func (e *LligneFunctionCallExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func (e *LligneExpression) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
+	return tracker.GetOrigin(e.sourcePos)
 }
 
-func (e *LligneFunctionCallExpr) SExpression() string {
-	var result string
-
-	result = "(call "
-
-	result += e.FunctionReference.SExpression()
-
-	result += " "
-
-	result += e.Argument.SExpression()
-
-	result += ")"
-
-	return result
+func (e *LligneExpression) SourcePos() int {
+	return e.sourcePos
 }
 
-func (e *LligneFunctionCallExpr) TypeCode() LligneExprType {
-	return ExprTypeFunctionCall
+func (e *LligneExpression) TypeCode() LligneExprType {
+	return e.typeCode
 }
 
 //=====================================================================================================================
 
 // LligneBooleanLiteralExpr represents a single boolean literal.
 type LligneBooleanLiteralExpr struct {
-	SourcePos int
-	Value     bool
+	LligneExpression
+	Value bool
 }
 
-func (e *LligneBooleanLiteralExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewBooleanLiteralExpr(
+	sourcePos int,
+	value bool,
+) ILligneExpression {
+	return &LligneBooleanLiteralExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeBooleanLiteral},
+		Value:            value,
+	}
 }
 
 func (e *LligneBooleanLiteralExpr) SExpression() string {
@@ -245,41 +239,77 @@ func (e *LligneBooleanLiteralExpr) SExpression() string {
 	return "(bool false)"
 }
 
-func (e *LligneBooleanLiteralExpr) TypeCode() LligneExprType {
-	return ExprTypeBooleanLiteral
+//=====================================================================================================================
+
+// LligneFunctionCallExpr represents a function call (a function name followed by a parenthesized expression).
+type LligneFunctionCallExpr struct {
+	LligneExpression
+	FunctionReference ILligneExpression
+	Argument          ILligneExpression
+}
+
+func NewFunctionCallExpr(
+	sourcePos int,
+	functionReference ILligneExpression,
+	argument ILligneExpression,
+) ILligneExpression {
+	return &LligneFunctionCallExpr{
+		LligneExpression:  LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeFunctionCall},
+		FunctionReference: functionReference,
+		Argument:          argument,
+	}
+}
+
+func (e *LligneFunctionCallExpr) SExpression() string {
+	result := "(call "
+	result += e.FunctionReference.SExpression()
+	result += " "
+	result += e.Argument.SExpression()
+	result += ")"
+	return result
 }
 
 //=====================================================================================================================
 
 // LligneIdentifierExpr represents a single identifier.
 type LligneIdentifierExpr struct {
-	SourcePos int
-	Name      string
+	LligneExpression
+	Name string
 }
 
-func (e *LligneIdentifierExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewIdentifierExpr(
+	sourcePos int,
+	name string,
+) ILligneExpression {
+	return &LligneIdentifierExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeIdentifier},
+		Name:             name,
+	}
 }
 
 func (e *LligneIdentifierExpr) SExpression() string {
 	return "(id " + e.Name + ")"
 }
 
-func (e *LligneIdentifierExpr) TypeCode() LligneExprType {
-	return ExprTypeIdentifier
-}
-
 //=====================================================================================================================
 
 // LligneInfixOperationExpr represents an infix operation.
 type LligneInfixOperationExpr struct {
-	SourcePos int
-	Operator  LligneInfixOperator
-	Operands  []ILligneExpression
+	LligneExpression
+	Operator LligneInfixOperator
+	Operands []ILligneExpression
 }
 
-func (e *LligneInfixOperationExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewInfixOperationExpr(
+	sourcePos int,
+	operator LligneInfixOperator,
+	operands []ILligneExpression,
+) ILligneExpression {
+	return &LligneInfixOperationExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeInfixOperation},
+		Operator:         operator,
+		Operands:         operands,
+	}
 }
 
 func (e *LligneInfixOperationExpr) SExpression() string {
@@ -295,109 +325,116 @@ func (e *LligneInfixOperationExpr) SExpression() string {
 	return result
 }
 
-func (e *LligneInfixOperationExpr) TypeCode() LligneExprType {
-	return ExprTypeInfixOperation
-}
-
 //=====================================================================================================================
 
 // LligneIntegerLiteralExpr represents a single integer literal.
 type LligneIntegerLiteralExpr struct {
-	SourcePos int
-	Text      string
+	LligneExpression
+	Text string
 }
 
-func (e *LligneIntegerLiteralExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewIntegerLiteralExpr(
+	sourcePos int,
+	text string,
+) ILligneExpression {
+	return &LligneIntegerLiteralExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeIntegerLiteral},
+		Text:             text,
+	}
 }
 
 func (e *LligneIntegerLiteralExpr) SExpression() string {
 	return "(int " + e.Text + ")"
 }
 
-func (e *LligneIntegerLiteralExpr) TypeCode() LligneExprType {
-	return ExprTypeIntegerLiteral
-}
-
 //=====================================================================================================================
 
 // LligneLeadingDocumentationExpr represents lines of leading documentation.
 type LligneLeadingDocumentationExpr struct {
-	SourcePos int
-	Text      string
+	LligneExpression
+	Text string
 }
 
-func (e *LligneLeadingDocumentationExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewLeadingDocumentationExpr(
+	sourcePos int,
+	text string,
+) ILligneExpression {
+	return &LligneLeadingDocumentationExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeLeadingDocumentation},
+		Text:             text,
+	}
 }
 
 func (e *LligneLeadingDocumentationExpr) SExpression() string {
 	return "(leadingdoc\n" + e.Text + ")"
 }
 
-func (e *LligneLeadingDocumentationExpr) TypeCode() LligneExprType {
-	return ExprTypeLeadingDocumentation
-}
-
 //=====================================================================================================================
 
 // LligneMultilineStringLiteralExpr represents a multiline (back-ticked) string literal.
 type LligneMultilineStringLiteralExpr struct {
-	SourcePos int
-	Text      string
+	LligneExpression
+	Text string
 }
 
-func (e *LligneMultilineStringLiteralExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewMultilineStringLiteralExpr(
+	sourcePos int,
+	text string,
+) ILligneExpression {
+	return &LligneMultilineStringLiteralExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeMultilineStringLiteral},
+		Text:             text,
+	}
 }
 
 func (e *LligneMultilineStringLiteralExpr) SExpression() string {
 	return "(multilinestr\n" + e.Text + ")"
 }
 
-func (e *LligneMultilineStringLiteralExpr) TypeCode() LligneExprType {
-	return ExprTypeMultilineStringLiteral
-}
-
 //=====================================================================================================================
 
 // LligneOptionalExpr represents a parenthesized expression or comma-separated sequence of expressions.
 type LligneOptionalExpr struct {
-	SourcePos int
-	Operand   ILligneExpression
+	LligneExpression
+	Operand ILligneExpression
 }
 
-func (e *LligneOptionalExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewOptionalExpr(
+	sourcePos int,
+	operand ILligneExpression,
+) ILligneExpression {
+	return &LligneOptionalExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeOptional},
+		Operand:          operand,
+	}
 }
 
 func (e *LligneOptionalExpr) SExpression() string {
-	var result string
-
-	result = "(optional "
-
+	result := "(optional "
 	result += e.Operand.SExpression()
-
 	result += ")"
-
 	return result
-}
-
-func (e *LligneOptionalExpr) TypeCode() LligneExprType {
-	return ExprTypeOptional
 }
 
 //=====================================================================================================================
 
 // LligneParenthesizedExpr represents a parenthesized expression or comma-separated sequence of expressions.
 type LligneParenthesizedExpr struct {
-	SourcePos  int
+	LligneExpression
 	Delimiters ParenExprDelimiters
 	Items      []ILligneExpression
 }
 
-func (e *LligneParenthesizedExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewParenthesizedExpr(
+	sourcePos int,
+	delimiters ParenExprDelimiters,
+	items []ILligneExpression,
+) ILligneExpression {
+	return &LligneParenthesizedExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeParenthesized},
+		Delimiters:       delimiters,
+		Items:            items,
+	}
 }
 
 func (e *LligneParenthesizedExpr) SExpression() string {
@@ -422,41 +459,47 @@ func (e *LligneParenthesizedExpr) SExpression() string {
 	return result
 }
 
-func (e *LligneParenthesizedExpr) TypeCode() LligneExprType {
-	return ExprTypeParenthesized
-}
-
 //=====================================================================================================================
 
 // LlignePrefixOperationExpr represents a prefix operation.
 type LlignePrefixOperationExpr struct {
-	SourcePos int
-	Operator  LlignePrefixOperator
-	Operand   ILligneExpression
+	LligneExpression
+	Operator LlignePrefixOperator
+	Operand  ILligneExpression
 }
 
-func (e *LlignePrefixOperationExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewPrefixOperationExpr(
+	sourcePos int,
+	operator LlignePrefixOperator,
+	operand ILligneExpression,
+) ILligneExpression {
+	return &LlignePrefixOperationExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypePrefixOperation},
+		Operator:         operator,
+		Operand:          operand,
+	}
 }
 
 func (e *LlignePrefixOperationExpr) SExpression() string {
 	return "(prefix " + strings.TrimSpace(e.Operator.String()) + " " + e.Operand.SExpression() + ")"
 }
 
-func (e *LlignePrefixOperationExpr) TypeCode() LligneExprType {
-	return ExprTypePrefixOperation
-}
-
 //=====================================================================================================================
 
 // LligneSequenceLiteralExpr represents a parenthesized expression or comma-separated sequence of expressions.
 type LligneSequenceLiteralExpr struct {
-	SourcePos int
-	Elements  []ILligneExpression
+	LligneExpression
+	Elements []ILligneExpression
 }
 
-func (e *LligneSequenceLiteralExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewSequenceLiteralExpr(
+	sourcePos int,
+	elements []ILligneExpression,
+) ILligneExpression {
+	return &LligneSequenceLiteralExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeSequenceLiteral},
+		Elements:         elements,
+	}
 }
 
 func (e *LligneSequenceLiteralExpr) SExpression() string {
@@ -472,48 +515,48 @@ func (e *LligneSequenceLiteralExpr) SExpression() string {
 	return result
 }
 
-func (e *LligneSequenceLiteralExpr) TypeCode() LligneExprType {
-	return ExprTypeSequenceLiteral
-}
-
 //=====================================================================================================================
 
 // LligneStringLiteralExpr represents a single string literal.
 type LligneStringLiteralExpr struct {
-	SourcePos int
-	Text      string
+	LligneExpression
+	Text string
 }
 
-func (e *LligneStringLiteralExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewStringLiteralExpr(
+	sourcePos int,
+	text string,
+) ILligneExpression {
+	return &LligneStringLiteralExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeStringLiteral},
+		Text:             text,
+	}
 }
 
 func (e *LligneStringLiteralExpr) SExpression() string {
 	return "(string " + e.Text + ")"
 }
 
-func (e *LligneStringLiteralExpr) TypeCode() LligneExprType {
-	return ExprTypeStringLiteral
-}
-
 //=====================================================================================================================
 
 // LligneTrailingDocumentationExpr represents lines of trailing documentation.
 type LligneTrailingDocumentationExpr struct {
-	SourcePos int
-	Text      string
+	LligneExpression
+	Text string
 }
 
-func (e *LligneTrailingDocumentationExpr) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
-	return tracker.GetOrigin(e.SourcePos)
+func NewTrailingDocumentationExpr(
+	sourcePos int,
+	text string,
+) ILligneExpression {
+	return &LligneTrailingDocumentationExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeTrailingDocumentation},
+		Text:             text,
+	}
 }
 
 func (e *LligneTrailingDocumentationExpr) SExpression() string {
 	return "(trailingdoc\n" + e.Text + ")"
-}
-
-func (e *LligneTrailingDocumentationExpr) TypeCode() LligneExprType {
-	return ExprTypeTrailingDocumentation
 }
 
 //=====================================================================================================================

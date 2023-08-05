@@ -29,7 +29,7 @@ func TestInterpreter(t *testing.T) {
 		codeBlock.Int64Add()
 		codeBlock.Int64Add()
 
-		codeBlock.Return()
+		codeBlock.Stop()
 
 		interpreter.Execute(machine, codeBlock)
 

@@ -137,6 +137,12 @@ func (cb *CodeBlock) Return() {
 	cb.OpCodes = append(cb.OpCodes, OpCodeReturn)
 }
 
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Stop() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeStop)
+}
+
 //=====================================================================================================================
 
 func (cb *CodeBlock) Disassemble() string {
@@ -199,6 +205,8 @@ func (cb *CodeBlock) Disassemble() string {
 
 		case OpCodeReturn:
 			write(output, line, "RETURN")
+		case OpCodeStop:
+			write(output, line, "STOP")
 			return output.String() + "\n"
 		}
 

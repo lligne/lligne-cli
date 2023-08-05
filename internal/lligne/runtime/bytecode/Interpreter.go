@@ -46,7 +46,7 @@ const true64 uint64 = 0xFFFFFFFFFFFFFFFF
 
 //---------------------------------------------------------------------------------------------------------------------
 
-var dispatch [20]func(*Machine, *CodeBlock)
+var dispatch [21]func(*Machine, *CodeBlock)
 
 //---------------------------------------------------------------------------------------------------------------------
 
@@ -200,6 +200,10 @@ func init() {
 	}
 
 	dispatch[OpCodeReturn] = func(m *Machine, c *CodeBlock) {
+		// TO DO
+	}
+
+	dispatch[OpCodeStop] = func(m *Machine, c *CodeBlock) {
 		m.IsRunning = false
 	}
 

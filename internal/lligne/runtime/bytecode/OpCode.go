@@ -9,7 +9,7 @@ package bytecode
 
 const (
 	OpCodeNoOp uint16 = iota
-
+	OpCodeStop
 	OpCodeReturn
 
 	// Booleans

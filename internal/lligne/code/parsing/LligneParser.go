@@ -62,11 +62,11 @@ func (p *lligneParser) makeInfixExpression(
 	if lhs.TypeCode() == model.ExprTypeInfixOperation {
 		lhsOrig := lhs.(*model.LligneInfixOperationExpr)
 		if lhsOrig.Operator == operator {
-			return &model.LligneInfixOperationExpr{SourcePos: lhsOrig.SourcePos, Operator: operator, Operands: append(lhsOrig.Operands, rhs)}
+			return model.NewInfixOperationExpr(lhsOrig.SourcePos(), operator, append(lhsOrig.Operands, rhs))
 		}
 	}
 
-	return &model.LligneInfixOperationExpr{SourcePos: sourceCodePos, Operator: operator, Operands: []model.ILligneExpression{lhs, rhs}}
+	return model.NewInfixOperationExpr(sourceCodePos, operator, []model.ILligneExpression{lhs, rhs})
 
 }
 
@@ -133,25 +133,25 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 	switch token.TokenType {
 
 	case scanning.TokenTypeBackTickedString:
-		return &model.LligneMultilineStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
+		return model.NewMultilineStringLiteralExpr(token.SourceStartPos, token.Text)
 
 	case scanning.TokenTypeDash:
 		return p.parsePrefixOperationExpression(token, model.PrefixOperatorNegation)
 
 	case scanning.TokenTypeDoubleQuotedString:
-		return &model.LligneStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
+		return model.NewStringLiteralExpr(token.SourceStartPos, token.Text)
 
 	case scanning.TokenTypeFalse:
-		return &model.LligneBooleanLiteralExpr{SourcePos: token.SourceStartPos, Value: false}
+		return model.NewBooleanLiteralExpr(token.SourceStartPos, false)
 
 	case scanning.TokenTypeIdentifier:
-		return &model.LligneIdentifierExpr{SourcePos: token.SourceStartPos, Name: token.Text}
+		return model.NewIdentifierExpr(token.SourceStartPos, token.Text)
 
 	case scanning.TokenTypeIntegerLiteral:
-		return &model.LligneIntegerLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
+		return model.NewIntegerLiteralExpr(token.SourceStartPos, token.Text)
 
 	case scanning.TokenTypeLeadingDocumentation:
-		return &model.LligneLeadingDocumentationExpr{SourcePos: token.SourceStartPos, Text: token.Text}
+		return model.NewLeadingDocumentationExpr(token.SourceStartPos, token.Text)
 
 	case scanning.TokenTypeLeftBrace:
 		return p.parseParenthesizedExpression(token, scanning.TokenTypeRightBrace)
@@ -166,13 +166,13 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 		return p.parsePrefixOperationExpression(token, model.PrefixOperatorLogicalNot)
 
 	case scanning.TokenTypeSingleQuotedString:
-		return &model.LligneStringLiteralExpr{SourcePos: token.SourceStartPos, Text: token.Text}
+		return model.NewStringLiteralExpr(token.SourceStartPos, token.Text)
 
 	case scanning.TokenTypeTrailingDocumentation:
-		return &model.LligneTrailingDocumentationExpr{SourcePos: token.SourceStartPos, Text: token.Text}
+		return model.NewTrailingDocumentationExpr(token.SourceStartPos, token.Text)
 
 	case scanning.TokenTypeTrue:
-		return &model.LligneBooleanLiteralExpr{SourcePos: token.SourceStartPos, Value: true}
+		return model.NewBooleanLiteralExpr(token.SourceStartPos, true)
 
 		//	default:
 		//	this.expectedType(
@@ -221,11 +221,11 @@ func (p *lligneParser) parseParenthesizedExpression(
 		delimiters = model.ParenExprDelimitersParentheses
 	}
 
-	return &model.LligneParenthesizedExpr{
-		SourcePos:  token.SourceStartPos,
-		Delimiters: delimiters,
-		Items:      items,
-	}
+	return model.NewParenthesizedExpr(
+		token.SourceStartPos,
+		delimiters,
+		items,
+	)
 
 }
 
@@ -237,17 +237,17 @@ func (p *lligneParser) parsePostfixExpression(opToken scanning.LligneToken, lhs 
 
 	case scanning.TokenTypeLeftParenthesis:
 		args := p.parseParenthesizedExpression(opToken, scanning.TokenTypeRightParenthesis)
-		return &model.LligneFunctionCallExpr{
-			SourcePos:         opToken.SourceStartPos,
-			FunctionReference: lhs,
-			Argument:          args,
-		}
+		return model.NewFunctionCallExpr(
+			opToken.SourceStartPos,
+			lhs,
+			args,
+		)
 
 	case scanning.TokenTypeQuestionMark:
-		return &model.LligneOptionalExpr{
-			SourcePos: opToken.SourceStartPos,
-			Operand:   lhs,
-		}
+		return model.NewOptionalExpr(
+			opToken.SourceStartPos,
+			lhs,
+		)
 
 	}
 
@@ -263,11 +263,11 @@ func (p *lligneParser) parsePrefixOperationExpression(
 ) model.ILligneExpression {
 	rightBindingPower := prefixBindingPowers[token.TokenType].Power
 	rhs := p.parseExprBindingPower(rightBindingPower)
-	return &model.LlignePrefixOperationExpr{
-		SourcePos: token.SourceStartPos,
-		Operator:  operator,
-		Operand:   rhs,
-	}
+	return model.NewPrefixOperationExpr(
+		token.SourceStartPos,
+		operator,
+		rhs,
+	)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -277,7 +277,7 @@ func (p *lligneParser) parseSequenceLiteral(token scanning.LligneToken) model.IL
 	var items []model.ILligneExpression
 
 	if p.scanner.AdvanceTokenIfType(scanning.TokenTypeRightBracket) {
-		return &model.LligneSequenceLiteralExpr{SourcePos: token.SourceStartPos, Elements: items}
+		return model.NewSequenceLiteralExpr(token.SourceStartPos, items)
 	}
 
 	for !p.scanner.PeekTokenIsType(scanning.TokenTypeRightBracket) {
@@ -293,10 +293,10 @@ func (p *lligneParser) parseSequenceLiteral(token scanning.LligneToken) model.IL
 		panic("Expected " + scanning.TokenTypeRightBracket.String())
 	}
 
-	return &model.LligneSequenceLiteralExpr{
-		SourcePos: token.SourceStartPos,
-		Elements:  items,
-	}
+	return model.NewSequenceLiteralExpr(
+		token.SourceStartPos,
+		items,
+	)
 
 	return &model.LligneSequenceLiteralExpr{}
 

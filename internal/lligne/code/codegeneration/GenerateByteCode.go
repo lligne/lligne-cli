@@ -18,7 +18,7 @@ func GenerateByteCode(expression model.ILligneExpression) *bytecode.CodeBlock {
 
 	buildCodeBlock(result, expression)
 
-	result.Return()
+	result.Stop()
 
 	return result
 }
