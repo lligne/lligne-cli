@@ -35,11 +35,12 @@ func NewLligneScanner(sourceCode string) ILligneScanner {
 	}
 
 	// Read the first rune.
-	if len(s.sourceCode) == 0 {
-		s.nextRune = 0
-		s.nextRuneWidth = 0
-	} else {
-		s.nextRune, s.nextRuneWidth = utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
+	if len(s.sourceCode) > 0 {
+		s.runeAhead1, s.runAhead1Width = utf8.DecodeRuneInString(s.sourceCode[0:])
+	}
+
+	if len(s.sourceCode) > 1 {
+		s.runeAhead2, s.runAhead2Width = utf8.DecodeRuneInString(s.sourceCode[1:])
 	}
 
 	return s
@@ -53,8 +54,10 @@ type lligneScanner struct {
 	sourceCode         string
 	markedPos          int
 	currentPos         int
-	nextRune           rune
-	nextRuneWidth      int
+	runeAhead1         rune
+	runeAhead2         rune
+	runAhead1Width     int
+	runAhead2Width     int
 	tokenOriginTracker LligneTokenOriginTracker
 }
 
@@ -71,7 +74,7 @@ func (s *lligneScanner) GetOrigin(sourcePos int) LligneOrigin {
 func (s *lligneScanner) ReadToken() LligneToken {
 
 	// Ignore whitespace
-	for unicode.IsSpace(s.nextRune) {
+	for unicode.IsSpace(s.runeAhead1) {
 		s.advance()
 	}
 
@@ -79,7 +82,7 @@ func (s *lligneScanner) ReadToken() LligneToken {
 	s.markedPos = s.currentPos
 
 	// Consume the next character.
-	ch := s.nextRune
+	ch := s.runeAhead1
 	s.advance()
 
 	// Handle character ranges.
@@ -154,16 +157,18 @@ func (s *lligneScanner) ReadToken() LligneToken {
 // advance consumes one rune and stages the next one in the scanner.
 func (s *lligneScanner) advance() {
 
-	if s.nextRune == '\n' {
+	if s.runeAhead1 == '\n' {
 		s.tokenOriginTracker.AppendNewLinePosition(s.currentPos)
 	}
-	s.currentPos += s.nextRuneWidth
+	s.currentPos += s.runAhead1Width
+	s.runeAhead1 = s.runeAhead2
+	s.runAhead1Width = s.runAhead2Width
 
-	if s.currentPos >= len(s.sourceCode) {
-		s.nextRune = 0
-		s.nextRuneWidth = 0
+	if s.currentPos+1 >= len(s.sourceCode) {
+		s.runeAhead2 = 0
+		s.runAhead2Width = 0
 	} else {
-		s.nextRune, s.nextRuneWidth = utf8.DecodeRuneInString(s.sourceCode[s.currentPos:])
+		s.runeAhead2, s.runAhead2Width = utf8.DecodeRuneInString(s.sourceCode[s.currentPos+1:])
 	}
 
 }
@@ -198,7 +203,7 @@ func (s *lligneScanner) oneOrTwoRuneToken(
 	twoRuneType LligneTokenType,
 ) LligneToken {
 
-	if s.nextRune == secondRune {
+	if s.runeAhead1 == secondRune {
 		s.advance()
 		return s.token(twoRuneType)
 	}
@@ -218,11 +223,11 @@ func (s *lligneScanner) oneToThreeRuneToken(
 	threeRuneType LligneTokenType,
 ) LligneToken {
 
-	if s.nextRune == secondRune {
+	if s.runeAhead1 == secondRune {
 
 		s.advance()
 
-		if s.nextRune == thirdRune {
+		if s.runeAhead1 == thirdRune {
 			s.advance()
 			return s.token(threeRuneType)
 		}
@@ -240,11 +245,11 @@ func (s *lligneScanner) oneToThreeRuneToken(
 // scanAfterEquals scans one of: '=', '==', '===', '=~'.
 func (s *lligneScanner) scanAfterEquals() LligneToken {
 
-	if s.nextRune == '=' {
+	if s.runeAhead1 == '=' {
 
 		s.advance()
 
-		if s.nextRune == '=' {
+		if s.runeAhead1 == '=' {
 			s.advance()
 			return s.token(TokenTypeEqualsEqualsEquals)
 		}
@@ -253,7 +258,7 @@ func (s *lligneScanner) scanAfterEquals() LligneToken {
 
 	}
 
-	if s.nextRune == '~' {
+	if s.runeAhead1 == '~' {
 		s.advance()
 		return s.token(TokenTypeMatches)
 	}
@@ -267,7 +272,7 @@ func (s *lligneScanner) scanAfterEquals() LligneToken {
 // scanAfterSlash scans either just the slash or else a comment extending to the end of the line.
 func (s *lligneScanner) scanAfterSlash() LligneToken {
 
-	if s.nextRune == '/' {
+	if s.runeAhead1 == '/' {
 		s.advance()
 		return s.scanDocumentation()
 	}
@@ -287,7 +292,7 @@ func (s *lligneScanner) scanBackTickedString() LligneToken {
 	for {
 
 		// Consume to the end of the line.
-		for s.nextRune != '\n' && s.nextRune != 0 {
+		for s.runeAhead1 != '\n' && s.runeAhead1 != 0 {
 			s.advance()
 		}
 
@@ -296,19 +301,19 @@ func (s *lligneScanner) scanBackTickedString() LligneToken {
 		text.WriteRune('\n')
 
 		// Quit if hit the end of input.
-		if s.nextRune == 0 {
+		if s.runeAhead1 == 0 {
 			break
 		}
 
 		s.advance()
 
 		// Ignore whitespace
-		for s.nextRune != '\n' && unicode.IsSpace(s.nextRune) {
+		for s.runeAhead1 != '\n' && unicode.IsSpace(s.runeAhead1) {
 			s.advance()
 		}
 
 		// Quit after seeing something other than another back-ticked string on the subsequent line.
-		if s.nextRune != '`' {
+		if s.runeAhead1 != '`' {
 			break
 		}
 
@@ -333,7 +338,7 @@ func (s *lligneScanner) scanDocumentation() LligneToken {
 	for {
 
 		// Consume to the end of the line.
-		for s.nextRune != '\n' && s.nextRune != 0 {
+		for s.runeAhead1 != '\n' && s.runeAhead1 != 0 {
 			s.advance()
 		}
 
@@ -342,19 +347,19 @@ func (s *lligneScanner) scanDocumentation() LligneToken {
 		text.WriteRune('\n')
 
 		// Quit if hit the end of input.
-		if s.nextRune == 0 {
+		if s.runeAhead1 == 0 {
 			break
 		}
 
 		s.advance()
 
 		// Ignore whitespace
-		for s.nextRune != '\n' && unicode.IsSpace(s.nextRune) {
+		for s.runeAhead1 != '\n' && unicode.IsSpace(s.runeAhead1) {
 			s.advance()
 		}
 
 		// Quit after seeing something other than another back-ticked string on the subsequent line.
-		if s.nextRune != '/' || s.sourceCode[s.currentPos+1] != '/' {
+		if s.runeAhead1 != '/' || s.sourceCode[s.currentPos+1] != '/' {
 			break
 		}
 
@@ -375,7 +380,7 @@ func (s *lligneScanner) scanDocumentation() LligneToken {
 func (s *lligneScanner) scanDoubleQuotedString() LligneToken {
 
 	for {
-		switch s.nextRune {
+		switch s.runeAhead1 {
 		case '"':
 			s.advance()
 			return s.token(TokenTypeDoubleQuotedString)
@@ -397,7 +402,7 @@ func (s *lligneScanner) scanDoubleQuotedString() LligneToken {
 // scanIdentifierOrKeyword scans the remainder of an identifier after the opening letter has been consumed.
 func (s *lligneScanner) scanIdentifierOrKeyword() LligneToken {
 
-	for isIdentifierPart(s.nextRune) {
+	for isIdentifierPart(s.runeAhead1) {
 		s.advance()
 	}
 
@@ -417,13 +422,31 @@ func (s *lligneScanner) scanIdentifierOrKeyword() LligneToken {
 // scanNumber scans a numeric literal after the opening digit has been consumed.
 func (s *lligneScanner) scanNumber() LligneToken {
 
-	for isDigit(s.nextRune) {
+	for isDigit(s.runeAhead1) {
 		s.advance()
 	}
 
-	// TODO: also floating point literals
+	if s.runeAhead1 == '.' && isDigit(s.runeAhead2) {
+		s.advance()
+		return s.scanNumberFloatingPoint()
+	}
 
 	return s.token(TokenTypeIntegerLiteral)
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// scanNumberFloatingPoint scans a floating point literal after the decimal point has been consumed.
+func (s *lligneScanner) scanNumberFloatingPoint() LligneToken {
+
+	for isDigit(s.runeAhead1) {
+		s.advance()
+	}
+
+	// TODO: exponents
+
+	return s.token(TokenTypeFloatingPointLiteral)
 
 }
 
@@ -433,7 +456,7 @@ func (s *lligneScanner) scanNumber() LligneToken {
 func (s *lligneScanner) scanSingleQuotedString() LligneToken {
 
 	for {
-		switch s.nextRune {
+		switch s.runeAhead1 {
 		case '\'':
 			s.advance()
 			return s.token(TokenTypeSingleQuotedString)

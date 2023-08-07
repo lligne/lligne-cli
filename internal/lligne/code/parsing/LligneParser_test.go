@@ -40,6 +40,11 @@ func TestLligneParser(t *testing.T) {
 		check("789", "(int 789)")
 	})
 
+	t.Run("floating point literals", func(t *testing.T) {
+		check("1.23", "(float 1.23)")
+		check("78.9", "(float 78.9)")
+	})
+
 	t.Run("multiline string literals", func(t *testing.T) {
 		check("` line one\n ` line two\n", "(multilinestr\n` line one\n` line two\n)")
 	})
@@ -60,6 +65,8 @@ func TestLligneParser(t *testing.T) {
 	t.Run("addition", func(t *testing.T) {
 		check("x + 1", `(+ (id x) (int 1))`)
 		check(" 3 + y", `(+ (int 3) (id y))`)
+		check("x + 1.7", `(+ (id x) (float 1.7))`)
+		check(" 3.666 + y", `(+ (float 3.666) (id y))`)
 	})
 
 	t.Run("table of expressions", func(t *testing.T) {
@@ -91,6 +98,7 @@ func TestLligneParser(t *testing.T) {
 			{"(x: int && 5)", "(parenthesized \"()\" (: (id x) (&& (id int) (int 5))))"},
 			{"(x: int && 5, y: string && \"s\")", "(parenthesized \"()\" (: (id x) (&& (id int) (int 5))) (: (id y) (&& (id string) (string \"s\"))))"},
 			{"(1, 2, 3, 4, 5)", "(parenthesized \"()\" (int 1) (int 2) (int 3) (int 4) (int 5))"},
+			{"(1.0, 2.0, 3.0, 4.0, 5.0)", "(parenthesized \"()\" (float 1.0) (float 2.0) (float 3.0) (float 4.0) (float 5.0))"},
 
 			{"{}", "(parenthesized \"{}\")"},
 			{"{x: int && 5}", "(parenthesized \"{}\" (: (id x) (&& (id int) (int 5))))"},

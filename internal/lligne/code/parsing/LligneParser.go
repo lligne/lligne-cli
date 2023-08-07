@@ -59,7 +59,7 @@ func (p *lligneParser) makeInfixExpression(
 	rhs model.ILligneExpression,
 ) model.ILligneExpression {
 
-	if lhs.TypeCode() == model.ExprTypeInfixOperation {
+	if lhs.ExprType() == model.ExprTypeInfixOperation {
 		lhsOrig := lhs.(*model.LligneInfixOperationExpr)
 		if lhsOrig.Operator == operator {
 			return model.NewInfixOperationExpr(lhsOrig.SourcePos(), operator, append(lhsOrig.Operands, rhs))
@@ -143,6 +143,9 @@ func (p *lligneParser) parseLeftHandSide() model.ILligneExpression {
 
 	case scanning.TokenTypeFalse:
 		return model.NewBooleanLiteralExpr(token.SourceStartPos, false)
+
+	case scanning.TokenTypeFloatingPointLiteral:
+		return model.NewFloatingPointLiteralExpr(token.SourceStartPos, token.Text)
 
 	case scanning.TokenTypeIdentifier:
 		return model.NewIdentifierExpr(token.SourceStartPos, token.Text)

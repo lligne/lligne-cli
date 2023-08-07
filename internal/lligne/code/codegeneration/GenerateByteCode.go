@@ -27,7 +27,7 @@ func GenerateByteCode(expression model.ILligneExpression) *bytecode.CodeBlock {
 
 func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.ILligneExpression) {
 
-	switch expression.TypeCode() {
+	switch expression.ExprType() {
 
 	case model.ExprTypeBooleanLiteral:
 		expr := expression.(*model.LligneBooleanLiteralExpr)
@@ -103,7 +103,7 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.ILligneExpre
 		}
 
 	default:
-		panic("Unhandled expression type: " + strconv.Itoa(int(expression.TypeCode())))
+		panic("Unhandled expression type: " + strconv.Itoa(int(expression.ExprType())))
 
 	}
 

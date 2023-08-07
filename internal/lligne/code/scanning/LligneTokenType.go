@@ -71,6 +71,7 @@ const (
 	TokenTypeBackTickedString
 	TokenTypeDocumentation
 	TokenTypeDoubleQuotedString
+	TokenTypeFloatingPointLiteral
 	TokenTypeIdentifier
 	TokenTypeIntegerLiteral
 	TokenTypeSingleQuotedString
@@ -197,6 +198,8 @@ func (tt LligneTokenType) String() string {
 		return "[documentation]"
 	case TokenTypeDoubleQuotedString:
 		return "[string literal]"
+	case TokenTypeFloatingPointLiteral:
+		return "[floating point literal]"
 	case TokenTypeIdentifier:
 		return "[identifier]"
 	case TokenTypeIntegerLiteral:

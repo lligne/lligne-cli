@@ -15,10 +15,12 @@ import (
 
 // ILligneExpression is the interface to an expression AST node.
 type ILligneExpression interface {
+	ExprType() LligneExprType
 	GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin
 	SExpression() string
+	SetTypeInfo(typeInfo ILligneType)
 	SourcePos() int
-	TypeCode() LligneExprType
+	TypeInfo() ILligneType
 }
 
 //=====================================================================================================================
@@ -28,6 +30,7 @@ type LligneExprType int
 
 const (
 	ExprTypeBooleanLiteral LligneExprType = 1 + iota
+	ExprTypeFloatingPointLiteral
 	ExprTypeFunctionCall
 	ExprTypeIdentifier
 	ExprTypeInfixOperation
@@ -198,20 +201,32 @@ const (
 
 // LligneExpression represents any expression
 type LligneExpression struct {
+	exprType  LligneExprType
 	sourcePos int
-	typeCode  LligneExprType
+	typeInfo  ILligneType
+}
+
+func (e *LligneExpression) ExprType() LligneExprType {
+	return e.exprType
 }
 
 func (e *LligneExpression) GetOrigin(tracker scanning.ILligneTokenOriginTracker) scanning.LligneOrigin {
 	return tracker.GetOrigin(e.sourcePos)
 }
 
+func (e *LligneExpression) SetTypeInfo(typeInfo ILligneType) {
+	if e.typeInfo != nil {
+		panic("Type info is immutable")
+	}
+	e.typeInfo = typeInfo
+}
+
 func (e *LligneExpression) SourcePos() int {
 	return e.sourcePos
 }
 
-func (e *LligneExpression) TypeCode() LligneExprType {
-	return e.typeCode
+func (e *LligneExpression) TypeInfo() ILligneType {
+	return e.typeInfo
 }
 
 //=====================================================================================================================
@@ -227,7 +242,7 @@ func NewBooleanLiteralExpr(
 	value bool,
 ) ILligneExpression {
 	return &LligneBooleanLiteralExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeBooleanLiteral},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeBooleanLiteral},
 		Value:            value,
 	}
 }
@@ -237,6 +252,28 @@ func (e *LligneBooleanLiteralExpr) SExpression() string {
 		return "(bool true)"
 	}
 	return "(bool false)"
+}
+
+//=====================================================================================================================
+
+// LligneFloatingPointLiteralExpr represents a single integer literal.
+type LligneFloatingPointLiteralExpr struct {
+	LligneExpression
+	Text string
+}
+
+func NewFloatingPointLiteralExpr(
+	sourcePos int,
+	text string,
+) ILligneExpression {
+	return &LligneFloatingPointLiteralExpr{
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeFloatingPointLiteral},
+		Text:             text,
+	}
+}
+
+func (e *LligneFloatingPointLiteralExpr) SExpression() string {
+	return "(float " + e.Text + ")"
 }
 
 //=====================================================================================================================
@@ -254,7 +291,7 @@ func NewFunctionCallExpr(
 	argument ILligneExpression,
 ) ILligneExpression {
 	return &LligneFunctionCallExpr{
-		LligneExpression:  LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeFunctionCall},
+		LligneExpression:  LligneExpression{sourcePos: sourcePos, exprType: ExprTypeFunctionCall},
 		FunctionReference: functionReference,
 		Argument:          argument,
 	}
@@ -282,7 +319,7 @@ func NewIdentifierExpr(
 	name string,
 ) ILligneExpression {
 	return &LligneIdentifierExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeIdentifier},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeIdentifier},
 		Name:             name,
 	}
 }
@@ -306,7 +343,7 @@ func NewInfixOperationExpr(
 	operands []ILligneExpression,
 ) ILligneExpression {
 	return &LligneInfixOperationExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeInfixOperation},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeInfixOperation},
 		Operator:         operator,
 		Operands:         operands,
 	}
@@ -338,7 +375,7 @@ func NewIntegerLiteralExpr(
 	text string,
 ) ILligneExpression {
 	return &LligneIntegerLiteralExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeIntegerLiteral},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeIntegerLiteral},
 		Text:             text,
 	}
 }
@@ -360,7 +397,7 @@ func NewLeadingDocumentationExpr(
 	text string,
 ) ILligneExpression {
 	return &LligneLeadingDocumentationExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeLeadingDocumentation},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeLeadingDocumentation},
 		Text:             text,
 	}
 }
@@ -382,7 +419,7 @@ func NewMultilineStringLiteralExpr(
 	text string,
 ) ILligneExpression {
 	return &LligneMultilineStringLiteralExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeMultilineStringLiteral},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeMultilineStringLiteral},
 		Text:             text,
 	}
 }
@@ -404,7 +441,7 @@ func NewOptionalExpr(
 	operand ILligneExpression,
 ) ILligneExpression {
 	return &LligneOptionalExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeOptional},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeOptional},
 		Operand:          operand,
 	}
 }
@@ -431,7 +468,7 @@ func NewParenthesizedExpr(
 	items []ILligneExpression,
 ) ILligneExpression {
 	return &LligneParenthesizedExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeParenthesized},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeParenthesized},
 		Delimiters:       delimiters,
 		Items:            items,
 	}
@@ -474,7 +511,7 @@ func NewPrefixOperationExpr(
 	operand ILligneExpression,
 ) ILligneExpression {
 	return &LlignePrefixOperationExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypePrefixOperation},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypePrefixOperation},
 		Operator:         operator,
 		Operand:          operand,
 	}
@@ -497,7 +534,7 @@ func NewSequenceLiteralExpr(
 	elements []ILligneExpression,
 ) ILligneExpression {
 	return &LligneSequenceLiteralExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeSequenceLiteral},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeSequenceLiteral},
 		Elements:         elements,
 	}
 }
@@ -528,7 +565,7 @@ func NewStringLiteralExpr(
 	text string,
 ) ILligneExpression {
 	return &LligneStringLiteralExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeStringLiteral},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeStringLiteral},
 		Text:             text,
 	}
 }
@@ -550,7 +587,7 @@ func NewTrailingDocumentationExpr(
 	text string,
 ) ILligneExpression {
 	return &LligneTrailingDocumentationExpr{
-		LligneExpression: LligneExpression{sourcePos: sourcePos, typeCode: ExprTypeTrailingDocumentation},
+		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeTrailingDocumentation},
 		Text:             text,
 	}
 }

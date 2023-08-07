@@ -66,7 +66,7 @@ func TestLligneScanner(t *testing.T) {
 		expectToken(scanner, TokenTypeEof, "", 15)
 	})
 
-	t.Run("a few numbers", func(t *testing.T) {
+	t.Run("a few integers", func(t *testing.T) {
 		scanner := NewLligneScanner(
 			"123 4\n(99000) 5",
 		)
@@ -78,6 +78,20 @@ func TestLligneScanner(t *testing.T) {
 		expectToken(scanner, TokenTypeRightParenthesis, ")", 12)
 		expectToken(scanner, TokenTypeIntegerLiteral, "5", 14)
 		expectToken(scanner, TokenTypeEof, "", 15)
+	})
+
+	t.Run("a few numbers", func(t *testing.T) {
+		scanner := NewLligneScanner(
+			"12.3 4\n(990.00) 5.1",
+		)
+
+		expectToken(scanner, TokenTypeFloatingPointLiteral, "12.3", 0)
+		expectToken(scanner, TokenTypeIntegerLiteral, "4", 5)
+		expectToken(scanner, TokenTypeLeftParenthesis, "(", 7)
+		expectToken(scanner, TokenTypeFloatingPointLiteral, "990.00", 8)
+		expectToken(scanner, TokenTypeRightParenthesis, ")", 14)
+		expectToken(scanner, TokenTypeFloatingPointLiteral, "5.1", 16)
+		expectToken(scanner, TokenTypeEof, "", 19)
 	})
 
 	t.Run("a few double quoted strings", func(t *testing.T) {
