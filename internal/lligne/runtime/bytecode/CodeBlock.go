@@ -7,6 +7,7 @@ package bytecode
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -44,6 +45,89 @@ func (cb *CodeBlock) BoolNot() {
 
 func (cb *CodeBlock) BoolOr() {
 	cb.OpCodes = append(cb.OpCodes, OpCodeBoolOr)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64Add() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64Add)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64Divide() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64Divide)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64Equals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64Equals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64GreaterThan() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64GreaterThan)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64GreaterThanOrEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64GreaterThanOrEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64LessThan() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64LessThan)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64LessThanOrEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64LessThanOrEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64LoadFloat64(operand float64) {
+	bits := math.Float64bits(operand)
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64LoadFloat64)
+	cb.OpCodes = append(cb.OpCodes, uint16(bits))
+	cb.OpCodes = append(cb.OpCodes, uint16(bits>>16))
+	cb.OpCodes = append(cb.OpCodes, uint16(bits>>32))
+	cb.OpCodes = append(cb.OpCodes, uint16(bits>>48))
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64LoadOne() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64LoadOne)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64LoadZero() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64LoadZero)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64Multiply() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64Multiply)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64Negate() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64Negate)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Float64Subtract() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64Subtract)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -171,6 +255,42 @@ func (cb *CodeBlock) Disassemble() string {
 		case OpCodeBoolOr:
 			write(output, line, "BOOL_OR")
 
+		case OpCodeFloat64Add:
+			write(output, line, "FLOAT64_ADD")
+		case OpCodeFloat64Divide:
+			write(output, line, "FLOAT64_DIVIDE")
+		case OpCodeFloat64Equals:
+			write(output, line, "FLOAT64_EQUALS")
+		case OpCodeFloat64GreaterThan:
+			write(output, line, "FLOAT64_GREATER")
+		case OpCodeFloat64GreaterThanOrEquals:
+			write(output, line, "FLOAT64_NOT_LESS")
+		case OpCodeFloat64LessThan:
+			write(output, line, "FLOAT64_LESS")
+		case OpCodeFloat64LessThanOrEquals:
+			write(output, line, "FLOAT64_NOT_GREATER")
+		case OpCodeFloat64LoadFloat64:
+			bits := uint64(cb.OpCodes[ip])
+			ip += 1
+			bits |= uint64(cb.OpCodes[ip]) << 16
+			ip += 1
+			bits |= uint64(cb.OpCodes[ip]) << 32
+			ip += 1
+			bits |= uint64(cb.OpCodes[ip]) << 48
+			ip += 1
+			value := math.Float64frombits(bits)
+			writeFloat64(output, line, "FLOAT64_LOAD_FLOAT64", value)
+		case OpCodeFloat64LoadOne:
+			write(output, line, "FLOAT64_LOAD_ONE")
+		case OpCodeFloat64LoadZero:
+			write(output, line, "FLOAT64_LOAD_ZERO")
+		case OpCodeFloat64Multiply:
+			write(output, line, "FLOAT64_MULTIPLY")
+		case OpCodeFloat64Negate:
+			write(output, line, "FLOAT64_NEGATE")
+		case OpCodeFloat64Subtract:
+			write(output, line, "FLOAT64_SUBTRACT")
+
 		case OpCodeInt64Add:
 			write(output, line, "INT64_ADD")
 		case OpCodeInt64Divide:
@@ -219,6 +339,13 @@ func (cb *CodeBlock) Disassemble() string {
 func write(output *strings.Builder, line int, opCode string) {
 	output.WriteString("\n")
 	output.WriteString(fmt.Sprintf("%4d  %s", line, opCode))
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func writeFloat64(output *strings.Builder, line int, opCode string, operand float64) {
+	output.WriteString("\n")
+	output.WriteString(fmt.Sprintf("%4d  %-20s %10.3f", line, opCode, operand))
 }
 
 //---------------------------------------------------------------------------------------------------------------------

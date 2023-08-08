@@ -5,6 +5,8 @@
 
 package bytecode
 
+import "math"
+
 //=====================================================================================================================
 
 type Interpreter struct {
@@ -36,6 +38,12 @@ func (n *Interpreter) Execute(machine *Machine, code *CodeBlock) {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (n *Interpreter) Float64GetResult(machine *Machine) float64 {
+	return math.Float64frombits(machine.Stack[machine.Top])
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (n *Interpreter) Int64GetResult(machine *Machine) int64 {
 	return int64(machine.Stack[machine.Top])
 }
@@ -46,7 +54,7 @@ const true64 uint64 = 0xFFFFFFFFFFFFFFFF
 
 //---------------------------------------------------------------------------------------------------------------------
 
-var dispatch [21]func(*Machine, *CodeBlock)
+var dispatch [34]func(*Machine, *CodeBlock)
 
 //---------------------------------------------------------------------------------------------------------------------
 
@@ -90,6 +98,116 @@ func init() {
 		} else {
 			m.Stack[m.Top] = 0
 		}
+	}
+
+	dispatch[OpCodeFloat64Add] = func(m *Machine, c *CodeBlock) {
+		rhs := math.Float64frombits(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := math.Float64frombits(m.Stack[m.Top])
+		m.Stack[m.Top] = math.Float64bits(lhs + rhs)
+	}
+
+	dispatch[OpCodeFloat64Divide] = func(m *Machine, c *CodeBlock) {
+		rhs := math.Float64frombits(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := math.Float64frombits(m.Stack[m.Top])
+		m.Stack[m.Top] = math.Float64bits(lhs / rhs)
+	}
+
+	dispatch[OpCodeFloat64Equals] = func(m *Machine, c *CodeBlock) {
+		rhs := math.Float64frombits(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := math.Float64frombits(m.Stack[m.Top])
+		if lhs == rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
+
+	dispatch[OpCodeInt64GreaterThan] = func(m *Machine, c *CodeBlock) {
+		rhs := math.Float64frombits(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := math.Float64frombits(m.Stack[m.Top])
+		if lhs > rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
+
+	dispatch[OpCodeFloat64GreaterThanOrEquals] = func(m *Machine, c *CodeBlock) {
+		rhs := math.Float64frombits(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := math.Float64frombits(m.Stack[m.Top])
+		if lhs >= rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
+
+	dispatch[OpCodeFloat64LessThan] = func(m *Machine, c *CodeBlock) {
+		rhs := math.Float64frombits(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := math.Float64frombits(m.Stack[m.Top])
+		if lhs < rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
+
+	dispatch[OpCodeFloat64LessThanOrEquals] = func(m *Machine, c *CodeBlock) {
+		rhs := math.Float64frombits(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := math.Float64frombits(m.Stack[m.Top])
+		if lhs <= rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
+
+	dispatch[OpCodeFloat64LoadFloat64] = func(m *Machine, c *CodeBlock) {
+		bits := uint64(c.OpCodes[m.IP])
+		m.IP += 1
+		bits |= uint64(c.OpCodes[m.IP]) << 16
+		m.IP += 1
+		bits |= uint64(c.OpCodes[m.IP]) << 32
+		m.IP += 1
+		bits |= uint64(c.OpCodes[m.IP]) << 48
+		m.IP += 1
+		m.Top += 1
+		m.Stack[m.Top] = bits
+	}
+
+	dispatch[OpCodeFloat64LoadOne] = func(m *Machine, c *CodeBlock) {
+		m.Top += 1
+		m.Stack[m.Top] = math.Float64bits(1.0)
+	}
+
+	dispatch[OpCodeFloat64LoadZero] = func(m *Machine, c *CodeBlock) {
+		m.Top += 1
+		m.Stack[m.Top] = 0
+	}
+
+	dispatch[OpCodeFloat64Multiply] = func(m *Machine, c *CodeBlock) {
+		rhs := math.Float64frombits(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := math.Float64frombits(m.Stack[m.Top])
+		m.Stack[m.Top] = math.Float64bits(lhs * rhs)
+	}
+
+	dispatch[OpCodeFloat64Negate] = func(m *Machine, c *CodeBlock) {
+		m.Stack[m.Top] = math.Float64bits(-math.Float64frombits(m.Stack[m.Top]))
+	}
+
+	dispatch[OpCodeFloat64Subtract] = func(m *Machine, c *CodeBlock) {
+		rhs := math.Float64frombits(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := math.Float64frombits(m.Stack[m.Top])
+		m.Stack[m.Top] = math.Float64bits(lhs - rhs)
 	}
 
 	dispatch[OpCodeInt64Add] = func(m *Machine, c *CodeBlock) {

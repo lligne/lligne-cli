@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"lligne-cli/internal/lligne/code/parsing"
 	"lligne-cli/internal/lligne/code/scanning"
+	"lligne-cli/internal/lligne/code/typechecking"
 	"lligne-cli/internal/lligne/runtime/bytecode"
 	"testing"
 )
@@ -28,12 +29,11 @@ func TestGenerateBoolByteCode(t *testing.T) {
 		)
 		parser := parsing.NewLligneParser(scanner)
 		model := parser.ParseExpression()
+		typechecking.DetermineTypes(&model)
 
 		codeBlock := GenerateByteCode(model)
 
-		//disassembler := &bytecode.Disassembler{}
-		//codeBlock.Execute(disassembler)
-		//print(disassembler.GetOutput())
+		//print(codeBlock.Disassemble())
 
 		interpreter := &bytecode.Interpreter{}
 		machine := bytecode.NewMachine()
@@ -88,12 +88,11 @@ func TestGenerateInt64ByteCode(t *testing.T) {
 		)
 		parser := parsing.NewLligneParser(scanner)
 		model := parser.ParseExpression()
+		typechecking.DetermineTypes(&model)
 
 		codeBlock := GenerateByteCode(model)
 
-		//disassembler := &bytecode.Disassembler{}
-		//codeBlock.Execute(disassembler)
-		//print(disassembler.GetOutput())
+		//print(codeBlock.Disassemble())
 
 		interpreter := &bytecode.Interpreter{}
 		machine := bytecode.NewMachine()
@@ -129,6 +128,64 @@ func TestGenerateInt64ByteCode(t *testing.T) {
 		}
 		for _, test := range tests {
 			checkInt64(test.sourceCode, test.expectedValue)
+		}
+	})
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func TestGenerateFloat64ByteCode(t *testing.T) {
+
+	checkFloat64 := func(sourceCode string, expected float64) {
+		scanner := scanning.NewLligneBufferedScanner(
+			scanning.NewLligneDocumentationHandlingScanner(
+				sourceCode,
+				scanning.NewLligneScanner(sourceCode),
+			),
+		)
+		parser := parsing.NewLligneParser(scanner)
+		model := parser.ParseExpression()
+		typechecking.DetermineTypes(&model)
+
+		codeBlock := GenerateByteCode(model)
+
+		//print(codeBlock.Disassemble())
+
+		interpreter := &bytecode.Interpreter{}
+		machine := bytecode.NewMachine()
+
+		interpreter.Execute(machine, codeBlock)
+
+		actual := interpreter.Float64GetResult(machine)
+
+		assert.Equal(t, expected, actual, "For source code: "+sourceCode)
+	}
+
+	t.Run("Float64 expression evaluations", func(t *testing.T) {
+		type exprOutcome struct {
+			sourceCode    string
+			expectedValue float64
+		}
+
+		tests := []exprOutcome{
+			{"0.0 + 1.0", 1.0},
+			{"1.0 + 2.0", 3.0},
+			{"1.0 + 2.0 + 7.0", 10.0},
+			{"(1.0 + 2.0) + (7.0 + 5.0)", 15.0},
+			{"20.0 - 2.0", 18.0},
+			{"20.0 - 2.0 - 4.0", 14.0},
+			{"(1.0 + 2.0) + (7.0 - 5.0)", 5.0},
+			{"(22.0 + 2.0) - (7.0 - 5.0)", 22},
+			{"20.0 * 2.0", 40.0},
+			{"(5.0 + 6.0 - 1.0) * (0.0 + 1.0 + 2.0 + 3.0)", 60.0},
+			{"20.0 / 2.0", 10.0},
+			{"20.0 / (1.0 + 1.0)", 10.0},
+			{"-7.0", -7},
+			{"-(7.0 - 3.0) + 1.0", -3.0},
+		}
+		for _, test := range tests {
+			checkFloat64(test.sourceCode, test.expectedValue)
 		}
 	})
 

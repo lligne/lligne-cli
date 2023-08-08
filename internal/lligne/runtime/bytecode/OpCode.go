@@ -19,6 +19,21 @@ const (
 	OpCodeBoolNot
 	OpCodeBoolOr
 
+	// 64 Bit Floating Point
+	OpCodeFloat64Add
+	OpCodeFloat64Divide
+	OpCodeFloat64Equals
+	OpCodeFloat64GreaterThan
+	OpCodeFloat64GreaterThanOrEquals
+	OpCodeFloat64LessThan
+	OpCodeFloat64LessThanOrEquals
+	OpCodeFloat64LoadFloat64
+	OpCodeFloat64LoadOne
+	OpCodeFloat64LoadZero
+	OpCodeFloat64Multiply
+	OpCodeFloat64Negate
+	OpCodeFloat64Subtract
+
 	// 64 Bit Integers
 	OpCodeInt64Add
 	OpCodeInt64Divide

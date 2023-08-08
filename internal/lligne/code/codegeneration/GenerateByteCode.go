@@ -37,6 +37,18 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.ILligneExpre
 			codeBlock.BoolLoadFalse()
 		}
 
+	case model.ExprTypeFloatingPointLiteral:
+		expr := expression.(*model.LligneFloatingPointLiteralExpr)
+		value, _ := strconv.ParseFloat(expr.Text, 64)
+		switch value {
+		case 0:
+			codeBlock.Float64LoadZero()
+		case 1:
+			codeBlock.Float64LoadOne()
+		default:
+			codeBlock.Float64LoadFloat64(value)
+		}
+
 	case model.ExprTypeInfixOperation:
 		expr := expression.(*model.LligneInfixOperationExpr)
 		buildCodeBlock(codeBlock, expr.Operands[0])
@@ -44,27 +56,63 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.ILligneExpre
 			buildCodeBlock(codeBlock, operand)
 			switch expr.Operator {
 			case model.InfixOperatorAdd:
-				codeBlock.Int64Add()
+				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+					codeBlock.Int64Add()
+				} else {
+					codeBlock.Float64Add()
+				}
 			case model.InfixOperatorDivide:
-				codeBlock.Int64Divide()
+				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+					codeBlock.Int64Divide()
+				} else {
+					codeBlock.Float64Divide()
+				}
 			case model.InfixOperatorEquals:
-				codeBlock.Int64Equals()
+				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+					codeBlock.Int64Equals()
+				} else {
+					codeBlock.Float64Equals()
+				}
 			case model.InfixOperatorGreaterThan:
-				codeBlock.Int64GreaterThan()
+				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+					codeBlock.Int64GreaterThan()
+				} else {
+					codeBlock.Float64GreaterThan()
+				}
 			case model.InfixOperatorGreaterThanOrEquals:
-				codeBlock.Int64GreaterThanOrEquals()
+				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+					codeBlock.Int64GreaterThanOrEquals()
+				} else {
+					codeBlock.Float64GreaterThanOrEquals()
+				}
 			case model.InfixOperatorLessThan:
-				codeBlock.Int64LessThan()
+				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+					codeBlock.Int64LessThan()
+				} else {
+					codeBlock.Float64LessThan()
+				}
 			case model.InfixOperatorLessThanOrEquals:
-				codeBlock.Int64LessThanOrEquals()
+				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+					codeBlock.Int64LessThanOrEquals()
+				} else {
+					codeBlock.Float64LessThanOrEquals()
+				}
 			case model.InfixOperatorLogicAnd:
 				codeBlock.BoolAnd()
 			case model.InfixOperatorLogicOr:
 				codeBlock.BoolOr()
 			case model.InfixOperatorMultiply:
-				codeBlock.Int64Multiply()
+				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+					codeBlock.Int64Multiply()
+				} else {
+					codeBlock.Float64Multiply()
+				}
 			case model.InfixOperatorSubtract:
-				codeBlock.Int64Subtract()
+				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+					codeBlock.Int64Subtract()
+				} else {
+					codeBlock.Float64Subtract()
+				}
 			default:
 				panic("Unhandled infix operation: " + strconv.Itoa(int(expr.Operator)))
 			}
@@ -97,7 +145,11 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.ILligneExpre
 		case model.PrefixOperatorLogicalNot:
 			codeBlock.BoolNot()
 		case model.PrefixOperatorNegation:
-			codeBlock.Int64Negate()
+			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+				codeBlock.Int64Negate()
+			} else {
+				codeBlock.Float64Negate()
+			}
 		default:
 			panic("Unhandled prefix operation: " + strconv.Itoa(int(expr.Operator)))
 		}
