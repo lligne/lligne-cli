@@ -1,5 +1,5 @@
 //
-// # helper facility to track token line and column as a side effect of scanning.
+// # Helper facility to track token line and column as a side effect of scanning.
 //
 // (C) Copyright 2023 Martin E. Nordberg III
 // Apache 2.0 License

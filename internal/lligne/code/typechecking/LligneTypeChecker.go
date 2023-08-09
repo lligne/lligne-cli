@@ -34,13 +34,12 @@ func DetermineTypes(expression *model.ILligneExpression) {
 //=====================================================================================================================
 
 func determineInfixOperationTypes(expression *model.LligneInfixOperationExpr) {
-	for _, operand := range expression.Operands {
-		DetermineTypes(&operand)
-	}
+	DetermineTypes(&expression.Lhs)
+	DetermineTypes(&expression.Rhs)
 
 	// TODO: lots more logic needed
 
-	expression.SetTypeInfo(expression.Operands[0].TypeInfo())
+	expression.SetTypeInfo(expression.Lhs.TypeInfo())
 }
 
 //=====================================================================================================================

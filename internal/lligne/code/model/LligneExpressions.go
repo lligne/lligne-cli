@@ -334,32 +334,27 @@ func (e *LligneIdentifierExpr) SExpression() string {
 type LligneInfixOperationExpr struct {
 	LligneExpression
 	Operator LligneInfixOperator
-	Operands []ILligneExpression
+	Lhs      ILligneExpression
+	Rhs      ILligneExpression
 }
 
 func NewInfixOperationExpr(
 	sourcePos int,
 	operator LligneInfixOperator,
-	operands []ILligneExpression,
+	lhs ILligneExpression,
+	rhs ILligneExpression,
 ) ILligneExpression {
 	return &LligneInfixOperationExpr{
 		LligneExpression: LligneExpression{sourcePos: sourcePos, exprType: ExprTypeInfixOperation},
 		Operator:         operator,
-		Operands:         operands,
+		Lhs:              lhs,
+		Rhs:              rhs,
 	}
 }
 
 func (e *LligneInfixOperationExpr) SExpression() string {
-	result := "(" + strings.TrimSpace(e.Operator.String())
-
-	for _, operand := range e.Operands {
-		result += " "
-		result += operand.SExpression()
-	}
-
-	result += ")"
-
-	return result
+	return "(" + strings.TrimSpace(e.Operator.String()) + " " +
+		e.Lhs.SExpression() + " " + e.Rhs.SExpression() + ")"
 }
 
 //=====================================================================================================================

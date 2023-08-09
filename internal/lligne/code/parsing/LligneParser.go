@@ -48,30 +48,6 @@ func (p *lligneParser) ParseParenthesizedItems() model.ILligneExpression {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-/**
- * Constructs an infix operator expression from given operator token [opToken], left-hand side [lhs],
- * and right-hand side [rhs].
- */
-func (p *lligneParser) makeInfixExpression(
-	sourceCodePos int,
-	operator model.LligneInfixOperator,
-	lhs model.ILligneExpression,
-	rhs model.ILligneExpression,
-) model.ILligneExpression {
-
-	if lhs.ExprType() == model.ExprTypeInfixOperation {
-		lhsOrig := lhs.(*model.LligneInfixOperationExpr)
-		if lhsOrig.Operator == operator {
-			return model.NewInfixOperationExpr(lhsOrig.SourcePos(), operator, append(lhsOrig.Operands, rhs))
-		}
-	}
-
-	return model.NewInfixOperationExpr(sourceCodePos, operator, []model.ILligneExpression{lhs, rhs})
-
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
 func (p *lligneParser) parseExprBindingPower(minBindingPower int) model.ILligneExpression {
 
 	lhs := p.parseLeftHandSide()
@@ -111,7 +87,7 @@ func (p *lligneParser) parseExprBindingPower(minBindingPower int) model.ILligneE
 
 			rhs := p.parseExprBindingPower(bindingPower.Right)
 
-			lhs = p.makeInfixExpression(opToken.SourceStartPos, bindingPower.Operator, lhs, rhs)
+			lhs = model.NewInfixOperationExpr(opToken.SourceStartPos, bindingPower.Operator, lhs, rhs)
 
 			continue
 

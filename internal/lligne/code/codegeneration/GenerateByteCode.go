@@ -51,71 +51,69 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.ILligneExpre
 
 	case model.ExprTypeInfixOperation:
 		expr := expression.(*model.LligneInfixOperationExpr)
-		buildCodeBlock(codeBlock, expr.Operands[0])
-		for _, operand := range expr.Operands[1:] {
-			buildCodeBlock(codeBlock, operand)
-			switch expr.Operator {
-			case model.InfixOperatorAdd:
-				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
-					codeBlock.Int64Add()
-				} else {
-					codeBlock.Float64Add()
-				}
-			case model.InfixOperatorDivide:
-				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
-					codeBlock.Int64Divide()
-				} else {
-					codeBlock.Float64Divide()
-				}
-			case model.InfixOperatorEquals:
-				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
-					codeBlock.Int64Equals()
-				} else {
-					codeBlock.Float64Equals()
-				}
-			case model.InfixOperatorGreaterThan:
-				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
-					codeBlock.Int64GreaterThan()
-				} else {
-					codeBlock.Float64GreaterThan()
-				}
-			case model.InfixOperatorGreaterThanOrEquals:
-				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
-					codeBlock.Int64GreaterThanOrEquals()
-				} else {
-					codeBlock.Float64GreaterThanOrEquals()
-				}
-			case model.InfixOperatorLessThan:
-				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
-					codeBlock.Int64LessThan()
-				} else {
-					codeBlock.Float64LessThan()
-				}
-			case model.InfixOperatorLessThanOrEquals:
-				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
-					codeBlock.Int64LessThanOrEquals()
-				} else {
-					codeBlock.Float64LessThanOrEquals()
-				}
-			case model.InfixOperatorLogicAnd:
-				codeBlock.BoolAnd()
-			case model.InfixOperatorLogicOr:
-				codeBlock.BoolOr()
-			case model.InfixOperatorMultiply:
-				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
-					codeBlock.Int64Multiply()
-				} else {
-					codeBlock.Float64Multiply()
-				}
-			case model.InfixOperatorSubtract:
-				if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
-					codeBlock.Int64Subtract()
-				} else {
-					codeBlock.Float64Subtract()
-				}
-			default:
-				panic("Unhandled infix operation: " + strconv.Itoa(int(expr.Operator)))
+		buildCodeBlock(codeBlock, expr.Lhs)
+		buildCodeBlock(codeBlock, expr.Rhs)
+		switch expr.Operator {
+		case model.InfixOperatorAdd:
+			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+				codeBlock.Int64Add()
+			} else {
+				codeBlock.Float64Add()
 			}
+		case model.InfixOperatorDivide:
+			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+				codeBlock.Int64Divide()
+			} else {
+				codeBlock.Float64Divide()
+			}
+		case model.InfixOperatorEquals:
+			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+				codeBlock.Int64Equals()
+			} else {
+				codeBlock.Float64Equals()
+			}
+		case model.InfixOperatorGreaterThan:
+			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+				codeBlock.Int64GreaterThan()
+			} else {
+				codeBlock.Float64GreaterThan()
+			}
+		case model.InfixOperatorGreaterThanOrEquals:
+			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+				codeBlock.Int64GreaterThanOrEquals()
+			} else {
+				codeBlock.Float64GreaterThanOrEquals()
+			}
+		case model.InfixOperatorLessThan:
+			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+				codeBlock.Int64LessThan()
+			} else {
+				codeBlock.Float64LessThan()
+			}
+		case model.InfixOperatorLessThanOrEquals:
+			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+				codeBlock.Int64LessThanOrEquals()
+			} else {
+				codeBlock.Float64LessThanOrEquals()
+			}
+		case model.InfixOperatorLogicAnd:
+			codeBlock.BoolAnd()
+		case model.InfixOperatorLogicOr:
+			codeBlock.BoolOr()
+		case model.InfixOperatorMultiply:
+			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+				codeBlock.Int64Multiply()
+			} else {
+				codeBlock.Float64Multiply()
+			}
+		case model.InfixOperatorSubtract:
+			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+				codeBlock.Int64Subtract()
+			} else {
+				codeBlock.Float64Subtract()
+			}
+		default:
+			panic("Unhandled infix operation: " + strconv.Itoa(int(expr.Operator)))
 		}
 
 	case model.ExprTypeIntegerLiteral:
