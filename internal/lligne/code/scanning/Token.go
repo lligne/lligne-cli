@@ -9,11 +9,11 @@ package scanning
 
 //=====================================================================================================================
 
-// LligneToken is an abstract token occurring at SourceStartPos in its source file.
-type LligneToken struct {
-	TokenType      LligneTokenType
-	Text           string
-	SourceStartPos int
+// Token is an abstract token of type TokenType occurring at SourceOffset with length SourceLength in its source code.
+type Token struct {
+	SourceOffset uint32
+	SourceLength uint16
+	TokenType    TokenType
 }
 
 //=====================================================================================================================

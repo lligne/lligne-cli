@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"unsafe"
 )
 
 //=====================================================================================================================
@@ -270,15 +271,8 @@ func (cb *CodeBlock) Disassemble() string {
 		case OpCodeFloat64LessThanOrEquals:
 			write(output, line, "FLOAT64_NOT_GREATER")
 		case OpCodeFloat64LoadFloat64:
-			bits := uint64(cb.OpCodes[ip])
-			ip += 1
-			bits |= uint64(cb.OpCodes[ip]) << 16
-			ip += 1
-			bits |= uint64(cb.OpCodes[ip]) << 32
-			ip += 1
-			bits |= uint64(cb.OpCodes[ip]) << 48
-			ip += 1
-			value := math.Float64frombits(bits)
+			value := *(*float64)(unsafe.Pointer(&cb.OpCodes[ip]))
+			ip += 4
 			writeFloat64(output, line, "FLOAT64_LOAD_FLOAT64", value)
 		case OpCodeFloat64LoadOne:
 			write(output, line, "FLOAT64_LOAD_ONE")

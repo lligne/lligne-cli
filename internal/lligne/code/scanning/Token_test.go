@@ -10,20 +10,24 @@ package scanning
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"unsafe"
 )
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func TestLligneOrigin(t *testing.T) {
 
-	t.Run("to string", func(t *testing.T) {
-		sample := LligneOrigin{
-			FileName: "sample.lligne",
-			Line:     23,
-			Column:   34,
-		}
+	t.Run("token size", func(t *testing.T) {
 
-		assert.Equal(t, "sample.lligne(23,34)", sample.String(), "to string")
+		token := Token{
+			SourceOffset: 25,
+			SourceLength: 7,
+			TokenType:    TokenTypeDoubleQuotedString,
+		}
+		expected := uintptr(8)
+		actual := unsafe.Sizeof(token)
+
+		assert.Equal(t, expected, actual, "to string")
 	})
 
 }

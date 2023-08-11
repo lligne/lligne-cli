@@ -7,33 +7,35 @@
 
 package typechecking
 
-import "lligne-cli/internal/lligne/code/model"
+import (
+	"lligne-cli/internal/lligne/code/model"
+)
 
 //=====================================================================================================================
 
-func DetermineTypes(expression *model.ILligneExpression) {
+func DetermineTypes(expression *model.IExpression) {
 
-	switch (*expression).ExprType() {
+	switch (*expression).(type) {
 
-	case model.ExprTypeBooleanLiteral:
+	case *model.BooleanLiteralExpr:
 		(*expression).SetTypeInfo(model.NewBoolType())
-	case model.ExprTypeFloatingPointLiteral:
+	case *model.FloatingPointLiteralExpr:
 		(*expression).SetTypeInfo(model.NewFloat64Type())
-	case model.ExprTypeInfixOperation:
-		determineInfixOperationTypes((*expression).(*model.LligneInfixOperationExpr))
-	case model.ExprTypeIntegerLiteral:
+	case *model.InfixOperationExpr:
+		determineInfixOperationTypes((*expression).(*model.InfixOperationExpr))
+	case *model.IntegerLiteralExpr:
 		(*expression).SetTypeInfo(model.NewInt64Type())
-	case model.ExprTypeParenthesized:
-		determineParenthesizedTypes((*expression).(*model.LligneParenthesizedExpr))
-	case model.ExprTypePrefixOperation:
-		determinePrefixOperationTypes((*expression).(*model.LlignePrefixOperationExpr))
+	case *model.ParenthesizedExpr:
+		determineParenthesizedTypes((*expression).(*model.ParenthesizedExpr))
+	case *model.PrefixOperationExpr:
+		determinePrefixOperationTypes((*expression).(*model.PrefixOperationExpr))
 
 	}
 }
 
 //=====================================================================================================================
 
-func determineInfixOperationTypes(expression *model.LligneInfixOperationExpr) {
+func determineInfixOperationTypes(expression *model.InfixOperationExpr) {
 	DetermineTypes(&expression.Lhs)
 	DetermineTypes(&expression.Rhs)
 
@@ -44,7 +46,7 @@ func determineInfixOperationTypes(expression *model.LligneInfixOperationExpr) {
 
 //=====================================================================================================================
 
-func determineParenthesizedTypes(expression *model.LligneParenthesizedExpr) {
+func determineParenthesizedTypes(expression *model.ParenthesizedExpr) {
 	for _, item := range expression.Items {
 		DetermineTypes(&item)
 	}
@@ -56,7 +58,7 @@ func determineParenthesizedTypes(expression *model.LligneParenthesizedExpr) {
 
 //=====================================================================================================================
 
-func determinePrefixOperationTypes(expression *model.LlignePrefixOperationExpr) {
+func determinePrefixOperationTypes(expression *model.PrefixOperationExpr) {
 	DetermineTypes(&expression.Operand)
 
 	// TODO: lots more logic needed

@@ -13,11 +13,11 @@ import (
 
 //=====================================================================================================================
 
-// LligneTokenType is an enumeration of Lligne token types.
-type LligneTokenType int
+// TokenType is an enumeration of Lligne token types.
+type TokenType uint16
 
 const (
-	TokenTypeEof LligneTokenType = iota
+	TokenTypeEof TokenType = iota
 
 	// Punctuation
 	TokenTypeAmpersand
@@ -92,7 +92,7 @@ const (
 // ---------------------------------------------------------------------------------------------------------------------
 
 // TextOfTokenType returns a string describing a Lligne token type.
-func (tt LligneTokenType) String() string {
+func (tt TokenType) String() string {
 
 	switch tt {
 

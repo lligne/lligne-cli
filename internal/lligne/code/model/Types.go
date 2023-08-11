@@ -7,60 +7,60 @@ package model
 
 //=====================================================================================================================
 
-// ILligneType represents the type of expression.
-type ILligneType interface {
-	BaseType() LligneBaseType
+// IType represents the type of expression.
+type IType interface {
+	BaseType() BaseType
 }
 
 //=====================================================================================================================
 
-// LligneType is an enumeration of Lligne data types.
-type LligneBaseType int
+// BaseType is an enumeration of Lligne data types.
+type BaseType int
 
 const (
-	BaseTypeBoolean LligneBaseType = 1 + iota
+	BaseTypeBoolean BaseType = 1 + iota
 	BaseTypeFloat64
 	BaseTypeInt64
 )
 
 //=====================================================================================================================
 
-type LligneType struct {
-	baseType LligneBaseType
+type Type struct {
+	baseType BaseType
 }
 
-func (t *LligneType) BaseType() LligneBaseType {
+func (t *Type) BaseType() BaseType {
 	return t.baseType
 }
 
 //=====================================================================================================================
 
-type LligneBoolType struct {
-	LligneType
+type BoolType struct {
+	Type
 }
 
-func NewBoolType() ILligneType {
-	return &LligneBoolType{LligneType: LligneType{baseType: BaseTypeBoolean}}
-}
-
-//=====================================================================================================================
-
-type LligneFloat64Type struct {
-	LligneType
-}
-
-func NewFloat64Type() ILligneType {
-	return &LligneFloat64Type{LligneType: LligneType{baseType: BaseTypeFloat64}}
+func NewBoolType() IType {
+	return &BoolType{Type: Type{baseType: BaseTypeBoolean}}
 }
 
 //=====================================================================================================================
 
-type LligneInt64Type struct {
-	LligneType
+type Float64Type struct {
+	Type
 }
 
-func NewInt64Type() ILligneType {
-	return &LligneInt64Type{LligneType: LligneType{baseType: BaseTypeInt64}}
+func NewFloat64Type() IType {
+	return &Float64Type{Type: Type{baseType: BaseTypeFloat64}}
+}
+
+//=====================================================================================================================
+
+type Int64Type struct {
+	Type
+}
+
+func NewInt64Type() IType {
+	return &Int64Type{Type: Type{baseType: BaseTypeInt64}}
 }
 
 //=====================================================================================================================

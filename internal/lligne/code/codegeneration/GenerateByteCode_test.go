@@ -21,14 +21,12 @@ import (
 func TestGenerateBoolByteCode(t *testing.T) {
 
 	checkBool := func(sourceCode string, expected bool) {
-		scanner := scanning.NewLligneBufferedScanner(
-			scanning.NewLligneDocumentationHandlingScanner(
-				sourceCode,
-				scanning.NewLligneScanner(sourceCode),
-			),
-		)
-		parser := parsing.NewLligneParser(scanner)
-		model := parser.ParseExpression()
+		tokens, _ := scanning.Scan(sourceCode)
+
+		tokens = scanning.RemoveDocumentation(tokens)
+
+		model := parsing.ParseExpression(sourceCode, tokens)
+
 		typechecking.DetermineTypes(&model)
 
 		codeBlock := GenerateByteCode(model)
@@ -80,14 +78,10 @@ func TestGenerateBoolByteCode(t *testing.T) {
 func TestGenerateInt64ByteCode(t *testing.T) {
 
 	checkInt64 := func(sourceCode string, expected int64) {
-		scanner := scanning.NewLligneBufferedScanner(
-			scanning.NewLligneDocumentationHandlingScanner(
-				sourceCode,
-				scanning.NewLligneScanner(sourceCode),
-			),
-		)
-		parser := parsing.NewLligneParser(scanner)
-		model := parser.ParseExpression()
+		tokens, _ := scanning.Scan(sourceCode)
+
+		model := parsing.ParseExpression(sourceCode, tokens)
+
 		typechecking.DetermineTypes(&model)
 
 		codeBlock := GenerateByteCode(model)
@@ -138,14 +132,10 @@ func TestGenerateInt64ByteCode(t *testing.T) {
 func TestGenerateFloat64ByteCode(t *testing.T) {
 
 	checkFloat64 := func(sourceCode string, expected float64) {
-		scanner := scanning.NewLligneBufferedScanner(
-			scanning.NewLligneDocumentationHandlingScanner(
-				sourceCode,
-				scanning.NewLligneScanner(sourceCode),
-			),
-		)
-		parser := parsing.NewLligneParser(scanner)
-		model := parser.ParseExpression()
+		tokens, _ := scanning.Scan(sourceCode)
+
+		model := parsing.ParseExpression(sourceCode, tokens)
+
 		typechecking.DetermineTypes(&model)
 
 		codeBlock := GenerateByteCode(model)

@@ -8,30 +8,41 @@
 package scanning
 
 import (
-	"strings"
 	"unicode"
 	"unicode/utf8"
 )
 
 //=====================================================================================================================
 
-// ILligneScanner represents the ability to read a sequence of tokens.
-type ILligneScanner interface {
-	ILligneTokenOriginTracker
-	ReadToken() LligneToken
+// Scan converts the given source code to an array of tokens plus an array of new line character offsets.
+func Scan(sourceCode string) (tokens []Token, newLineOffsets []uint32) {
+
+	// Create a scanner.
+	scanner := newScanner(sourceCode)
+
+	// Scan the entire source code.
+	scanner.scan()
+
+	// Extract the results.
+	tokens = scanner.tokens
+	newLineOffsets = scanner.newLineOffsets
+
+	return
+
 }
 
-//---------------------------------------------------------------------------------------------------------------------
+//=====================================================================================================================
 
-// NewLligneScanner allocates a new scanner for given sourceCode from the given fileName.
-func NewLligneScanner(sourceCode string) ILligneScanner {
+// newScanner allocates a new scanner for given sourceCode from the given fileName.
+func newScanner(sourceCode string) *scanner {
 
-	// Start out the scan position.
-	s := &lligneScanner{
-		sourceCode:         sourceCode,
-		currentPos:         0,
-		markedPos:          0,
-		tokenOriginTracker: NewLligneTokenOriginTracker("todo.lligne"),
+	// Create a scanner
+	s := &scanner{
+		sourceCode:     sourceCode,
+		markedPos:      0,
+		currentPos:     0,
+		newLineOffsets: make([]uint32, 0),
+		tokens:         make([]Token, 0),
 	}
 
 	// Read the first rune.
@@ -50,28 +61,38 @@ func NewLligneScanner(sourceCode string) ILligneScanner {
 //=====================================================================================================================
 
 // LligneScanner converts a string of Lligne source code into tokens.
-type lligneScanner struct {
-	sourceCode         string
-	markedPos          int
-	currentPos         int
-	runeAhead1         rune
-	runeAhead2         rune
-	runAhead1Width     int
-	runAhead2Width     int
-	tokenOriginTracker LligneTokenOriginTracker
+type scanner struct {
+	sourceCode     string
+	markedPos      int
+	currentPos     int
+	runeAhead1     rune
+	runeAhead2     rune
+	runAhead1Width int
+	runAhead2Width int
+	tokens         []Token
+	newLineOffsets []uint32
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-// GetOrigin determines a token origin.
-func (s *lligneScanner) GetOrigin(sourcePos int) LligneOrigin {
-	return s.tokenOriginTracker.GetOrigin(sourcePos)
+// scan converts the source code to an array of tokens
+func (s *scanner) scan() {
+	for {
+		token := s.readToken()
+		s.tokens = append(s.tokens, token)
+
+		if token.TokenType == TokenTypeEof {
+			s.tokens = append(s.tokens, token)
+			s.tokens = append(s.tokens, token)
+			break
+		}
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-// ReadToken returns the next token from the scanner.
-func (s *lligneScanner) ReadToken() LligneToken {
+// readToken returns the next token from the scanner.
+func (s *scanner) readToken() Token {
 
 	// Ignore whitespace
 	for unicode.IsSpace(s.runeAhead1) {
@@ -152,13 +173,12 @@ func (s *lligneScanner) ReadToken() LligneToken {
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------------------------------------------
 
 // advance consumes one rune and stages the next one in the scanner.
-func (s *lligneScanner) advance() {
+func (s *scanner) advance() {
 
 	if s.runeAhead1 == '\n' {
-		s.tokenOriginTracker.AppendNewLinePosition(s.currentPos)
+		s.newLineOffsets = append(s.newLineOffsets, uint32(s.currentPos))
 	}
 	s.currentPos += s.runAhead1Width
 	s.runeAhead1 = s.runeAhead2
@@ -197,11 +217,11 @@ func isIdentifierStart(ch rune) bool {
 //---------------------------------------------------------------------------------------------------------------------
 
 // oneOrTwoRuneToken scans a sequence of runes that could be one or two characters in length.
-func (s *lligneScanner) oneOrTwoRuneToken(
-	oneRuneType LligneTokenType,
+func (s *scanner) oneOrTwoRuneToken(
+	oneRuneType TokenType,
 	secondRune rune,
-	twoRuneType LligneTokenType,
-) LligneToken {
+	twoRuneType TokenType,
+) Token {
 
 	if s.runeAhead1 == secondRune {
 		s.advance()
@@ -215,13 +235,13 @@ func (s *lligneScanner) oneOrTwoRuneToken(
 //---------------------------------------------------------------------------------------------------------------------
 
 // oneToThreeRuneToken scans a sequence of runes that could be one, two, or three characters in length.
-func (s *lligneScanner) oneToThreeRuneToken(
-	oneRuneType LligneTokenType,
+func (s *scanner) oneToThreeRuneToken(
+	oneRuneType TokenType,
 	secondRune rune,
-	twoRuneType LligneTokenType,
+	twoRuneType TokenType,
 	thirdRune rune,
-	threeRuneType LligneTokenType,
-) LligneToken {
+	threeRuneType TokenType,
+) Token {
 
 	if s.runeAhead1 == secondRune {
 
@@ -243,7 +263,7 @@ func (s *lligneScanner) oneToThreeRuneToken(
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanAfterEquals scans one of: '=', '==', '===', '=~'.
-func (s *lligneScanner) scanAfterEquals() LligneToken {
+func (s *scanner) scanAfterEquals() Token {
 
 	if s.runeAhead1 == '=' {
 
@@ -270,7 +290,7 @@ func (s *lligneScanner) scanAfterEquals() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanAfterSlash scans either just the slash or else a comment extending to the end of the line.
-func (s *lligneScanner) scanAfterSlash() LligneToken {
+func (s *scanner) scanAfterSlash() Token {
 
 	if s.runeAhead1 == '/' {
 		s.advance()
@@ -284,9 +304,8 @@ func (s *lligneScanner) scanAfterSlash() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanBackTickedString consumes a multiline back-ticked string.
-func (s *lligneScanner) scanBackTickedString() LligneToken {
+func (s *scanner) scanBackTickedString() Token {
 
-	text := strings.Builder{}
 	mark := s.markedPos
 
 	for {
@@ -295,10 +314,6 @@ func (s *lligneScanner) scanBackTickedString() LligneToken {
 		for s.runeAhead1 != '\n' && s.runeAhead1 != 0 {
 			s.advance()
 		}
-
-		// Accumulate this line and always a new line character.
-		text.WriteString(s.sourceCode[s.markedPos:s.currentPos])
-		text.WriteRune('\n')
 
 		// Quit if hit the end of input.
 		if s.runeAhead1 == 0 {
@@ -323,16 +338,19 @@ func (s *lligneScanner) scanBackTickedString() LligneToken {
 
 	}
 
-	return LligneToken{TokenTypeBackTickedString, text.String(), mark}
+	return Token{
+		SourceOffset: uint32(mark),
+		SourceLength: uint16(s.currentPos - mark),
+		TokenType:    TokenTypeBackTickedString,
+	}
 
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanDocumentation consumes a multiline comment.
-func (s *lligneScanner) scanDocumentation() LligneToken {
+func (s *scanner) scanDocumentation() Token {
 
-	text := strings.Builder{}
 	mark := s.markedPos
 
 	for {
@@ -341,10 +359,6 @@ func (s *lligneScanner) scanDocumentation() LligneToken {
 		for s.runeAhead1 != '\n' && s.runeAhead1 != 0 {
 			s.advance()
 		}
-
-		// Accumulate this line and always a new line character.
-		text.WriteString(s.sourceCode[s.markedPos:s.currentPos])
-		text.WriteRune('\n')
 
 		// Quit if hit the end of input.
 		if s.runeAhead1 == 0 {
@@ -370,14 +384,18 @@ func (s *lligneScanner) scanDocumentation() LligneToken {
 
 	}
 
-	return LligneToken{TokenTypeDocumentation, text.String(), mark}
+	return Token{
+		SourceOffset: uint32(mark),
+		SourceLength: uint16(s.currentPos - mark),
+		TokenType:    TokenTypeDocumentation,
+	}
 
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanDoubleQuotedString scans the remainder of a string literal after the initial double quote character has been consumed.
-func (s *lligneScanner) scanDoubleQuotedString() LligneToken {
+func (s *scanner) scanDoubleQuotedString() Token {
 
 	for {
 		switch s.runeAhead1 {
@@ -400,7 +418,7 @@ func (s *lligneScanner) scanDoubleQuotedString() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanIdentifierOrKeyword scans the remainder of an identifier after the opening letter has been consumed.
-func (s *lligneScanner) scanIdentifierOrKeyword() LligneToken {
+func (s *scanner) scanIdentifierOrKeyword() Token {
 
 	for isIdentifierPart(s.runeAhead1) {
 		s.advance()
@@ -410,17 +428,25 @@ func (s *lligneScanner) scanIdentifierOrKeyword() LligneToken {
 
 	tokenType, isKeyword := keywords[text]
 	if isKeyword {
-		return LligneToken{tokenType, text, s.markedPos}
+		return Token{
+			SourceOffset: uint32(s.markedPos),
+			SourceLength: uint16(s.currentPos - s.markedPos),
+			TokenType:    tokenType,
+		}
 	}
 
-	return LligneToken{TokenTypeIdentifier, text, s.markedPos}
+	return Token{
+		SourceOffset: uint32(s.markedPos),
+		SourceLength: uint16(s.currentPos - s.markedPos),
+		TokenType:    TokenTypeIdentifier,
+	}
 
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanNumber scans a numeric literal after the opening digit has been consumed.
-func (s *lligneScanner) scanNumber() LligneToken {
+func (s *scanner) scanNumber() Token {
 
 	for isDigit(s.runeAhead1) {
 		s.advance()
@@ -438,7 +464,7 @@ func (s *lligneScanner) scanNumber() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanNumberFloatingPoint scans a floating point literal after the decimal point has been consumed.
-func (s *lligneScanner) scanNumberFloatingPoint() LligneToken {
+func (s *scanner) scanNumberFloatingPoint() Token {
 
 	for isDigit(s.runeAhead1) {
 		s.advance()
@@ -453,7 +479,7 @@ func (s *lligneScanner) scanNumberFloatingPoint() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // scanSingleQuotedString scans the remainder of a string literal after the initial single quote character has been consumed.
-func (s *lligneScanner) scanSingleQuotedString() LligneToken {
+func (s *scanner) scanSingleQuotedString() Token {
 
 	for {
 		switch s.runeAhead1 {
@@ -476,17 +502,17 @@ func (s *lligneScanner) scanSingleQuotedString() LligneToken {
 //---------------------------------------------------------------------------------------------------------------------
 
 // Function token builds a new token of given type with text from the marked position to the current position.
-func (s *lligneScanner) token(tokenType LligneTokenType) LligneToken {
-	return LligneToken{
-		TokenType:      tokenType,
-		Text:           s.sourceCode[s.markedPos:s.currentPos],
-		SourceStartPos: s.markedPos,
+func (s *scanner) token(tokenType TokenType) Token {
+	return Token{
+		SourceOffset: uint32(s.markedPos),
+		SourceLength: uint16(s.currentPos - s.markedPos),
+		TokenType:    tokenType,
 	}
 }
 
 //=====================================================================================================================
 
-var keywords = map[string]LligneTokenType{
+var keywords = map[string]TokenType{
 	TokenTypeAnd.String():   TokenTypeAnd,
 	TokenTypeAs.String():    TokenTypeAs,
 	TokenTypeFalse.String(): TokenTypeFalse,

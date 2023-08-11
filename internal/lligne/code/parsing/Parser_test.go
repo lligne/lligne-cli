@@ -18,14 +18,11 @@ import (
 func TestLligneParser(t *testing.T) {
 
 	check := func(sourceCode string, sExpression string) {
-		scanner := scanning.NewLligneBufferedScanner(
-			scanning.NewLligneDocumentationHandlingScanner(
-				sourceCode,
-				scanning.NewLligneScanner(sourceCode),
-			),
-		)
-		parser := NewLligneParser(scanner)
-		model := parser.ParseExpression()
+		tokens, _ := scanning.Scan(sourceCode)
+
+		tokens = scanning.ProcessLeadingTrailingDocumentation(sourceCode, tokens)
+
+		model := ParseExpression(sourceCode, tokens)
 
 		assert.Equal(t, sExpression, model.SExpression(), "For source code: "+sourceCode)
 	}
@@ -46,7 +43,7 @@ func TestLligneParser(t *testing.T) {
 	})
 
 	t.Run("multiline string literals", func(t *testing.T) {
-		check("` line one\n ` line two\n", "(multilinestr\n` line one\n` line two\n)")
+		check("` line one\n ` line two\n", "(multilinestr\n` line one\n ` line two\n)")
 	})
 
 	t.Run("string literals", func(t *testing.T) {
@@ -55,11 +52,11 @@ func TestLligneParser(t *testing.T) {
 	})
 
 	t.Run("leading documentation", func(t *testing.T) {
-		check("// line one\n // line two\nq", "( (leadingdoc\n// line one\n// line two\n) (id q))")
+		check("// line one\n // line two\nq", "( (leadingdoc\n// line one\n // line two\n) (id q))")
 	})
 
 	t.Run("trailing documentation", func(t *testing.T) {
-		check("q // line one\n // line two\n", "( (id q) (trailingdoc\n// line one\n// line two\n))")
+		check("q // line one\n // line two\n", "( (id q) (trailingdoc\n// line one\n // line two\n))")
 	})
 
 	t.Run("addition", func(t *testing.T) {

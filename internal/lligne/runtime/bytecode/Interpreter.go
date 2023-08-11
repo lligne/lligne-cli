@@ -5,7 +5,10 @@
 
 package bytecode
 
-import "math"
+import (
+	"math"
+	"unsafe"
+)
 
 //=====================================================================================================================
 
@@ -170,16 +173,9 @@ func init() {
 	}
 
 	dispatch[OpCodeFloat64LoadFloat64] = func(m *Machine, c *CodeBlock) {
-		bits := uint64(c.OpCodes[m.IP])
-		m.IP += 1
-		bits |= uint64(c.OpCodes[m.IP]) << 16
-		m.IP += 1
-		bits |= uint64(c.OpCodes[m.IP]) << 32
-		m.IP += 1
-		bits |= uint64(c.OpCodes[m.IP]) << 48
-		m.IP += 1
 		m.Top += 1
-		m.Stack[m.Top] = bits
+		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&c.OpCodes[m.IP]))
+		m.IP += 4
 	}
 
 	dispatch[OpCodeFloat64LoadOne] = func(m *Machine, c *CodeBlock) {
