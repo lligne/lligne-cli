@@ -8,13 +8,14 @@ package codegeneration
 import (
 	"fmt"
 	"lligne-cli/internal/lligne/code/model"
+	"lligne-cli/internal/lligne/code/typechecking"
 	"lligne-cli/internal/lligne/runtime/bytecode"
 	"strconv"
 )
 
 //=====================================================================================================================
 
-func GenerateByteCode(expression model.IExpression) *bytecode.CodeBlock {
+func GenerateByteCode(expression typechecking.ITypedExpression) *bytecode.CodeBlock {
 	result := &bytecode.CodeBlock{}
 
 	buildCodeBlock(result, expression)
@@ -26,18 +27,18 @@ func GenerateByteCode(expression model.IExpression) *bytecode.CodeBlock {
 
 //=====================================================================================================================
 
-func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.IExpression) {
+func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.ITypedExpression) {
 
 	switch expr := expression.(type) {
 
-	case *model.BooleanLiteralExpr:
+	case *typechecking.TypedBooleanLiteralExpr:
 		if expr.Value {
 			codeBlock.BoolLoadTrue()
 		} else {
 			codeBlock.BoolLoadFalse()
 		}
 
-	case *model.FloatingPointLiteralExpr:
+	case *typechecking.TypedFloatingPointLiteralExpr:
 		value, _ := strconv.ParseFloat(expr.Text, 64)
 		switch value {
 		case 0:
@@ -48,48 +49,48 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.IExpression)
 			codeBlock.Float64LoadFloat64(value)
 		}
 
-	case *model.InfixOperationExpr:
+	case *typechecking.TypedInfixOperationExpr:
 		buildCodeBlock(codeBlock, expr.Lhs)
 		buildCodeBlock(codeBlock, expr.Rhs)
 		switch expr.Operator {
 		case model.InfixOperatorAdd:
-			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
 				codeBlock.Int64Add()
 			} else {
 				codeBlock.Float64Add()
 			}
 		case model.InfixOperatorDivide:
-			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
 				codeBlock.Int64Divide()
 			} else {
 				codeBlock.Float64Divide()
 			}
 		case model.InfixOperatorEquals:
-			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
 				codeBlock.Int64Equals()
 			} else {
 				codeBlock.Float64Equals()
 			}
 		case model.InfixOperatorGreaterThan:
-			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
 				codeBlock.Int64GreaterThan()
 			} else {
 				codeBlock.Float64GreaterThan()
 			}
 		case model.InfixOperatorGreaterThanOrEquals:
-			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
 				codeBlock.Int64GreaterThanOrEquals()
 			} else {
 				codeBlock.Float64GreaterThanOrEquals()
 			}
 		case model.InfixOperatorLessThan:
-			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
 				codeBlock.Int64LessThan()
 			} else {
 				codeBlock.Float64LessThan()
 			}
 		case model.InfixOperatorLessThanOrEquals:
-			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
 				codeBlock.Int64LessThanOrEquals()
 			} else {
 				codeBlock.Float64LessThanOrEquals()
@@ -99,13 +100,13 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.IExpression)
 		case model.InfixOperatorLogicOr:
 			codeBlock.BoolOr()
 		case model.InfixOperatorMultiply:
-			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
 				codeBlock.Int64Multiply()
 			} else {
 				codeBlock.Float64Multiply()
 			}
 		case model.InfixOperatorSubtract:
-			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
 				codeBlock.Int64Subtract()
 			} else {
 				codeBlock.Float64Subtract()
@@ -114,7 +115,7 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.IExpression)
 			panic("Unhandled infix operation: " + strconv.Itoa(int(expr.Operator)))
 		}
 
-	case *model.IntegerLiteralExpr:
+	case *typechecking.TypedIntegerLiteralExpr:
 		value, _ := strconv.Atoi(expr.Text)
 		switch value {
 		case 0:
@@ -125,20 +126,20 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression model.IExpression)
 			codeBlock.Int64LoadInt16(int16(value))
 		}
 
-	case *model.ParenthesizedExpr:
+	case *typechecking.TypedParenthesizedExpr:
 		if len(expr.Items) == 1 {
 			buildCodeBlock(codeBlock, expr.Items[0])
 		} else {
 			panic("Records not yet handled")
 		}
 
-	case *model.PrefixOperationExpr:
+	case *typechecking.TypedPrefixOperationExpr:
 		buildCodeBlock(codeBlock, expr.Operand)
 		switch expr.Operator {
 		case model.PrefixOperatorLogicalNot:
 			codeBlock.BoolNot()
 		case model.PrefixOperatorNegation:
-			if expr.TypeInfo().BaseType() == model.BaseTypeInt64 {
+			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
 				codeBlock.Int64Negate()
 			} else {
 				codeBlock.Float64Negate()

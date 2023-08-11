@@ -27,9 +27,9 @@ func TestGenerateBoolByteCode(t *testing.T) {
 
 		model := parsing.ParseExpression(sourceCode, tokens)
 
-		typechecking.DetermineTypes(&model)
+		typedModel := typechecking.TypeCheckExpr(model)
 
-		codeBlock := GenerateByteCode(model)
+		codeBlock := GenerateByteCode(typedModel)
 
 		//print(codeBlock.Disassemble())
 
@@ -82,9 +82,9 @@ func TestGenerateInt64ByteCode(t *testing.T) {
 
 		model := parsing.ParseExpression(sourceCode, tokens)
 
-		typechecking.DetermineTypes(&model)
+		typedModel := typechecking.TypeCheckExpr(model)
 
-		codeBlock := GenerateByteCode(model)
+		codeBlock := GenerateByteCode(typedModel)
 
 		//print(codeBlock.Disassemble())
 
@@ -136,9 +136,9 @@ func TestGenerateFloat64ByteCode(t *testing.T) {
 
 		model := parsing.ParseExpression(sourceCode, tokens)
 
-		typechecking.DetermineTypes(&model)
+		typedModel := typechecking.TypeCheckExpr(model)
 
-		codeBlock := GenerateByteCode(model)
+		codeBlock := GenerateByteCode(typedModel)
 
 		//print(codeBlock.Disassemble())
 

@@ -13,57 +13,101 @@ import (
 
 //=====================================================================================================================
 
-func DetermineTypes(expression *model.IExpression) {
+func TypeCheckExpr(expression model.IExpression) ITypedExpression {
+	result, _ := typeCheckExpr(expression)
+	return result
+}
 
-	switch (*expression).(type) {
+//=====================================================================================================================
+
+func typeCheckExpr(expression model.IExpression) (ITypedExpression, IType) {
+
+	switch expr := expression.(type) {
 
 	case *model.BooleanLiteralExpr:
-		(*expression).SetTypeInfo(model.NewBoolType())
+		typeInfo := NewBoolType()
+		return &TypedBooleanLiteralExpr{
+			SourcePosition: expr.SourcePosition,
+			Value:          expr.Value,
+			TypeInfo:       typeInfo,
+		}, typeInfo
 	case *model.FloatingPointLiteralExpr:
-		(*expression).SetTypeInfo(model.NewFloat64Type())
+		typeInfo := NewFloat64Type()
+		return &TypedFloatingPointLiteralExpr{
+			SourcePosition: expr.SourcePosition,
+			Text:           expr.Text,
+			TypeInfo:       typeInfo,
+		}, typeInfo
 	case *model.InfixOperationExpr:
-		determineInfixOperationTypes((*expression).(*model.InfixOperationExpr))
+		return typeCheckInfixOperationExpr(expr)
 	case *model.IntegerLiteralExpr:
-		(*expression).SetTypeInfo(model.NewInt64Type())
+		typeInfo := NewInt64Type()
+		return &TypedIntegerLiteralExpr{
+			SourcePosition: expr.SourcePosition,
+			Text:           expr.Text,
+			TypeInfo:       typeInfo,
+		}, typeInfo
 	case *model.ParenthesizedExpr:
-		determineParenthesizedTypes((*expression).(*model.ParenthesizedExpr))
+		return typeCheckParenthesizedExpr(expr)
 	case *model.PrefixOperationExpr:
-		determinePrefixOperationTypes((*expression).(*model.PrefixOperationExpr))
+		return typeCheckPrefixOperationExpr(expr)
 
 	}
+
+	panic("Unhandled type check")
 }
 
 //=====================================================================================================================
 
-func determineInfixOperationTypes(expression *model.InfixOperationExpr) {
-	DetermineTypes(&expression.Lhs)
-	DetermineTypes(&expression.Rhs)
-
-	// TODO: lots more logic needed
-
-	expression.SetTypeInfo(expression.Lhs.TypeInfo())
+func typeCheckInfixOperationExpr(expr *model.InfixOperationExpr) (ITypedExpression, IType) {
+	lhs, lhsType := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	return &TypedInfixOperationExpr{
+		SourcePosition: expr.SourcePosition,
+		Operator:       expr.Operator,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       lhsType,
+	}, lhsType
 }
 
 //=====================================================================================================================
 
-func determineParenthesizedTypes(expression *model.ParenthesizedExpr) {
-	for _, item := range expression.Items {
-		DetermineTypes(&item)
+func typeCheckParenthesizedExpr(expr *model.ParenthesizedExpr) (ITypedExpression, IType) {
+
+	var items []ITypedExpression
+	var itemTypes []IType
+
+	for _, item0 := range expr.Items {
+		item, itemType := typeCheckExpr(item0)
+		items = append(items, item)
+		itemTypes = append(itemTypes, itemType)
 	}
 
 	// TODO: lots more logic needed
 
-	expression.SetTypeInfo(expression.Items[0].TypeInfo())
+	return &TypedParenthesizedExpr{
+		SourcePosition: expr.SourcePosition,
+		Delimiters:     expr.Delimiters,
+		Items:          items,
+		TypeInfo:       itemTypes[0],
+	}, itemTypes[0]
+
 }
 
 //=====================================================================================================================
 
-func determinePrefixOperationTypes(expression *model.PrefixOperationExpr) {
-	DetermineTypes(&expression.Operand)
+func typeCheckPrefixOperationExpr(expr *model.PrefixOperationExpr) (ITypedExpression, IType) {
+	operand, operandType := typeCheckExpr(expr.Operand)
 
 	// TODO: lots more logic needed
 
-	expression.SetTypeInfo(expression.Operand.TypeInfo())
+	return &TypedPrefixOperationExpr{
+		SourcePosition: expr.SourcePosition,
+		Operator:       expr.Operator,
+		Operand:        operand,
+		TypeInfo:       operandType,
+	}, operandType
 }
 
 //=====================================================================================================================

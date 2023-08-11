@@ -15,8 +15,6 @@ import (
 // IExpression is the interface to an expression AST node.
 type IExpression interface {
 	SExpression() string
-	SetTypeInfo(typeInfo IType)
-	TypeInfo() IType
 }
 
 //=====================================================================================================================
@@ -177,19 +175,7 @@ const (
 
 // Expression represents any expression
 type Expression struct {
-	sourcePosition SourcePos
-	typeInfo       IType
-}
-
-func (e *Expression) SetTypeInfo(typeInfo IType) {
-	if e.typeInfo != nil {
-		panic("Type info is immutable")
-	}
-	e.typeInfo = typeInfo
-}
-
-func (e *Expression) TypeInfo() IType {
-	return e.typeInfo
+	SourcePosition SourcePos
 }
 
 //=====================================================================================================================
@@ -205,7 +191,7 @@ func NewBooleanLiteralExpr(
 	value bool,
 ) IExpression {
 	return &BooleanLiteralExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Value:      value,
 	}
 }
@@ -230,7 +216,7 @@ func NewFloatingPointLiteralExpr(
 	text string,
 ) IExpression {
 	return &FloatingPointLiteralExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Text:       text,
 	}
 }
@@ -254,7 +240,7 @@ func NewFunctionCallExpr(
 	argument IExpression,
 ) IExpression {
 	return &FunctionCallExpr{
-		Expression:        Expression{sourcePosition: sourcePosition},
+		Expression:        Expression{SourcePosition: sourcePosition},
 		FunctionReference: functionReference,
 		Argument:          argument,
 	}
@@ -282,7 +268,7 @@ func NewIdentifierExpr(
 	name string,
 ) IExpression {
 	return &IdentifierExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Name:       name,
 	}
 }
@@ -308,7 +294,7 @@ func NewInfixOperationExpr(
 	rhs IExpression,
 ) IExpression {
 	return &InfixOperationExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Operator:   operator,
 		Lhs:        lhs,
 		Rhs:        rhs,
@@ -333,7 +319,7 @@ func NewIntegerLiteralExpr(
 	text string,
 ) IExpression {
 	return &IntegerLiteralExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Text:       text,
 	}
 }
@@ -355,7 +341,7 @@ func NewLeadingDocumentationExpr(
 	text string,
 ) IExpression {
 	return &LeadingDocumentationExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Text:       text,
 	}
 }
@@ -377,7 +363,7 @@ func NewMultilineStringLiteralExpr(
 	text string,
 ) IExpression {
 	return &MultilineStringLiteralExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Text:       text,
 	}
 }
@@ -399,7 +385,7 @@ func NewOptionalExpr(
 	operand IExpression,
 ) IExpression {
 	return &OptionalExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Operand:    operand,
 	}
 }
@@ -426,7 +412,7 @@ func NewParenthesizedExpr(
 	items []IExpression,
 ) IExpression {
 	return &ParenthesizedExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Delimiters: delimiters,
 		Items:      items,
 	}
@@ -469,7 +455,7 @@ func NewPrefixOperationExpr(
 	operand IExpression,
 ) IExpression {
 	return &PrefixOperationExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Operator:   operator,
 		Operand:    operand,
 	}
@@ -492,7 +478,7 @@ func NewSequenceLiteralExpr(
 	elements []IExpression,
 ) IExpression {
 	return &SequenceLiteralExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Elements:   elements,
 	}
 }
@@ -523,7 +509,7 @@ func NewStringLiteralExpr(
 	text string,
 ) IExpression {
 	return &StringLiteralExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Text:       text,
 	}
 }
@@ -545,7 +531,7 @@ func NewTrailingDocumentationExpr(
 	text string,
 ) IExpression {
 	return &TrailingDocumentationExpr{
-		Expression: Expression{sourcePosition: sourcePosition},
+		Expression: Expression{SourcePosition: sourcePosition},
 		Text:       text,
 	}
 }
