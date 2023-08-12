@@ -121,7 +121,7 @@ func (p *lligneParser) parseLeftHandSide() model.IExpression {
 		}
 
 	case scanning.TokenTypeDash:
-		return p.parsePrefixOperationExpression(token, model.PrefixOperatorNegation)
+		return p.parseNegationOperationExpression(token)
 
 	case scanning.TokenTypeDoubleQuotedString:
 		return &model.StringLiteralExpr{
@@ -169,7 +169,7 @@ func (p *lligneParser) parseLeftHandSide() model.IExpression {
 		return p.parseParenthesizedExpression(token, scanning.TokenTypeRightParenthesis)
 
 	case scanning.TokenTypeNot:
-		return p.parsePrefixOperationExpression(token, model.PrefixOperatorLogicalNot)
+		return p.parseLogicalNotOperationExpression(token)
 
 	case scanning.TokenTypeSingleQuotedString:
 		return &model.StringLiteralExpr{
@@ -202,6 +202,32 @@ func (p *lligneParser) parseLeftHandSide() model.IExpression {
 
 	panic("Unfinished parsing code: '" + strconv.Itoa(int(token.TokenType)) + "'.")
 
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (p *lligneParser) parseLogicalNotOperationExpression(
+	token scanning.Token,
+) model.IExpression {
+	rightBindingPower := prefixBindingPowers[token.TokenType].Power
+	rhs := p.parseExprBindingPower(rightBindingPower)
+	return &model.LogicalNotOperationExpr{
+		SourcePosition: model.NewSourcePos(token),
+		Operand:        rhs,
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (p *lligneParser) parseNegationOperationExpression(
+	token scanning.Token,
+) model.IExpression {
+	rightBindingPower := prefixBindingPowers[token.TokenType].Power
+	rhs := p.parseExprBindingPower(rightBindingPower)
+	return &model.NegationOperationExpr{
+		SourcePosition: model.NewSourcePos(token),
+		Operand:        rhs,
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -274,21 +300,6 @@ func (p *lligneParser) parsePostfixExpression(opToken scanning.Token, lhs model.
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (p *lligneParser) parsePrefixOperationExpression(
-	token scanning.Token,
-	operator model.PrefixOperator,
-) model.IExpression {
-	rightBindingPower := prefixBindingPowers[token.TokenType].Power
-	rhs := p.parseExprBindingPower(rightBindingPower)
-	return &model.PrefixOperationExpr{
-		SourcePosition: model.NewSourcePos(token),
-		Operator:       operator,
-		Operand:        rhs,
-	}
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
 func (p *lligneParser) parseSequenceLiteral(token scanning.Token) model.IExpression {
 
 	var items []model.IExpression
@@ -334,15 +345,13 @@ type infixBindingPower struct {
 //=====================================================================================================================
 
 type prefixBindingPower struct {
-	Power    int
-	Operator model.PrefixOperator
+	Power int
 }
 
 //=====================================================================================================================
 
 type postfixBindingPower struct {
-	Power    int
-	Operator model.PostfixOperator
+	Power int
 }
 
 //=====================================================================================================================
@@ -392,7 +401,7 @@ func init() {
 
 	level += 2
 
-	prefixBindingPowers[scanning.TokenTypeNot] = prefixBindingPower{level, model.PrefixOperatorLogicalNot}
+	prefixBindingPowers[scanning.TokenTypeNot] = prefixBindingPower{level}
 
 	level += 2
 
@@ -425,7 +434,7 @@ func init() {
 
 	level += 2
 
-	prefixBindingPowers[scanning.TokenTypeDash] = prefixBindingPower{level, model.PrefixOperatorNegation}
+	prefixBindingPowers[scanning.TokenTypeDash] = prefixBindingPower{level}
 
 	level += 2
 
@@ -437,9 +446,9 @@ func init() {
 
 	level += 2
 
-	postfixBindingPowers[scanning.TokenTypeLeftParenthesis] = postfixBindingPower{level, model.PostfixOperatorFunctionCall}
-	postfixBindingPowers[scanning.TokenTypeLeftBracket] = postfixBindingPower{level, model.PostfixOperatorIndex}
-	postfixBindingPowers[scanning.TokenTypeQuestionMark] = postfixBindingPower{level, model.PostfixOperatorOptional}
+	postfixBindingPowers[scanning.TokenTypeLeftParenthesis] = postfixBindingPower{level}
+	postfixBindingPowers[scanning.TokenTypeLeftBracket] = postfixBindingPower{level}
+	postfixBindingPowers[scanning.TokenTypeQuestionMark] = postfixBindingPower{level}
 
 }
 

@@ -126,26 +126,23 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.IType
 			codeBlock.Int64LoadInt16(int16(value))
 		}
 
+	case *typechecking.TypedLogicalNotOperationExpr:
+		buildCodeBlock(codeBlock, expr.Operand)
+		codeBlock.BoolNot()
+
+	case *typechecking.TypedNegationOperationExpr:
+		buildCodeBlock(codeBlock, expr.Operand)
+		if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
+			codeBlock.Int64Negate()
+		} else {
+			codeBlock.Float64Negate()
+		}
+
 	case *typechecking.TypedParenthesizedExpr:
 		if len(expr.Items) == 1 {
 			buildCodeBlock(codeBlock, expr.Items[0])
 		} else {
 			panic("Records not yet handled")
-		}
-
-	case *typechecking.TypedPrefixOperationExpr:
-		buildCodeBlock(codeBlock, expr.Operand)
-		switch expr.Operator {
-		case model.PrefixOperatorLogicalNot:
-			codeBlock.BoolNot()
-		case model.PrefixOperatorNegation:
-			if expr.TypeInfo.BaseType() == typechecking.BaseTypeInt64 {
-				codeBlock.Int64Negate()
-			} else {
-				codeBlock.Float64Negate()
-			}
-		default:
-			panic("Unhandled prefix operation: " + strconv.Itoa(int(expr.Operator)))
 		}
 
 	default:

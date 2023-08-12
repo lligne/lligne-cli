@@ -98,6 +98,17 @@ func (e *TypedLeadingDocumentationExpr) isTypeExpression() {}
 
 //=====================================================================================================================
 
+// TypedLogicalNotOperationExpr represents a logical not operation.
+type TypedLogicalNotOperationExpr struct {
+	SourcePosition model.SourcePos
+	Operand        ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedLogicalNotOperationExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
 // TypedMultilineStringLiteralExpr represents a multiline (back-ticked) string literal.
 type TypedMultilineStringLiteralExpr struct {
 	SourcePosition model.SourcePos
@@ -106,6 +117,17 @@ type TypedMultilineStringLiteralExpr struct {
 }
 
 func (e *TypedMultilineStringLiteralExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
+// TypedNegationOperationExpr represents an arithmetic negation operation.
+type TypedNegationOperationExpr struct {
+	SourcePosition model.SourcePos
+	Operand        ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedNegationOperationExpr) isTypeExpression() {}
 
 //=====================================================================================================================
 
@@ -129,18 +151,6 @@ type TypedParenthesizedExpr struct {
 }
 
 func (e *TypedParenthesizedExpr) isTypeExpression() {}
-
-//=====================================================================================================================
-
-// TypedPrefixOperationExpr represents a prefix operation.
-type TypedPrefixOperationExpr struct {
-	SourcePosition model.SourcePos
-	Operator       model.PrefixOperator
-	Operand        ITypedExpression
-	TypeInfo       IType
-}
-
-func (e *TypedPrefixOperationExpr) isTypeExpression() {}
 
 //=====================================================================================================================
 

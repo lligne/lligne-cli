@@ -45,8 +45,14 @@ func SExpression(expression IExpression) string {
 	case *LeadingDocumentationExpr:
 		return "(leadingdoc\n" + expr.Text + ")"
 
+	case *LogicalNotOperationExpr:
+		return "(not " + SExpression(expr.Operand) + ")"
+
 	case *MultilineStringLiteralExpr:
 		return "(multilinestr\n" + expr.Text + ")"
+
+	case *NegationOperationExpr:
+		return "(negate " + SExpression(expr.Operand) + ")"
 
 	case *OptionalExpr:
 		result := "(optional "
@@ -74,9 +80,6 @@ func SExpression(expression IExpression) string {
 		result += ")"
 
 		return result
-
-	case *PrefixOperationExpr:
-		return "(prefix " + strings.TrimSpace(expr.Operator.String()) + " " + SExpression(expr.Operand) + ")"
 
 	case *SequenceLiteralExpr:
 		result := "(sequence"

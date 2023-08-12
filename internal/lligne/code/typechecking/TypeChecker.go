@@ -47,10 +47,12 @@ func typeCheckExpr(expression model.IExpression) (ITypedExpression, IType) {
 			Text:           expr.Text,
 			TypeInfo:       typeInfo,
 		}, typeInfo
+	case *model.LogicalNotOperationExpr:
+		return typeCheckLogicalNotOperationExpr(expr)
+	case *model.NegationOperationExpr:
+		return typeCheckNegationOperationExpr(expr)
 	case *model.ParenthesizedExpr:
 		return typeCheckParenthesizedExpr(expr)
-	case *model.PrefixOperationExpr:
-		return typeCheckPrefixOperationExpr(expr)
 
 	}
 
@@ -69,6 +71,32 @@ func typeCheckInfixOperationExpr(expr *model.InfixOperationExpr) (ITypedExpressi
 		Rhs:            rhs,
 		TypeInfo:       lhsType,
 	}, lhsType
+}
+
+//=====================================================================================================================
+
+func typeCheckLogicalNotOperationExpr(expr *model.LogicalNotOperationExpr) (ITypedExpression, IType) {
+	operand, operandType := typeCheckExpr(expr.Operand)
+
+	// TODO: validate that operands are boolean
+
+	return &TypedLogicalNotOperationExpr{
+		SourcePosition: expr.SourcePosition,
+		Operand:        operand,
+		TypeInfo:       operandType,
+	}, operandType
+}
+
+//=====================================================================================================================
+
+func typeCheckNegationOperationExpr(expr *model.NegationOperationExpr) (ITypedExpression, IType) {
+	operand, operandType := typeCheckExpr(expr.Operand)
+
+	return &TypedNegationOperationExpr{
+		SourcePosition: expr.SourcePosition,
+		Operand:        operand,
+		TypeInfo:       operandType,
+	}, operandType
 }
 
 //=====================================================================================================================
@@ -93,21 +121,6 @@ func typeCheckParenthesizedExpr(expr *model.ParenthesizedExpr) (ITypedExpression
 		TypeInfo:       itemTypes[0],
 	}, itemTypes[0]
 
-}
-
-//=====================================================================================================================
-
-func typeCheckPrefixOperationExpr(expr *model.PrefixOperationExpr) (ITypedExpression, IType) {
-	operand, operandType := typeCheckExpr(expr.Operand)
-
-	// TODO: lots more logic needed
-
-	return &TypedPrefixOperationExpr{
-		SourcePosition: expr.SourcePosition,
-		Operator:       expr.Operator,
-		Operand:        operand,
-		TypeInfo:       operandType,
-	}, operandType
 }
 
 //=====================================================================================================================

@@ -136,46 +136,6 @@ const (
 
 //=====================================================================================================================
 
-// TODO: get rid of this
-
-// PrefixOperator is an enumeration of 's prefix operators.
-type PrefixOperator int
-
-const (
-	PrefixOperatorLogicalNot PrefixOperator = 1 + iota
-	PrefixOperatorNegation
-)
-
-// ---------------------------------------------------------------------------------------------------------------------
-
-// String returns a string representing the code of an operator.
-func (op PrefixOperator) String() string {
-
-	switch op {
-
-	case PrefixOperatorLogicalNot:
-		return "not "
-	case PrefixOperatorNegation:
-		return "-"
-	}
-
-	panic("Unhandled prefix operator: '" + strconv.Itoa(int(op)) + "'.")
-}
-
-//=====================================================================================================================
-
-// PostfixOperator is an enumeration of 's prefix operators.
-type PostfixOperator int
-
-const (
-	PostfixOperatorNone PostfixOperator = iota
-	PostfixOperatorFunctionCall
-	PostfixOperatorIndex
-	PostfixOperatorOptional
-)
-
-//=====================================================================================================================
-
 // BooleanLiteralExpr represents a single boolean literal.
 type BooleanLiteralExpr struct {
 	SourcePosition SourcePos
@@ -249,6 +209,16 @@ func (e *LeadingDocumentationExpr) isExpression() {}
 
 //=====================================================================================================================
 
+// LogicalNotOperationExpr represents the logical not prefix operation.
+type LogicalNotOperationExpr struct {
+	SourcePosition SourcePos
+	Operand        IExpression
+}
+
+func (e *LogicalNotOperationExpr) isExpression() {}
+
+//=====================================================================================================================
+
 // MultilineStringLiteralExpr represents a multiline (back-ticked) string literal.
 type MultilineStringLiteralExpr struct {
 	SourcePosition SourcePos
@@ -256,6 +226,16 @@ type MultilineStringLiteralExpr struct {
 }
 
 func (e *MultilineStringLiteralExpr) isExpression() {}
+
+//=====================================================================================================================
+
+// NegationOperationExpr represents the arithmetic negation prefix operation.
+type NegationOperationExpr struct {
+	SourcePosition SourcePos
+	Operand        IExpression
+}
+
+func (e *NegationOperationExpr) isExpression() {}
 
 //=====================================================================================================================
 
@@ -277,17 +257,6 @@ type ParenthesizedExpr struct {
 }
 
 func (e *ParenthesizedExpr) isExpression() {}
-
-//=====================================================================================================================
-
-// PrefixOperationExpr represents a prefix operation.
-type PrefixOperationExpr struct {
-	SourcePosition SourcePos
-	Operator       PrefixOperator
-	Operand        IExpression
-}
-
-func (e *PrefixOperationExpr) isExpression() {}
 
 //=====================================================================================================================
 
