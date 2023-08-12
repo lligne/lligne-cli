@@ -47,3 +47,30 @@ func (s SourcePos) Thru(s2 SourcePos) SourcePos {
 }
 
 //=====================================================================================================================
+
+//func (t *LligneTokenOriginTracker) GetOrigin(sourcePos int) LligneOrigin {
+//
+//	priorNewLinePos := 0
+//	if len(t.newLinePositions) > 0 {
+//		iMin := 0
+//		iMax := len(t.newLinePositions)
+//		for iMax-iMin > 1 {
+//			iMid := (iMin + iMax) / 2
+//			if sourcePos > t.newLinePositions[iMid] {
+//				iMin = iMid
+//			} else {
+//				iMax = iMid
+//			}
+//		}
+//		priorNewLinePos = iMin
+//	}
+//
+//	return LligneOrigin{
+//		FileName: t.fileName,
+//		Line:     priorNewLinePos + 1,
+//		Column:   sourcePos - t.newLinePositions[priorNewLinePos],
+//	}
+//
+//}
+
+//=====================================================================================================================

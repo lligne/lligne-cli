@@ -9,6 +9,7 @@ package parsing
 
 import (
 	"github.com/stretchr/testify/assert"
+	"lligne-cli/internal/lligne/code/model"
 	"lligne-cli/internal/lligne/code/scanning"
 	"testing"
 )
@@ -22,9 +23,9 @@ func TestLligneParser(t *testing.T) {
 
 		tokens = scanning.ProcessLeadingTrailingDocumentation(sourceCode, tokens)
 
-		model := ParseExpression(sourceCode, tokens)
+		expression := ParseExpression(sourceCode, tokens)
 
-		assert.Equal(t, sExpression, model.SExpression(), "For source code: "+sourceCode)
+		assert.Equal(t, sExpression, model.SExpression(expression), "For source code: "+sourceCode)
 	}
 
 	t.Run("identifier literals", func(t *testing.T) {
