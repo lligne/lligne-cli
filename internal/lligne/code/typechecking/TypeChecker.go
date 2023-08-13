@@ -24,6 +24,9 @@ func typeCheckExpr(expression model.IExpression) (ITypedExpression, IType) {
 
 	switch expr := expression.(type) {
 
+	case *model.AdditionExpr:
+		return typeCheckAdditionExpr(expr)
+
 	case *model.BooleanLiteralExpr:
 		typeInfo := NewBoolType()
 		return &TypedBooleanLiteralExpr{
@@ -31,6 +34,13 @@ func typeCheckExpr(expression model.IExpression) (ITypedExpression, IType) {
 			Value:          expr.Value,
 			TypeInfo:       typeInfo,
 		}, typeInfo
+
+	case *model.DivisionExpr:
+		return typeCheckDivisionExpr(expr)
+
+	case *model.EqualsExpr:
+		return typeCheckEqualsExpr(expr)
+
 	case *model.FloatingPointLiteralExpr:
 		typeInfo := NewFloat64Type()
 		return &TypedFloatingPointLiteralExpr{
@@ -38,8 +48,13 @@ func typeCheckExpr(expression model.IExpression) (ITypedExpression, IType) {
 			Text:           expr.Text,
 			TypeInfo:       typeInfo,
 		}, typeInfo
-	case *model.InfixOperationExpr:
-		return typeCheckInfixOperationExpr(expr)
+
+	case *model.GreaterThanExpr:
+		return typeCheckGreaterThanExpr(expr)
+
+	case *model.GreaterThanOrEqualsExpr:
+		return typeCheckGreaterThanOrEqualsExpr(expr)
+
 	case *model.IntegerLiteralExpr:
 		typeInfo := NewInt64Type()
 		return &TypedIntegerLiteralExpr{
@@ -47,12 +62,33 @@ func typeCheckExpr(expression model.IExpression) (ITypedExpression, IType) {
 			Text:           expr.Text,
 			TypeInfo:       typeInfo,
 		}, typeInfo
+
+	case *model.LessThanExpr:
+		return typeCheckLessThanExpr(expr)
+
+	case *model.LessThanOrEqualsExpr:
+		return typeCheckLessThanOrEqualsExpr(expr)
+
+	case *model.LogicalAndExpr:
+		return typeCheckLogicalAndExpr(expr)
+
 	case *model.LogicalNotOperationExpr:
 		return typeCheckLogicalNotOperationExpr(expr)
+
+	case *model.LogicalOrExpr:
+		return typeCheckLogicalOrExpr(expr)
+
+	case *model.MultiplicationExpr:
+		return typeCheckMultiplicationExpr(expr)
+
 	case *model.NegationOperationExpr:
 		return typeCheckNegationOperationExpr(expr)
+
 	case *model.ParenthesizedExpr:
 		return typeCheckParenthesizedExpr(expr)
+
+	case *model.SubtractionExpr:
+		return typeCheckSubtractionExpr(expr)
 
 	}
 
@@ -61,16 +97,123 @@ func typeCheckExpr(expression model.IExpression) (ITypedExpression, IType) {
 
 //=====================================================================================================================
 
-func typeCheckInfixOperationExpr(expr *model.InfixOperationExpr) (ITypedExpression, IType) {
+func typeCheckAdditionExpr(expr *model.AdditionExpr) (ITypedExpression, IType) {
 	lhs, lhsType := typeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
-	return &TypedInfixOperationExpr{
+	// TODO: ensure they're the same
+	// TODO: coerce integers
+	return &TypedAdditionExpr{
 		SourcePosition: expr.SourcePosition,
-		Operator:       expr.Operator,
 		Lhs:            lhs,
 		Rhs:            rhs,
 		TypeInfo:       lhsType,
 	}, lhsType
+}
+
+//=====================================================================================================================
+
+func typeCheckDivisionExpr(expr *model.DivisionExpr) (ITypedExpression, IType) {
+	lhs, lhsType := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	// TODO: ensure they're the same
+	// TODO: coerce integers
+	return &TypedDivisionExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       lhsType,
+	}, lhsType
+}
+
+//=====================================================================================================================
+
+func typeCheckEqualsExpr(expr *model.EqualsExpr) (ITypedExpression, IType) {
+	lhs, lhsType := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	// TODO: ensure they're the same
+	// TODO: coerce integers
+	return &TypedEqualsExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       lhsType,
+	}, lhsType
+}
+
+//=====================================================================================================================
+
+func typeCheckGreaterThanExpr(expr *model.GreaterThanExpr) (ITypedExpression, IType) {
+	lhs, lhsType := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	// TODO: ensure they're the same
+	// TODO: coerce integers
+	return &TypedGreaterThanExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       lhsType,
+	}, lhsType
+}
+
+//=====================================================================================================================
+
+func typeCheckGreaterThanOrEqualsExpr(expr *model.GreaterThanOrEqualsExpr) (ITypedExpression, IType) {
+	lhs, lhsType := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	// TODO: ensure they're the same
+	// TODO: coerce integers
+	return &TypedGreaterThanOrEqualsExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       lhsType,
+	}, lhsType
+}
+
+//=====================================================================================================================
+
+func typeCheckLessThanExpr(expr *model.LessThanExpr) (ITypedExpression, IType) {
+	lhs, lhsType := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	// TODO: ensure they're the same
+	// TODO: coerce integers
+	return &TypedLessThanExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       lhsType,
+	}, lhsType
+}
+
+//=====================================================================================================================
+
+func typeCheckLessThanOrEqualsExpr(expr *model.LessThanOrEqualsExpr) (ITypedExpression, IType) {
+	lhs, lhsType := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	// TODO: ensure they're the same
+	// TODO: coerce integers
+	return &TypedLessThanOrEqualsExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       lhsType,
+	}, lhsType
+}
+
+//=====================================================================================================================
+
+func typeCheckLogicalAndExpr(expr *model.LogicalAndExpr) (ITypedExpression, IType) {
+	lhs, _ := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	exprType := NewBoolType()
+	// TODO: ensure they're both boolean
+	// TODO: coerce integers
+	return &TypedLogicalAndExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       exprType,
+	}, exprType
 }
 
 //=====================================================================================================================
@@ -85,6 +228,37 @@ func typeCheckLogicalNotOperationExpr(expr *model.LogicalNotOperationExpr) (ITyp
 		Operand:        operand,
 		TypeInfo:       operandType,
 	}, operandType
+}
+
+//=====================================================================================================================
+
+func typeCheckLogicalOrExpr(expr *model.LogicalOrExpr) (ITypedExpression, IType) {
+	lhs, _ := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	exprType := NewBoolType()
+	// TODO: ensure they're both boolean
+	// TODO: coerce integers
+	return &TypedLogicalOrExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       exprType,
+	}, exprType
+}
+
+//=====================================================================================================================
+
+func typeCheckMultiplicationExpr(expr *model.MultiplicationExpr) (ITypedExpression, IType) {
+	lhs, lhsType := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	// TODO: ensure they're the same
+	// TODO: coerce integers
+	return &TypedMultiplicationExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       lhsType,
+	}, lhsType
 }
 
 //=====================================================================================================================
@@ -121,6 +295,21 @@ func typeCheckParenthesizedExpr(expr *model.ParenthesizedExpr) (ITypedExpression
 		TypeInfo:       itemTypes[0],
 	}, itemTypes[0]
 
+}
+
+//=====================================================================================================================
+
+func typeCheckSubtractionExpr(expr *model.SubtractionExpr) (ITypedExpression, IType) {
+	lhs, lhsType := typeCheckExpr(expr.Lhs)
+	rhs := TypeCheckExpr(expr.Rhs)
+	// TODO: ensure they're the same
+	// TODO: coerce integers
+	return &TypedSubtractionExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeInfo:       lhsType,
+	}, lhsType
 }
 
 //=====================================================================================================================

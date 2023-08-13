@@ -18,6 +18,18 @@ type ITypedExpression interface {
 
 //=====================================================================================================================
 
+// TypedAdditionExpr represents an addition operation.
+type TypedAdditionExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedAdditionExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
 // TypedBooleanLiteralExpr represents a single boolean literal.
 type TypedBooleanLiteralExpr struct {
 	SourcePosition model.SourcePos
@@ -26,6 +38,30 @@ type TypedBooleanLiteralExpr struct {
 }
 
 func (e *TypedBooleanLiteralExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
+// TypedDivisionExpr represents a division operation.
+type TypedDivisionExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedDivisionExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
+// TypedEqualsExpr represents a equals operation.
+type TypedEqualsExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedEqualsExpr) isTypeExpression() {}
 
 //=====================================================================================================================
 
@@ -52,6 +88,30 @@ func (e *TypedFunctionCallExpr) isTypeExpression() {}
 
 //=====================================================================================================================
 
+// TypedGreaterThanExpr represents a greater than operation.
+type TypedGreaterThanExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedGreaterThanExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
+// TypedGreaterThanOrEqualsExpr represents a greater than operation.
+type TypedGreaterThanOrEqualsExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedGreaterThanOrEqualsExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
 // TypedIdentifierExpr represents a single identifier.
 type TypedIdentifierExpr struct {
 	SourcePosition model.SourcePos
@@ -60,19 +120,6 @@ type TypedIdentifierExpr struct {
 }
 
 func (e *TypedIdentifierExpr) isTypeExpression() {}
-
-//=====================================================================================================================
-
-// TypedInfixOperationExpr represents an infix operation.
-type TypedInfixOperationExpr struct {
-	SourcePosition model.SourcePos
-	Operator       model.InfixOperator
-	Lhs            ITypedExpression
-	Rhs            ITypedExpression
-	TypeInfo       IType
-}
-
-func (e *TypedInfixOperationExpr) isTypeExpression() {}
 
 //=====================================================================================================================
 
@@ -98,7 +145,43 @@ func (e *TypedLeadingDocumentationExpr) isTypeExpression() {}
 
 //=====================================================================================================================
 
-// TypedLogicalNotOperationExpr represents a logical not operation.
+// TypedLessThanExpr represents a less than operation.
+type TypedLessThanExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedLessThanExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
+// TypedLessThanOrEqualsExpr represents a less than operation.
+type TypedLessThanOrEqualsExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedLessThanOrEqualsExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
+// TypedLogicalAndExpr represents a logical "and" operation.
+type TypedLogicalAndExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedLogicalAndExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
+// TypedLogicalNotOperationExpr represents a logical "not" operation.
 type TypedLogicalNotOperationExpr struct {
 	SourcePosition model.SourcePos
 	Operand        ITypedExpression
@@ -106,6 +189,18 @@ type TypedLogicalNotOperationExpr struct {
 }
 
 func (e *TypedLogicalNotOperationExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
+// TypedLogicalOrExpr represents a logical "or" operation.
+type TypedLogicalOrExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedLogicalOrExpr) isTypeExpression() {}
 
 //=====================================================================================================================
 
@@ -117,6 +212,18 @@ type TypedMultilineStringLiteralExpr struct {
 }
 
 func (e *TypedMultilineStringLiteralExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
+// TypedMultiplicationExpr represents a multiplication operation.
+type TypedMultiplicationExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedMultiplicationExpr) isTypeExpression() {}
 
 //=====================================================================================================================
 
@@ -173,6 +280,18 @@ type TypedStringLiteralExpr struct {
 }
 
 func (e *TypedStringLiteralExpr) isTypeExpression() {}
+
+//=====================================================================================================================
+
+// TypedSubtractionExpr represents a subtraction operation.
+type TypedSubtractionExpr struct {
+	SourcePosition model.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+	TypeInfo       IType
+}
+
+func (e *TypedSubtractionExpr) isTypeExpression() {}
 
 //=====================================================================================================================
 

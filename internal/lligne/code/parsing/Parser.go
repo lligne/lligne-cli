@@ -85,14 +85,7 @@ func (p *lligneParser) parseExprBindingPower(minBindingPower int) model.IExpress
 
 			p.index += 1
 
-			rhs := p.parseExprBindingPower(bindingPower.Right)
-
-			lhs = &model.InfixOperationExpr{
-				SourcePosition: model.NewSourcePos(opToken),
-				Operator:       bindingPower.Operator,
-				Lhs:            lhs,
-				Rhs:            rhs,
-			}
+			lhs = p.parseInfixOperation(opToken, bindingPower, lhs)
 
 			continue
 
@@ -103,6 +96,213 @@ func (p *lligneParser) parseExprBindingPower(minBindingPower int) model.IExpress
 	}
 
 	return lhs
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// parseInfixOperation parses an infix expression after the left hand side and the operator token have been consumed
+func (p *lligneParser) parseInfixOperation(
+	opToken scanning.Token,
+	bindingPower infixBindingPower,
+	lhs model.IExpression,
+) model.IExpression {
+	rhs := p.parseExprBindingPower(bindingPower.Right)
+
+	switch opToken.TokenType {
+
+	case scanning.TokenTypeAmpersand:
+		return &model.IntersectExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeAmpersandAmpersand:
+		return &model.IntersectLowPrecedenceExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeAnd:
+		return &model.LogicalAndExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeAsterisk:
+		return &model.MultiplicationExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeColon:
+		return &model.QualifyExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeDash:
+		return &model.SubtractionExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeDot:
+		return &model.FieldReferenceExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Parent:         lhs,
+			Child:          rhs,
+		}
+
+	case scanning.TokenTypeDotDot:
+		return &model.RangeExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			First:          lhs,
+			Last:           rhs,
+		}
+
+	case scanning.TokenTypeEquals:
+		return &model.IntersectAssignValueExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeEqualsEquals:
+		return &model.EqualsExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeGreaterThan:
+		return &model.GreaterThanExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeGreaterThanOrEquals:
+		return &model.GreaterThanOrEqualsExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeIn:
+		return &model.InExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeIs:
+		return &model.IsExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeLessThan:
+		return &model.LessThanExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeLessThanOrEquals:
+		return &model.LessThanOrEqualsExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeMatches:
+		return &model.MatchExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeNotMatches:
+		return &model.NotMatchExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeOr:
+		return &model.LogicalOrExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypePlus:
+		return &model.AdditionExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeQuestionMarkColon:
+		return &model.IntersectDefaultValueExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeRightArrow:
+		return &model.FunctionArrowExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Argument:       lhs,
+			Result:         rhs,
+		}
+
+	case scanning.TokenTypeSlash:
+		return &model.DivisionExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeSynthDocument:
+		return &model.DocumentExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeVerticalBar:
+		return &model.UnionExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeWhen:
+		return &model.WhenExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeWhere:
+		return &model.WhereExpr{
+			SourcePosition: model.NewSourcePos(opToken),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	}
+
+	panic(opToken.TokenType)
+
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -337,9 +537,8 @@ func (p *lligneParser) parseSequenceLiteral(token scanning.Token) model.IExpress
 //=====================================================================================================================
 
 type infixBindingPower struct {
-	Left     int
-	Right    int
-	Operator model.InfixOperator
+	Left  int
+	Right int
 }
 
 //=====================================================================================================================
@@ -366,38 +565,38 @@ func init() {
 
 	level := 1
 
-	infixBindingPowers[scanning.TokenTypeColon] = infixBindingPower{level, level + 1, model.InfixOperatorQualify}
-	infixBindingPowers[scanning.TokenTypeEquals] = infixBindingPower{level, level + 1, model.InfixOperatorIntersectAssignValue}
-	infixBindingPowers[scanning.TokenTypeQuestionMarkColon] = infixBindingPower{level, level + 1, model.InfixOperatorIntersectDefaultValue}
+	infixBindingPowers[scanning.TokenTypeColon] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeEquals] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeQuestionMarkColon] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeAmpersandAmpersand] = infixBindingPower{level, level + 1, model.InfixOperatorIntersectLowPrecedence}
+	infixBindingPowers[scanning.TokenTypeAmpersandAmpersand] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeVerticalBar] = infixBindingPower{level, level + 1, model.InfixOperatorUnion}
+	infixBindingPowers[scanning.TokenTypeVerticalBar] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeAmpersand] = infixBindingPower{level, level + 1, model.InfixOperatorIntersect}
+	infixBindingPowers[scanning.TokenTypeAmpersand] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeWhen] = infixBindingPower{level, level + 1, model.InfixOperatorWhen}
-	infixBindingPowers[scanning.TokenTypeWhere] = infixBindingPower{level, level + 1, model.InfixOperatorWhere}
+	infixBindingPowers[scanning.TokenTypeWhen] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeWhere] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeSynthDocument] = infixBindingPower{level, level + 1, model.InfixOperatorDocument}
+	infixBindingPowers[scanning.TokenTypeSynthDocument] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeOr] = infixBindingPower{level, level + 1, model.InfixOperatorLogicOr}
+	infixBindingPowers[scanning.TokenTypeOr] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeAnd] = infixBindingPower{level, level + 1, model.InfixOperatorLogicAnd}
+	infixBindingPowers[scanning.TokenTypeAnd] = infixBindingPower{level, level + 1}
 
 	level += 2
 
@@ -405,32 +604,32 @@ func init() {
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeEqualsEquals] = infixBindingPower{level, level + 1, model.InfixOperatorEquals}
-	infixBindingPowers[scanning.TokenTypeGreaterThan] = infixBindingPower{level, level + 1, model.InfixOperatorGreaterThan}
-	infixBindingPowers[scanning.TokenTypeGreaterThanOrEquals] = infixBindingPower{level, level + 1, model.InfixOperatorGreaterThanOrEquals}
-	infixBindingPowers[scanning.TokenTypeLessThan] = infixBindingPower{level, level + 1, model.InfixOperatorLessThan}
-	infixBindingPowers[scanning.TokenTypeLessThanOrEquals] = infixBindingPower{level, level + 1, model.InfixOperatorLessThanOrEquals}
+	infixBindingPowers[scanning.TokenTypeEqualsEquals] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeGreaterThan] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeGreaterThanOrEquals] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeLessThan] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeLessThanOrEquals] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeIn] = infixBindingPower{level, level + 1, model.InfixOperatorIn}
-	infixBindingPowers[scanning.TokenTypeIs] = infixBindingPower{level, level + 1, model.InfixOperatorIs}
-	infixBindingPowers[scanning.TokenTypeMatches] = infixBindingPower{level, level + 1, model.InfixOperatorMatch}
-	infixBindingPowers[scanning.TokenTypeNotMatches] = infixBindingPower{level, level + 1, model.InfixOperatorNotMatch}
+	infixBindingPowers[scanning.TokenTypeIn] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeIs] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeMatches] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeNotMatches] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeDotDot] = infixBindingPower{level, level + 1, model.InfixOperatorRange}
+	infixBindingPowers[scanning.TokenTypeDotDot] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeDash] = infixBindingPower{level, level + 1, model.InfixOperatorSubtract}
-	infixBindingPowers[scanning.TokenTypePlus] = infixBindingPower{level, level + 1, model.InfixOperatorAdd}
+	infixBindingPowers[scanning.TokenTypeDash] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypePlus] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeAsterisk] = infixBindingPower{level, level + 1, model.InfixOperatorMultiply}
-	infixBindingPowers[scanning.TokenTypeSlash] = infixBindingPower{level, level + 1, model.InfixOperatorDivide}
+	infixBindingPowers[scanning.TokenTypeAsterisk] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeSlash] = infixBindingPower{level, level + 1}
 
 	level += 2
 
@@ -438,11 +637,11 @@ func init() {
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeRightArrow] = infixBindingPower{level, level + 1, model.InfixOperatorFunctionCall}
+	infixBindingPowers[scanning.TokenTypeRightArrow] = infixBindingPower{level, level + 1}
 
 	level += 2
 
-	infixBindingPowers[scanning.TokenTypeDot] = infixBindingPower{level, level + 1, model.InfixOperatorFieldReference}
+	infixBindingPowers[scanning.TokenTypeDot] = infixBindingPower{level, level + 1}
 
 	level += 2
 
