@@ -3,7 +3,7 @@
 // Apache 2.0 License
 //
 
-package model
+package parsing
 
 //=====================================================================================================================
 
@@ -13,8 +13,6 @@ type IExpression interface {
 }
 
 //=====================================================================================================================
-
-// TODO: get rid of this
 
 // ParenExprDelimiters is an enumeration of start/stop delimiters for parenthesized expressions.
 type ParenExprDelimiters int
@@ -27,7 +25,7 @@ const (
 
 //=====================================================================================================================
 
-// AdditionExpr represents an addition operation.
+// AdditionExpr represents an addition ("+") operation.
 type AdditionExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression
@@ -48,7 +46,7 @@ func (e *BooleanLiteralExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// DivisionExpr represents a division operation.
+// DivisionExpr represents a division ("/") operation.
 type DivisionExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression
@@ -70,7 +68,7 @@ func (e *DocumentExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// EqualsExpr represents an equality comparison operation.
+// EqualsExpr represents an equality comparison ("==") operation.
 type EqualsExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression
@@ -81,7 +79,7 @@ func (e *EqualsExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// FieldReferenceExpr represents a field reference operation.
+// FieldReferenceExpr represents a field reference (".") operation.
 type FieldReferenceExpr struct {
 	SourcePosition SourcePos
 	Parent         IExpression
@@ -124,7 +122,7 @@ func (e *FunctionCallExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// GreaterThanExpr represents a greater than comparison operation.
+// GreaterThanExpr represents a greater than (">") comparison operation.
 type GreaterThanExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression
@@ -135,7 +133,7 @@ func (e *GreaterThanExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// GreaterThanOrEqualsExpr represents a greater than or equals comparison operation.
+// GreaterThanOrEqualsExpr represents a greater than or equals (">=") comparison operation.
 type GreaterThanOrEqualsExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression
@@ -242,7 +240,7 @@ func (e *LeadingDocumentationExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// LessThanExpr represents a less than comparison operation.
+// LessThanExpr represents a less than ("<") comparison operation.
 type LessThanExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression
@@ -253,7 +251,7 @@ func (e *LessThanExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// LessThanOrEqualsExpr represents a less than or equals comparison operation.
+// LessThanOrEqualsExpr represents a less than or equals ("<=") comparison operation.
 type LessThanOrEqualsExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression
@@ -317,7 +315,7 @@ func (e *MultilineStringLiteralExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// MultiplicationExpr represents a multiplication operation.
+// MultiplicationExpr represents a multiplication ("*") operation.
 type MultiplicationExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression
@@ -328,7 +326,7 @@ func (e *MultiplicationExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// NegationOperationExpr represents the arithmetic negation prefix operation.
+// NegationOperationExpr represents the arithmetic negation prefix ("-") operation.
 type NegationOperationExpr struct {
 	SourcePosition SourcePos
 	Operand        IExpression
@@ -338,7 +336,7 @@ func (e *NegationOperationExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// NotMatchExpr represents a pattern nonmatch "!~" operation.
+// NotMatchExpr represents a pattern nonmatch ("!~") operation.
 type NotMatchExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression
@@ -349,7 +347,7 @@ func (e *NotMatchExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// OptionalExpr represents a parenthesized expression or comma-separated sequence of expressions.
+// OptionalExpr represents an Optional(of:X) expression using "?" suffix.
 type OptionalExpr struct {
 	SourcePosition SourcePos
 	Operand        IExpression
@@ -370,7 +368,7 @@ func (e *ParenthesizedExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// QualifyExpr represents a type qualification ":" operation.
+// QualifyExpr represents a type qualification (":") operation.
 type QualifyExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression
@@ -381,7 +379,7 @@ func (e *QualifyExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// RangeExpr represents a range ".." operation.
+// RangeExpr represents a range ("..") operation.
 type RangeExpr struct {
 	SourcePosition SourcePos
 	First          IExpression
@@ -392,7 +390,7 @@ func (e *RangeExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// SequenceLiteralExpr represents a parenthesized expression or comma-separated sequence of expressions.
+// SequenceLiteralExpr represents an array literal.
 type SequenceLiteralExpr struct {
 	SourcePosition SourcePos
 	Elements       []IExpression
@@ -412,7 +410,7 @@ func (e *StringLiteralExpr) isExpression() {}
 
 //=====================================================================================================================
 
-// SubtractionExpr represents a subtraction operation.
+// SubtractionExpr represents a subtraction ("-") operation.
 type SubtractionExpr struct {
 	SourcePosition SourcePos
 	Lhs            IExpression

@@ -9,7 +9,6 @@ package parsing
 
 import (
 	"github.com/stretchr/testify/assert"
-	"lligne-cli/internal/lligne/code/model"
 	"lligne-cli/internal/lligne/code/scanning"
 	"testing"
 )
@@ -25,7 +24,7 @@ func TestLligneParser(t *testing.T) {
 
 		expression := ParseExpression(sourceCode, tokens)
 
-		assert.Equal(t, sExpression, model.SExpression(expression), "For source code: "+sourceCode)
+		assert.Equal(t, sExpression, SExpression(expression), "For source code: "+sourceCode)
 	}
 
 	t.Run("identifier literals", func(t *testing.T) {
@@ -124,6 +123,7 @@ func TestLligneParser(t *testing.T) {
 
 			{"int?", "(optional (id int))"},
 			{"float | int?", "(union (id float) (optional (id int)))"},
+			{"float & 7.0", "(intersect (id float) (float 7.0))"},
 
 			{"f(x: 0)", "(call (id f) (parenthesized \"()\" (qualify (id x) (int 0))))"},
 			{"(a: f(x: 0))", "(parenthesized \"()\" (qualify (id a) (call (id f) (parenthesized \"()\" (qualify (id x) (int 0))))))"},

@@ -30,6 +30,14 @@ func TestLligneScanner(t *testing.T) {
 		assert.Equal(t, 0, len(newLineOffsets))
 	})
 
+	t.Run("unrecognized character", func(t *testing.T) {
+		tokens, newLineOffsets := Scan("‽")
+
+		expectToken(tokens[0], TokenTypeUnrecognizedChar, 0, 3)
+		expectToken(tokens[1], TokenTypeEof, 3, 0)
+		assert.Equal(t, 0, len(newLineOffsets))
+	})
+
 	t.Run("a few punctuation tokens", func(t *testing.T) {
 		tokens, newLineOffsets := Scan(
 			"& &&\n *: , ",

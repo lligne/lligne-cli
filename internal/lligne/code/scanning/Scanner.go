@@ -47,11 +47,11 @@ func newScanner(sourceCode string) *scanner {
 
 	// Read the first rune.
 	if len(s.sourceCode) > 0 {
-		s.runeAhead1, s.runAhead1Width = utf8.DecodeRuneInString(s.sourceCode[0:])
+		s.runeAhead1, s.runeAhead1Width = utf8.DecodeRuneInString(s.sourceCode[0:])
 	}
 
-	if len(s.sourceCode) > 1 {
-		s.runeAhead2, s.runAhead2Width = utf8.DecodeRuneInString(s.sourceCode[1:])
+	if len(s.sourceCode) > s.runeAhead1Width {
+		s.runeAhead2, s.runeAhead2Width = utf8.DecodeRuneInString(s.sourceCode[s.runeAhead1Width:])
 	}
 
 	return s
@@ -62,15 +62,15 @@ func newScanner(sourceCode string) *scanner {
 
 // LligneScanner converts a string of Lligne source code into tokens.
 type scanner struct {
-	sourceCode     string
-	markedPos      int
-	currentPos     int
-	runeAhead1     rune
-	runeAhead2     rune
-	runAhead1Width int
-	runAhead2Width int
-	tokens         []Token
-	newLineOffsets []uint32
+	sourceCode      string
+	markedPos       int
+	currentPos      int
+	runeAhead1      rune
+	runeAhead2      rune
+	runeAhead1Width int
+	runeAhead2Width int
+	tokens          []Token
+	newLineOffsets  []uint32
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -180,15 +180,15 @@ func (s *scanner) advance() {
 	if s.runeAhead1 == '\n' {
 		s.newLineOffsets = append(s.newLineOffsets, uint32(s.currentPos))
 	}
-	s.currentPos += s.runAhead1Width
+	s.currentPos += s.runeAhead1Width
 	s.runeAhead1 = s.runeAhead2
-	s.runAhead1Width = s.runAhead2Width
+	s.runeAhead1Width = s.runeAhead2Width
 
 	if s.currentPos+1 >= len(s.sourceCode) {
 		s.runeAhead2 = 0
-		s.runAhead2Width = 0
+		s.runeAhead2Width = 0
 	} else {
-		s.runeAhead2, s.runAhead2Width = utf8.DecodeRuneInString(s.sourceCode[s.currentPos+1:])
+		s.runeAhead2, s.runeAhead2Width = utf8.DecodeRuneInString(s.sourceCode[s.currentPos+1:])
 	}
 
 }

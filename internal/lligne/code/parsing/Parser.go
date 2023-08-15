@@ -6,14 +6,13 @@
 package parsing
 
 import (
-	"lligne-cli/internal/lligne/code/model"
 	"lligne-cli/internal/lligne/code/scanning"
 	"strconv"
 )
 
 //=====================================================================================================================
 
-func ParseExpression(sourceCode string, tokens []scanning.Token) (model model.IExpression) {
+func ParseExpression(sourceCode string, tokens []scanning.Token) (model IExpression) {
 	parser := newParser(sourceCode, tokens)
 
 	return parser.parseExprBindingPower(0)
@@ -23,7 +22,7 @@ func ParseExpression(sourceCode string, tokens []scanning.Token) (model model.IE
 
 // ParseParenthesizedItems parses a non-empty sequence of code expected to be the items within a record literal, e.g.
 // the top level of a file.
-func ParseParenthesizedItems(sourceCode string, tokens []scanning.Token) model.IExpression {
+func ParseParenthesizedItems(sourceCode string, tokens []scanning.Token) IExpression {
 	parser := newParser(sourceCode, tokens)
 
 	return parser.parseParenthesizedExpression(tokens[0], scanning.TokenTypeEof)
@@ -48,7 +47,7 @@ type lligneParser struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (p *lligneParser) parseExprBindingPower(minBindingPower int) model.IExpression {
+func (p *lligneParser) parseExprBindingPower(minBindingPower int) IExpression {
 
 	lhs := p.parseLeftHandSide()
 
@@ -104,197 +103,197 @@ func (p *lligneParser) parseExprBindingPower(minBindingPower int) model.IExpress
 func (p *lligneParser) parseInfixOperation(
 	opToken scanning.Token,
 	bindingPower infixBindingPower,
-	lhs model.IExpression,
-) model.IExpression {
+	lhs IExpression,
+) IExpression {
 	rhs := p.parseExprBindingPower(bindingPower.Right)
 
 	switch opToken.TokenType {
 
 	case scanning.TokenTypeAmpersand:
-		return &model.IntersectExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &IntersectExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeAmpersandAmpersand:
-		return &model.IntersectLowPrecedenceExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &IntersectLowPrecedenceExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeAnd:
-		return &model.LogicalAndExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &LogicalAndExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeAsterisk:
-		return &model.MultiplicationExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &MultiplicationExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeColon:
-		return &model.QualifyExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &QualifyExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeDash:
-		return &model.SubtractionExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &SubtractionExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeDot:
-		return &model.FieldReferenceExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &FieldReferenceExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Parent:         lhs,
 			Child:          rhs,
 		}
 
 	case scanning.TokenTypeDotDot:
-		return &model.RangeExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &RangeExpr{
+			SourcePosition: NewSourcePos(opToken),
 			First:          lhs,
 			Last:           rhs,
 		}
 
 	case scanning.TokenTypeEquals:
-		return &model.IntersectAssignValueExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &IntersectAssignValueExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeEqualsEquals:
-		return &model.EqualsExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &EqualsExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeGreaterThan:
-		return &model.GreaterThanExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &GreaterThanExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeGreaterThanOrEquals:
-		return &model.GreaterThanOrEqualsExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &GreaterThanOrEqualsExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeIn:
-		return &model.InExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &InExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeIs:
-		return &model.IsExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &IsExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeLessThan:
-		return &model.LessThanExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &LessThanExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeLessThanOrEquals:
-		return &model.LessThanOrEqualsExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &LessThanOrEqualsExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeMatches:
-		return &model.MatchExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &MatchExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeNotMatches:
-		return &model.NotMatchExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &NotMatchExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeOr:
-		return &model.LogicalOrExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &LogicalOrExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypePlus:
-		return &model.AdditionExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &AdditionExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeQuestionMarkColon:
-		return &model.IntersectDefaultValueExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &IntersectDefaultValueExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeRightArrow:
-		return &model.FunctionArrowExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &FunctionArrowExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Argument:       lhs,
 			Result:         rhs,
 		}
 
 	case scanning.TokenTypeSlash:
-		return &model.DivisionExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &DivisionExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeSynthDocument:
-		return &model.DocumentExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &DocumentExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeVerticalBar:
-		return &model.UnionExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &UnionExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeWhen:
-		return &model.WhenExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &WhenExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeWhere:
-		return &model.WhereExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &WhereExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
@@ -307,7 +306,7 @@ func (p *lligneParser) parseInfixOperation(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (p *lligneParser) parseLeftHandSide() model.IExpression {
+func (p *lligneParser) parseLeftHandSide() IExpression {
 
 	token := p.tokens[p.index]
 	p.index += 1
@@ -315,8 +314,8 @@ func (p *lligneParser) parseLeftHandSide() model.IExpression {
 	switch token.TokenType {
 
 	case scanning.TokenTypeBackTickedString:
-		return &model.MultilineStringLiteralExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &MultilineStringLiteralExpr{
+			SourcePosition: NewSourcePos(token),
 			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
@@ -324,38 +323,38 @@ func (p *lligneParser) parseLeftHandSide() model.IExpression {
 		return p.parseNegationOperationExpression(token)
 
 	case scanning.TokenTypeDoubleQuotedString:
-		return &model.StringLiteralExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &StringLiteralExpr{
+			SourcePosition: NewSourcePos(token),
 			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeFalse:
-		return &model.BooleanLiteralExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &BooleanLiteralExpr{
+			SourcePosition: NewSourcePos(token),
 			Value:          false,
 		}
 
 	case scanning.TokenTypeFloatingPointLiteral:
-		return &model.FloatingPointLiteralExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &FloatingPointLiteralExpr{
+			SourcePosition: NewSourcePos(token),
 			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeIdentifier:
-		return &model.IdentifierExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &IdentifierExpr{
+			SourcePosition: NewSourcePos(token),
 			Name:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeIntegerLiteral:
-		return &model.IntegerLiteralExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &IntegerLiteralExpr{
+			SourcePosition: NewSourcePos(token),
 			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeLeadingDocumentation:
-		return &model.LeadingDocumentationExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &LeadingDocumentationExpr{
+			SourcePosition: NewSourcePos(token),
 			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
@@ -372,20 +371,20 @@ func (p *lligneParser) parseLeftHandSide() model.IExpression {
 		return p.parseLogicalNotOperationExpression(token)
 
 	case scanning.TokenTypeSingleQuotedString:
-		return &model.StringLiteralExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &StringLiteralExpr{
+			SourcePosition: NewSourcePos(token),
 			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeTrailingDocumentation:
-		return &model.TrailingDocumentationExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &TrailingDocumentationExpr{
+			SourcePosition: NewSourcePos(token),
 			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeTrue:
-		return &model.BooleanLiteralExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &BooleanLiteralExpr{
+			SourcePosition: NewSourcePos(token),
 			Value:          true,
 		}
 
@@ -408,11 +407,11 @@ func (p *lligneParser) parseLeftHandSide() model.IExpression {
 
 func (p *lligneParser) parseLogicalNotOperationExpression(
 	token scanning.Token,
-) model.IExpression {
+) IExpression {
 	rightBindingPower := prefixBindingPowers[token.TokenType].Power
 	rhs := p.parseExprBindingPower(rightBindingPower)
-	return &model.LogicalNotOperationExpr{
-		SourcePosition: model.NewSourcePos(token),
+	return &LogicalNotOperationExpr{
+		SourcePosition: NewSourcePos(token),
 		Operand:        rhs,
 	}
 }
@@ -421,11 +420,11 @@ func (p *lligneParser) parseLogicalNotOperationExpression(
 
 func (p *lligneParser) parseNegationOperationExpression(
 	token scanning.Token,
-) model.IExpression {
+) IExpression {
 	rightBindingPower := prefixBindingPowers[token.TokenType].Power
 	rhs := p.parseExprBindingPower(rightBindingPower)
-	return &model.NegationOperationExpr{
-		SourcePosition: model.NewSourcePos(token),
+	return &NegationOperationExpr{
+		SourcePosition: NewSourcePos(token),
 		Operand:        rhs,
 	}
 }
@@ -435,9 +434,9 @@ func (p *lligneParser) parseNegationOperationExpression(
 func (p *lligneParser) parseParenthesizedExpression(
 	token scanning.Token,
 	endingTokenType scanning.TokenType,
-) model.IExpression {
+) IExpression {
 
-	var items []model.IExpression
+	var items []IExpression
 
 	for p.tokens[p.index].TokenType != endingTokenType {
 		// Parse one expression.
@@ -454,18 +453,18 @@ func (p *lligneParser) parseParenthesizedExpression(
 	}
 	p.index += 1
 
-	var delimiters model.ParenExprDelimiters
+	var delimiters ParenExprDelimiters
 	switch endingTokenType {
 	case scanning.TokenTypeEof:
-		delimiters = model.ParenExprDelimitersWholeFile
+		delimiters = ParenExprDelimitersWholeFile
 	case scanning.TokenTypeRightBrace:
-		delimiters = model.ParenExprDelimitersBraces
+		delimiters = ParenExprDelimitersBraces
 	case scanning.TokenTypeRightParenthesis:
-		delimiters = model.ParenExprDelimitersParentheses
+		delimiters = ParenExprDelimitersParentheses
 	}
 
-	return &model.ParenthesizedExpr{
-		SourcePosition: model.NewSourcePos(token),
+	return &ParenthesizedExpr{
+		SourcePosition: NewSourcePos(token),
 		Delimiters:     delimiters,
 		Items:          items,
 	}
@@ -474,21 +473,21 @@ func (p *lligneParser) parseParenthesizedExpression(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (p *lligneParser) parsePostfixExpression(opToken scanning.Token, lhs model.IExpression) model.IExpression {
+func (p *lligneParser) parsePostfixExpression(opToken scanning.Token, lhs IExpression) IExpression {
 
 	switch opToken.TokenType {
 
 	case scanning.TokenTypeLeftParenthesis:
 		args := p.parseParenthesizedExpression(opToken, scanning.TokenTypeRightParenthesis)
-		return &model.FunctionCallExpr{
-			SourcePosition:    model.NewSourcePos(opToken),
+		return &FunctionCallExpr{
+			SourcePosition:    NewSourcePos(opToken),
 			FunctionReference: lhs,
 			Argument:          args,
 		}
 
 	case scanning.TokenTypeQuestionMark:
-		return &model.OptionalExpr{
-			SourcePosition: model.NewSourcePos(opToken),
+		return &OptionalExpr{
+			SourcePosition: NewSourcePos(opToken),
 			Operand:        lhs,
 		}
 
@@ -500,14 +499,14 @@ func (p *lligneParser) parsePostfixExpression(opToken scanning.Token, lhs model.
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (p *lligneParser) parseSequenceLiteral(token scanning.Token) model.IExpression {
+func (p *lligneParser) parseSequenceLiteral(token scanning.Token) IExpression {
 
-	var items []model.IExpression
+	var items []IExpression
 
 	if p.tokens[p.index].TokenType == scanning.TokenTypeRightBracket {
 		p.index += 1
-		return &model.SequenceLiteralExpr{
-			SourcePosition: model.NewSourcePos(token),
+		return &SequenceLiteralExpr{
+			SourcePosition: NewSourcePos(token),
 			Elements:       items,
 		}
 	}
@@ -527,8 +526,8 @@ func (p *lligneParser) parseSequenceLiteral(token scanning.Token) model.IExpress
 	}
 	p.index += 1
 
-	return &model.SequenceLiteralExpr{
-		SourcePosition: model.NewSourcePos(token),
+	return &SequenceLiteralExpr{
+		SourcePosition: NewSourcePos(token),
 		Elements:       items,
 	}
 

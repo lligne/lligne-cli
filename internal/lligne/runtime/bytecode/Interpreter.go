@@ -57,7 +57,7 @@ const true64 uint64 = 0xFFFFFFFFFFFFFFFF
 
 //---------------------------------------------------------------------------------------------------------------------
 
-var dispatch [34]func(*Machine, *CodeBlock)
+var dispatch [36]func(*Machine, *CodeBlock)
 
 //---------------------------------------------------------------------------------------------------------------------
 
@@ -128,7 +128,7 @@ func init() {
 		}
 	}
 
-	dispatch[OpCodeInt64GreaterThan] = func(m *Machine, c *CodeBlock) {
+	dispatch[OpCodeFloat64GreaterThan] = func(m *Machine, c *CodeBlock) {
 		rhs := math.Float64frombits(m.Stack[m.Top])
 		m.Top -= 1
 		lhs := math.Float64frombits(m.Stack[m.Top])
@@ -213,6 +213,11 @@ func init() {
 		m.Stack[m.Top] = uint64(lhs + rhs)
 	}
 
+	dispatch[OpCodeInt64Decrement] = func(m *Machine, c *CodeBlock) {
+		lhs := int64(m.Stack[m.Top])
+		m.Stack[m.Top] = uint64(lhs - 1)
+	}
+
 	dispatch[OpCodeInt64Divide] = func(m *Machine, c *CodeBlock) {
 		rhs := int64(m.Stack[m.Top])
 		m.Top -= 1
@@ -251,6 +256,11 @@ func init() {
 		} else {
 			m.Stack[m.Top] = 0
 		}
+	}
+
+	dispatch[OpCodeInt64Increment] = func(m *Machine, c *CodeBlock) {
+		lhs := int64(m.Stack[m.Top])
+		m.Stack[m.Top] = uint64(lhs + 1)
 	}
 
 	dispatch[OpCodeInt64LessThan] = func(m *Machine, c *CodeBlock) {

@@ -36,10 +36,12 @@ const (
 
 	// 64 Bit Integers
 	OpCodeInt64Add
+	OpCodeInt64Decrement
 	OpCodeInt64Divide
 	OpCodeInt64Equals
 	OpCodeInt64GreaterThan
 	OpCodeInt64GreaterThanOrEquals
+	OpCodeInt64Increment
 	OpCodeInt64LessThan
 	OpCodeInt64LessThanOrEquals
 	OpCodeInt64LoadInt16

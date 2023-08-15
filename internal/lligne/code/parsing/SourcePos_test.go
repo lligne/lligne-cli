@@ -5,7 +5,7 @@
 // Apache 2.0 License
 //
 
-package scanning
+package parsing
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -17,12 +17,11 @@ import (
 
 func TestLligneOrigin(t *testing.T) {
 
-	t.Run("Token size should be 8 bytes", func(t *testing.T) {
+	t.Run("SourcePos size should be 8 bytes", func(t *testing.T) {
 
-		token := Token{
-			SourceOffset: 25,
-			SourceLength: 7,
-			TokenType:    TokenTypeDoubleQuotedString,
+		token := SourcePos{
+			startOffset: 45,
+			endOffset:   50,
 		}
 		expected := uintptr(8)
 		actual := unsafe.Sizeof(token)

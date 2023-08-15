@@ -3,12 +3,13 @@
 // Apache 2.0 License
 //
 
-package model
+package parsing
 
 import "lligne-cli/internal/lligne/code/scanning"
 
 //=====================================================================================================================
 
+// SourcePos represents a range of source code bytes from startOffset to endOffset.
 type SourcePos struct {
 	startOffset uint32
 	endOffset   uint32
@@ -16,6 +17,7 @@ type SourcePos struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// NewSourcePos constructs a SourcePos instance.
 func NewSourcePos(token scanning.Token) SourcePos {
 	return SourcePos{
 		startOffset: token.SourceOffset,

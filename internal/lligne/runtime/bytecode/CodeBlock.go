@@ -139,6 +139,12 @@ func (cb *CodeBlock) Int64Add() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) Int64Decrement() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Decrement)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) Int64Divide() {
 	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Divide)
 }
@@ -159,6 +165,12 @@ func (cb *CodeBlock) Int64GreaterThan() {
 
 func (cb *CodeBlock) Int64GreaterThanOrEquals() {
 	cb.OpCodes = append(cb.OpCodes, OpCodeInt64GreaterThanOrEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) Int64Increment() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Increment)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -287,6 +299,8 @@ func (cb *CodeBlock) Disassemble() string {
 
 		case OpCodeInt64Add:
 			write(output, line, "INT64_ADD")
+		case OpCodeInt64Decrement:
+			write(output, line, "INT64_DECREMENT")
 		case OpCodeInt64Divide:
 			write(output, line, "INT64_DIVIDE")
 		case OpCodeInt64Equals:
@@ -295,6 +309,8 @@ func (cb *CodeBlock) Disassemble() string {
 			write(output, line, "INT64_GREATER")
 		case OpCodeInt64GreaterThanOrEquals:
 			write(output, line, "INT64_NOT_LESS")
+		case OpCodeInt64Increment:
+			write(output, line, "INT64_INCREMENT")
 		case OpCodeInt64LessThan:
 			write(output, line, "INT64_LESS")
 		case OpCodeInt64LessThanOrEquals:
