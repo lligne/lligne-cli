@@ -111,189 +111,189 @@ func (p *lligneParser) parseInfixOperation(
 
 	case scanning.TokenTypeAmpersand:
 		return &IntersectExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeAmpersandAmpersand:
 		return &IntersectLowPrecedenceExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeAnd:
 		return &LogicalAndExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeAsterisk:
 		return &MultiplicationExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeColon:
 		return &QualifyExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeDash:
 		return &SubtractionExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeDot:
 		return &FieldReferenceExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Parent:         lhs,
 			Child:          rhs,
 		}
 
 	case scanning.TokenTypeDotDot:
 		return &RangeExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			First:          lhs,
 			Last:           rhs,
 		}
 
 	case scanning.TokenTypeEquals:
 		return &IntersectAssignValueExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeEqualsEquals:
 		return &EqualsExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeGreaterThan:
 		return &GreaterThanExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeGreaterThanOrEquals:
 		return &GreaterThanOrEqualsExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeIn:
 		return &InExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeIs:
 		return &IsExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeLessThan:
 		return &LessThanExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeLessThanOrEquals:
 		return &LessThanOrEqualsExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeMatches:
 		return &MatchExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeNotMatches:
 		return &NotMatchExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeOr:
 		return &LogicalOrExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypePlus:
 		return &AdditionExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeQuestionMarkColon:
 		return &IntersectDefaultValueExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeRightArrow:
 		return &FunctionArrowExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Argument:       lhs,
 			Result:         rhs,
 		}
 
 	case scanning.TokenTypeSlash:
 		return &DivisionExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeSynthDocument:
 		return &DocumentExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeVerticalBar:
 		return &UnionExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeWhen:
 		return &WhenExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
 
 	case scanning.TokenTypeWhere:
 		return &WhereExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
 			Rhs:            rhs,
 		}
@@ -424,7 +424,7 @@ func (p *lligneParser) parseNegationOperationExpression(
 	rightBindingPower := prefixBindingPowers[token.TokenType].Power
 	rhs := p.parseExprBindingPower(rightBindingPower)
 	return &NegationOperationExpr{
-		SourcePosition: NewSourcePos(token),
+		SourcePosition: NewSourcePos(token).Thru(rhs.GetSourcePosition()),
 		Operand:        rhs,
 	}
 }
@@ -451,6 +451,7 @@ func (p *lligneParser) parseParenthesizedExpression(
 	if p.tokens[p.index].TokenType != endingTokenType {
 		panic("Expected " + endingTokenType.String())
 	}
+	endSourcePos := NewSourcePos(p.tokens[p.index])
 	p.index += 1
 
 	var delimiters ParenExprDelimiters
@@ -464,7 +465,7 @@ func (p *lligneParser) parseParenthesizedExpression(
 	}
 
 	return &ParenthesizedExpr{
-		SourcePosition: NewSourcePos(token),
+		SourcePosition: NewSourcePos(token).Thru(endSourcePos),
 		Delimiters:     delimiters,
 		Items:          items,
 	}
@@ -480,14 +481,14 @@ func (p *lligneParser) parsePostfixExpression(opToken scanning.Token, lhs IExpre
 	case scanning.TokenTypeLeftParenthesis:
 		args := p.parseParenthesizedExpression(opToken, scanning.TokenTypeRightParenthesis)
 		return &FunctionCallExpr{
-			SourcePosition:    NewSourcePos(opToken),
+			SourcePosition:    lhs.GetSourcePosition().Thru(args.GetSourcePosition()),
 			FunctionReference: lhs,
 			Argument:          args,
 		}
 
 	case scanning.TokenTypeQuestionMark:
 		return &OptionalExpr{
-			SourcePosition: NewSourcePos(opToken),
+			SourcePosition: lhs.GetSourcePosition(),
 			Operand:        lhs,
 		}
 
@@ -501,12 +502,14 @@ func (p *lligneParser) parsePostfixExpression(opToken scanning.Token, lhs IExpre
 
 func (p *lligneParser) parseSequenceLiteral(token scanning.Token) IExpression {
 
+	startSourcePos := NewSourcePos(token)
 	var items []IExpression
 
 	if p.tokens[p.index].TokenType == scanning.TokenTypeRightBracket {
+		endSourcePos := NewSourcePos(p.tokens[p.index])
 		p.index += 1
 		return &SequenceLiteralExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: startSourcePos.Thru(endSourcePos),
 			Elements:       items,
 		}
 	}
@@ -524,10 +527,11 @@ func (p *lligneParser) parseSequenceLiteral(token scanning.Token) IExpression {
 	if p.tokens[p.index].TokenType != scanning.TokenTypeRightBracket {
 		panic("Expected " + scanning.TokenTypeRightBracket.String())
 	}
+	endSourcePos := NewSourcePos(p.tokens[p.index])
 	p.index += 1
 
 	return &SequenceLiteralExpr{
-		SourcePosition: NewSourcePos(token),
+		SourcePosition: startSourcePos.Thru(endSourcePos),
 		Elements:       items,
 	}
 

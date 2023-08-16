@@ -13,6 +13,8 @@ import (
 
 // ITypedExpression is the interface to an expression AST node with types added.
 type ITypedExpression interface {
+	GetSourcePosition() parsing.SourcePos
+	GetTypeInfo() IType
 	isTypeExpression()
 }
 
@@ -26,7 +28,9 @@ type TypedAdditionExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedAdditionExpr) isTypeExpression() {}
+func (e *TypedAdditionExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedAdditionExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedAdditionExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -34,10 +38,11 @@ func (e *TypedAdditionExpr) isTypeExpression() {}
 type TypedBooleanLiteralExpr struct {
 	SourcePosition parsing.SourcePos
 	Value          bool
-	TypeInfo       IType
 }
 
-func (e *TypedBooleanLiteralExpr) isTypeExpression() {}
+func (e *TypedBooleanLiteralExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedBooleanLiteralExpr) GetTypeInfo() IType                   { return BoolTypeInstance }
+func (e *TypedBooleanLiteralExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -49,7 +54,9 @@ type TypedDivisionExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedDivisionExpr) isTypeExpression() {}
+func (e *TypedDivisionExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedDivisionExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedDivisionExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -58,21 +65,23 @@ type TypedEqualsExpr struct {
 	SourcePosition parsing.SourcePos
 	Lhs            ITypedExpression
 	Rhs            ITypedExpression
-	TypeInfo       IType
 }
 
-func (e *TypedEqualsExpr) isTypeExpression() {}
+func (e *TypedEqualsExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedEqualsExpr) GetTypeInfo() IType                   { return BoolTypeInstance }
+func (e *TypedEqualsExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
-// TypedFloatingPointLiteralExpr represents a single integer literal.
-type TypedFloatingPointLiteralExpr struct {
+// TypedFloat64LiteralExpr represents a single 64-bit floating point literal.
+type TypedFloat64LiteralExpr struct {
 	SourcePosition parsing.SourcePos
-	Text           string
-	TypeInfo       IType
+	Value          float64
 }
 
-func (e *TypedFloatingPointLiteralExpr) isTypeExpression() {}
+func (e *TypedFloat64LiteralExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedFloat64LiteralExpr) GetTypeInfo() IType                   { return Float64TypeInstance }
+func (e *TypedFloat64LiteralExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -84,7 +93,9 @@ type TypedFunctionCallExpr struct {
 	TypeInfo          IType
 }
 
-func (e *TypedFunctionCallExpr) isTypeExpression() {}
+func (e *TypedFunctionCallExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedFunctionCallExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedFunctionCallExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -93,10 +104,11 @@ type TypedGreaterThanExpr struct {
 	SourcePosition parsing.SourcePos
 	Lhs            ITypedExpression
 	Rhs            ITypedExpression
-	TypeInfo       IType
 }
 
-func (e *TypedGreaterThanExpr) isTypeExpression() {}
+func (e *TypedGreaterThanExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedGreaterThanExpr) GetTypeInfo() IType                   { return BoolTypeInstance }
+func (e *TypedGreaterThanExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -105,10 +117,11 @@ type TypedGreaterThanOrEqualsExpr struct {
 	SourcePosition parsing.SourcePos
 	Lhs            ITypedExpression
 	Rhs            ITypedExpression
-	TypeInfo       IType
 }
 
-func (e *TypedGreaterThanOrEqualsExpr) isTypeExpression() {}
+func (e *TypedGreaterThanOrEqualsExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedGreaterThanOrEqualsExpr) GetTypeInfo() IType                   { return BoolTypeInstance }
+func (e *TypedGreaterThanOrEqualsExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -119,18 +132,21 @@ type TypedIdentifierExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedIdentifierExpr) isTypeExpression() {}
+func (e *TypedIdentifierExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedIdentifierExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedIdentifierExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
-// TypedIntegerLiteralExpr represents a single integer literal.
-type TypedIntegerLiteralExpr struct {
+// TypedInt64LiteralExpr represents a single 64-bit integer literal.
+type TypedInt64LiteralExpr struct {
 	SourcePosition parsing.SourcePos
-	Text           string
-	TypeInfo       IType
+	Value          int64
 }
 
-func (e *TypedIntegerLiteralExpr) isTypeExpression() {}
+func (e *TypedInt64LiteralExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedInt64LiteralExpr) GetTypeInfo() IType                   { return Int64TypeInstance }
+func (e *TypedInt64LiteralExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -141,7 +157,11 @@ type TypedLeadingDocumentationExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedLeadingDocumentationExpr) isTypeExpression() {}
+func (e *TypedLeadingDocumentationExpr) GetSourcePosition() parsing.SourcePos {
+	return e.SourcePosition
+}
+func (e *TypedLeadingDocumentationExpr) GetTypeInfo() IType { return e.TypeInfo }
+func (e *TypedLeadingDocumentationExpr) isTypeExpression()  {}
 
 //=====================================================================================================================
 
@@ -150,10 +170,11 @@ type TypedLessThanExpr struct {
 	SourcePosition parsing.SourcePos
 	Lhs            ITypedExpression
 	Rhs            ITypedExpression
-	TypeInfo       IType
 }
 
-func (e *TypedLessThanExpr) isTypeExpression() {}
+func (e *TypedLessThanExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedLessThanExpr) GetTypeInfo() IType                   { return BoolTypeInstance }
+func (e *TypedLessThanExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -162,10 +183,11 @@ type TypedLessThanOrEqualsExpr struct {
 	SourcePosition parsing.SourcePos
 	Lhs            ITypedExpression
 	Rhs            ITypedExpression
-	TypeInfo       IType
 }
 
-func (e *TypedLessThanOrEqualsExpr) isTypeExpression() {}
+func (e *TypedLessThanOrEqualsExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedLessThanOrEqualsExpr) GetTypeInfo() IType                   { return BoolTypeInstance }
+func (e *TypedLessThanOrEqualsExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -174,10 +196,11 @@ type TypedLogicalAndExpr struct {
 	SourcePosition parsing.SourcePos
 	Lhs            ITypedExpression
 	Rhs            ITypedExpression
-	TypeInfo       IType
 }
 
-func (e *TypedLogicalAndExpr) isTypeExpression() {}
+func (e *TypedLogicalAndExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedLogicalAndExpr) GetTypeInfo() IType                   { return BoolTypeInstance }
+func (e *TypedLogicalAndExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -185,10 +208,11 @@ func (e *TypedLogicalAndExpr) isTypeExpression() {}
 type TypedLogicalNotOperationExpr struct {
 	SourcePosition parsing.SourcePos
 	Operand        ITypedExpression
-	TypeInfo       IType
 }
 
-func (e *TypedLogicalNotOperationExpr) isTypeExpression() {}
+func (e *TypedLogicalNotOperationExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedLogicalNotOperationExpr) GetTypeInfo() IType                   { return BoolTypeInstance }
+func (e *TypedLogicalNotOperationExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -197,10 +221,11 @@ type TypedLogicalOrExpr struct {
 	SourcePosition parsing.SourcePos
 	Lhs            ITypedExpression
 	Rhs            ITypedExpression
-	TypeInfo       IType
 }
 
-func (e *TypedLogicalOrExpr) isTypeExpression() {}
+func (e *TypedLogicalOrExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedLogicalOrExpr) GetTypeInfo() IType                   { return BoolTypeInstance }
+func (e *TypedLogicalOrExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -211,7 +236,11 @@ type TypedMultilineStringLiteralExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedMultilineStringLiteralExpr) isTypeExpression() {}
+func (e *TypedMultilineStringLiteralExpr) GetSourcePosition() parsing.SourcePos {
+	return e.SourcePosition
+}
+func (e *TypedMultilineStringLiteralExpr) GetTypeInfo() IType { return e.TypeInfo }
+func (e *TypedMultilineStringLiteralExpr) isTypeExpression()  {}
 
 //=====================================================================================================================
 
@@ -223,7 +252,9 @@ type TypedMultiplicationExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedMultiplicationExpr) isTypeExpression() {}
+func (e *TypedMultiplicationExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedMultiplicationExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedMultiplicationExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -234,7 +265,9 @@ type TypedNegationOperationExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedNegationOperationExpr) isTypeExpression() {}
+func (e *TypedNegationOperationExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedNegationOperationExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedNegationOperationExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -245,7 +278,9 @@ type TypedOptionalExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedOptionalExpr) isTypeExpression() {}
+func (e *TypedOptionalExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedOptionalExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedOptionalExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -257,7 +292,9 @@ type TypedParenthesizedExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedParenthesizedExpr) isTypeExpression() {}
+func (e *TypedParenthesizedExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedParenthesizedExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedParenthesizedExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -268,7 +305,9 @@ type TypedSequenceLiteralExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedSequenceLiteralExpr) isTypeExpression() {}
+func (e *TypedSequenceLiteralExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedSequenceLiteralExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedSequenceLiteralExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -279,7 +318,9 @@ type TypedStringLiteralExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedStringLiteralExpr) isTypeExpression() {}
+func (e *TypedStringLiteralExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedStringLiteralExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedStringLiteralExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -291,7 +332,9 @@ type TypedSubtractionExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedSubtractionExpr) isTypeExpression() {}
+func (e *TypedSubtractionExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedSubtractionExpr) GetTypeInfo() IType                   { return e.TypeInfo }
+func (e *TypedSubtractionExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
@@ -302,6 +345,10 @@ type TypedTrailingDocumentationExpr struct {
 	TypeInfo       IType
 }
 
-func (e *TypedTrailingDocumentationExpr) isTypeExpression() {}
+func (e *TypedTrailingDocumentationExpr) GetSourcePosition() parsing.SourcePos {
+	return e.SourcePosition
+}
+func (e *TypedTrailingDocumentationExpr) GetTypeInfo() IType { return e.TypeInfo }
+func (e *TypedTrailingDocumentationExpr) isTypeExpression()  {}
 
 //=====================================================================================================================

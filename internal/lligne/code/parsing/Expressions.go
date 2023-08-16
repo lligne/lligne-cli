@@ -9,6 +9,7 @@ package parsing
 
 // IExpression is the interface to an expression AST node.
 type IExpression interface {
+	GetSourcePosition() SourcePos
 	isExpression()
 }
 
@@ -32,7 +33,8 @@ type AdditionExpr struct {
 	Rhs            IExpression
 }
 
-func (e *AdditionExpr) isExpression() {}
+func (e *AdditionExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *AdditionExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -42,7 +44,8 @@ type BooleanLiteralExpr struct {
 	Value          bool
 }
 
-func (e *BooleanLiteralExpr) isExpression() {}
+func (e *BooleanLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *BooleanLiteralExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -53,7 +56,8 @@ type DivisionExpr struct {
 	Rhs            IExpression
 }
 
-func (e *DivisionExpr) isExpression() {}
+func (e *DivisionExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *DivisionExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -64,7 +68,8 @@ type DocumentExpr struct {
 	Rhs            IExpression
 }
 
-func (e *DocumentExpr) isExpression() {}
+func (e *DocumentExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *DocumentExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -75,7 +80,8 @@ type EqualsExpr struct {
 	Rhs            IExpression
 }
 
-func (e *EqualsExpr) isExpression() {}
+func (e *EqualsExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *EqualsExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -86,7 +92,8 @@ type FieldReferenceExpr struct {
 	Child          IExpression
 }
 
-func (e *FieldReferenceExpr) isExpression() {}
+func (e *FieldReferenceExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *FieldReferenceExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -96,7 +103,8 @@ type FloatingPointLiteralExpr struct {
 	Text           string
 }
 
-func (e *FloatingPointLiteralExpr) isExpression() {}
+func (e *FloatingPointLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *FloatingPointLiteralExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -107,7 +115,8 @@ type FunctionArrowExpr struct {
 	Result         IExpression
 }
 
-func (e *FunctionArrowExpr) isExpression() {}
+func (e *FunctionArrowExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *FunctionArrowExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -118,7 +127,8 @@ type FunctionCallExpr struct {
 	Argument          IExpression
 }
 
-func (e *FunctionCallExpr) isExpression() {}
+func (e *FunctionCallExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *FunctionCallExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -129,7 +139,8 @@ type GreaterThanExpr struct {
 	Rhs            IExpression
 }
 
-func (e *GreaterThanExpr) isExpression() {}
+func (e *GreaterThanExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *GreaterThanExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -140,7 +151,8 @@ type GreaterThanOrEqualsExpr struct {
 	Rhs            IExpression
 }
 
-func (e *GreaterThanOrEqualsExpr) isExpression() {}
+func (e *GreaterThanOrEqualsExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *GreaterThanOrEqualsExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -150,7 +162,8 @@ type IdentifierExpr struct {
 	Name           string
 }
 
-func (e *IdentifierExpr) isExpression() {}
+func (e *IdentifierExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *IdentifierExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -161,7 +174,8 @@ type InExpr struct {
 	Rhs            IExpression
 }
 
-func (e *InExpr) isExpression() {}
+func (e *InExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *InExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -171,7 +185,8 @@ type IntegerLiteralExpr struct {
 	Text           string
 }
 
-func (e *IntegerLiteralExpr) isExpression() {}
+func (e *IntegerLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *IntegerLiteralExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -182,7 +197,8 @@ type IntersectExpr struct {
 	Rhs            IExpression
 }
 
-func (e *IntersectExpr) isExpression() {}
+func (e *IntersectExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *IntersectExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -193,7 +209,8 @@ type IntersectAssignValueExpr struct {
 	Rhs            IExpression
 }
 
-func (e *IntersectAssignValueExpr) isExpression() {}
+func (e *IntersectAssignValueExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *IntersectAssignValueExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -204,7 +221,8 @@ type IntersectDefaultValueExpr struct {
 	Rhs            IExpression
 }
 
-func (e *IntersectDefaultValueExpr) isExpression() {}
+func (e *IntersectDefaultValueExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *IntersectDefaultValueExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -215,7 +233,8 @@ type IntersectLowPrecedenceExpr struct {
 	Rhs            IExpression
 }
 
-func (e *IntersectLowPrecedenceExpr) isExpression() {}
+func (e *IntersectLowPrecedenceExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *IntersectLowPrecedenceExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -226,7 +245,8 @@ type IsExpr struct {
 	Rhs            IExpression
 }
 
-func (e *IsExpr) isExpression() {}
+func (e *IsExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *IsExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -236,7 +256,8 @@ type LeadingDocumentationExpr struct {
 	Text           string
 }
 
-func (e *LeadingDocumentationExpr) isExpression() {}
+func (e *LeadingDocumentationExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *LeadingDocumentationExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -247,7 +268,8 @@ type LessThanExpr struct {
 	Rhs            IExpression
 }
 
-func (e *LessThanExpr) isExpression() {}
+func (e *LessThanExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *LessThanExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -258,7 +280,8 @@ type LessThanOrEqualsExpr struct {
 	Rhs            IExpression
 }
 
-func (e *LessThanOrEqualsExpr) isExpression() {}
+func (e *LessThanOrEqualsExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *LessThanOrEqualsExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -269,7 +292,8 @@ type LogicalAndExpr struct {
 	Rhs            IExpression
 }
 
-func (e *LogicalAndExpr) isExpression() {}
+func (e *LogicalAndExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *LogicalAndExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -279,7 +303,8 @@ type LogicalNotOperationExpr struct {
 	Operand        IExpression
 }
 
-func (e *LogicalNotOperationExpr) isExpression() {}
+func (e *LogicalNotOperationExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *LogicalNotOperationExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -290,7 +315,8 @@ type LogicalOrExpr struct {
 	Rhs            IExpression
 }
 
-func (e *LogicalOrExpr) isExpression() {}
+func (e *LogicalOrExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *LogicalOrExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -301,7 +327,8 @@ type MatchExpr struct {
 	Rhs            IExpression
 }
 
-func (e *MatchExpr) isExpression() {}
+func (e *MatchExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *MatchExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -311,7 +338,8 @@ type MultilineStringLiteralExpr struct {
 	Text           string
 }
 
-func (e *MultilineStringLiteralExpr) isExpression() {}
+func (e *MultilineStringLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *MultilineStringLiteralExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -322,7 +350,8 @@ type MultiplicationExpr struct {
 	Rhs            IExpression
 }
 
-func (e *MultiplicationExpr) isExpression() {}
+func (e *MultiplicationExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *MultiplicationExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -332,7 +361,8 @@ type NegationOperationExpr struct {
 	Operand        IExpression
 }
 
-func (e *NegationOperationExpr) isExpression() {}
+func (e *NegationOperationExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *NegationOperationExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -343,7 +373,8 @@ type NotMatchExpr struct {
 	Rhs            IExpression
 }
 
-func (e *NotMatchExpr) isExpression() {}
+func (e *NotMatchExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *NotMatchExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -353,7 +384,8 @@ type OptionalExpr struct {
 	Operand        IExpression
 }
 
-func (e *OptionalExpr) isExpression() {}
+func (e *OptionalExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *OptionalExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -364,7 +396,8 @@ type ParenthesizedExpr struct {
 	Items          []IExpression
 }
 
-func (e *ParenthesizedExpr) isExpression() {}
+func (e *ParenthesizedExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *ParenthesizedExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -375,7 +408,8 @@ type QualifyExpr struct {
 	Rhs            IExpression
 }
 
-func (e *QualifyExpr) isExpression() {}
+func (e *QualifyExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *QualifyExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -386,7 +420,8 @@ type RangeExpr struct {
 	Last           IExpression
 }
 
-func (e *RangeExpr) isExpression() {}
+func (e *RangeExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *RangeExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -396,7 +431,8 @@ type SequenceLiteralExpr struct {
 	Elements       []IExpression
 }
 
-func (e *SequenceLiteralExpr) isExpression() {}
+func (e *SequenceLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *SequenceLiteralExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -406,7 +442,8 @@ type StringLiteralExpr struct {
 	Text           string
 }
 
-func (e *StringLiteralExpr) isExpression() {}
+func (e *StringLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *StringLiteralExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -417,7 +454,8 @@ type SubtractionExpr struct {
 	Rhs            IExpression
 }
 
-func (e *SubtractionExpr) isExpression() {}
+func (e *SubtractionExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *SubtractionExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -427,7 +465,8 @@ type TrailingDocumentationExpr struct {
 	Text           string
 }
 
-func (e *TrailingDocumentationExpr) isExpression() {}
+func (e *TrailingDocumentationExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *TrailingDocumentationExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -438,7 +477,8 @@ type UnionExpr struct {
 	Rhs            IExpression
 }
 
-func (e *UnionExpr) isExpression() {}
+func (e *UnionExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *UnionExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -449,7 +489,8 @@ type WhenExpr struct {
 	Rhs            IExpression
 }
 
-func (e *WhenExpr) isExpression() {}
+func (e *WhenExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *WhenExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -460,6 +501,7 @@ type WhereExpr struct {
 	Rhs            IExpression
 }
 
-func (e *WhereExpr) isExpression() {}
+func (e *WhereExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *WhereExpr) isExpression()                {}
 
 //=====================================================================================================================

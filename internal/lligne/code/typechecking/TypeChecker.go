@@ -9,18 +9,12 @@ package typechecking
 
 import (
 	"lligne-cli/internal/lligne/code/parsing"
+	"strconv"
 )
 
 //=====================================================================================================================
 
 func TypeCheckExpr(expression parsing.IExpression) ITypedExpression {
-	result, _ := typeCheckExpr(expression)
-	return result
-}
-
-//=====================================================================================================================
-
-func typeCheckExpr(expression parsing.IExpression) (ITypedExpression, IType) {
 
 	switch expr := expression.(type) {
 
@@ -67,19 +61,8 @@ func typeCheckExpr(expression parsing.IExpression) (ITypedExpression, IType) {
 
 //=====================================================================================================================
 
-func typeCheckBooleanLiteralExpr(expr *parsing.BooleanLiteralExpr) (ITypedExpression, IType) {
-	typeInfo := BoolTypeInstance
-	return &TypedBooleanLiteralExpr{
-		SourcePosition: expr.SourcePosition,
-		Value:          expr.Value,
-		TypeInfo:       typeInfo,
-	}, typeInfo
-}
-
-//=====================================================================================================================
-
-func typeCheckAdditionExpr(expr *parsing.AdditionExpr) (ITypedExpression, IType) {
-	lhs, lhsType := typeCheckExpr(expr.Lhs)
+func typeCheckAdditionExpr(expr *parsing.AdditionExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
@@ -87,14 +70,23 @@ func typeCheckAdditionExpr(expr *parsing.AdditionExpr) (ITypedExpression, IType)
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhsType,
-	}, lhsType
+		TypeInfo:       lhs.GetTypeInfo(),
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckDivisionExpr(expr *parsing.DivisionExpr) (ITypedExpression, IType) {
-	lhs, lhsType := typeCheckExpr(expr.Lhs)
+func typeCheckBooleanLiteralExpr(expr *parsing.BooleanLiteralExpr) ITypedExpression {
+	return &TypedBooleanLiteralExpr{
+		SourcePosition: expr.SourcePosition,
+		Value:          expr.Value,
+	}
+}
+
+//=====================================================================================================================
+
+func typeCheckDivisionExpr(expr *parsing.DivisionExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
@@ -102,14 +94,14 @@ func typeCheckDivisionExpr(expr *parsing.DivisionExpr) (ITypedExpression, IType)
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhsType,
-	}, lhsType
+		TypeInfo:       lhs.GetTypeInfo(),
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckEqualsExpr(expr *parsing.EqualsExpr) (ITypedExpression, IType) {
-	lhs, lhsType := typeCheckExpr(expr.Lhs)
+func typeCheckEqualsExpr(expr *parsing.EqualsExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
@@ -117,25 +109,23 @@ func typeCheckEqualsExpr(expr *parsing.EqualsExpr) (ITypedExpression, IType) {
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhsType,
-	}, lhsType
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckFloatingPointLiteralExpr(expr *parsing.FloatingPointLiteralExpr) (ITypedExpression, IType) {
-	typeInfo := Float64TypeInstance
-	return &TypedFloatingPointLiteralExpr{
+func typeCheckFloatingPointLiteralExpr(expr *parsing.FloatingPointLiteralExpr) ITypedExpression {
+	value, _ := strconv.ParseFloat(expr.Text, 64)
+	return &TypedFloat64LiteralExpr{
 		SourcePosition: expr.SourcePosition,
-		Text:           expr.Text,
-		TypeInfo:       typeInfo,
-	}, typeInfo
+		Value:          value,
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckGreaterThanExpr(expr *parsing.GreaterThanExpr) (ITypedExpression, IType) {
-	lhs, lhsType := typeCheckExpr(expr.Lhs)
+func typeCheckGreaterThanExpr(expr *parsing.GreaterThanExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
@@ -143,14 +133,13 @@ func typeCheckGreaterThanExpr(expr *parsing.GreaterThanExpr) (ITypedExpression, 
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhsType,
-	}, lhsType
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckGreaterThanOrEqualsExpr(expr *parsing.GreaterThanOrEqualsExpr) (ITypedExpression, IType) {
-	lhs, lhsType := typeCheckExpr(expr.Lhs)
+func typeCheckGreaterThanOrEqualsExpr(expr *parsing.GreaterThanOrEqualsExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
@@ -158,25 +147,23 @@ func typeCheckGreaterThanOrEqualsExpr(expr *parsing.GreaterThanOrEqualsExpr) (IT
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhsType,
-	}, lhsType
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckIntegerLiteralExpr(expr *parsing.IntegerLiteralExpr) (ITypedExpression, IType) {
-	typeInfo := Int64TypeInstance
-	return &TypedIntegerLiteralExpr{
+func typeCheckIntegerLiteralExpr(expr *parsing.IntegerLiteralExpr) ITypedExpression {
+	value, _ := strconv.ParseInt(expr.Text, 10, 64)
+	return &TypedInt64LiteralExpr{
 		SourcePosition: expr.SourcePosition,
-		Text:           expr.Text,
-		TypeInfo:       typeInfo,
-	}, typeInfo
+		Value:          value,
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckLessThanExpr(expr *parsing.LessThanExpr) (ITypedExpression, IType) {
-	lhs, lhsType := typeCheckExpr(expr.Lhs)
+func typeCheckLessThanExpr(expr *parsing.LessThanExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
@@ -184,14 +171,13 @@ func typeCheckLessThanExpr(expr *parsing.LessThanExpr) (ITypedExpression, IType)
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhsType,
-	}, lhsType
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckLessThanOrEqualsExpr(expr *parsing.LessThanOrEqualsExpr) (ITypedExpression, IType) {
-	lhs, lhsType := typeCheckExpr(expr.Lhs)
+func typeCheckLessThanOrEqualsExpr(expr *parsing.LessThanOrEqualsExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
@@ -199,60 +185,54 @@ func typeCheckLessThanOrEqualsExpr(expr *parsing.LessThanOrEqualsExpr) (ITypedEx
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhsType,
-	}, lhsType
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckLogicalAndExpr(expr *parsing.LogicalAndExpr) (ITypedExpression, IType) {
-	lhs, _ := typeCheckExpr(expr.Lhs)
+func typeCheckLogicalAndExpr(expr *parsing.LogicalAndExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
-	exprType := BoolTypeInstance
 	// TODO: ensure they're both boolean
 	// TODO: coerce integers
 	return &TypedLogicalAndExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       exprType,
-	}, exprType
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckLogicalNotOperationExpr(expr *parsing.LogicalNotOperationExpr) (ITypedExpression, IType) {
-	operand, operandType := typeCheckExpr(expr.Operand)
+func typeCheckLogicalNotOperationExpr(expr *parsing.LogicalNotOperationExpr) ITypedExpression {
+	operand := TypeCheckExpr(expr.Operand)
 
 	// TODO: validate that operands are boolean
 
 	return &TypedLogicalNotOperationExpr{
 		SourcePosition: expr.SourcePosition,
 		Operand:        operand,
-		TypeInfo:       operandType,
-	}, operandType
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckLogicalOrExpr(expr *parsing.LogicalOrExpr) (ITypedExpression, IType) {
-	lhs, _ := typeCheckExpr(expr.Lhs)
+func typeCheckLogicalOrExpr(expr *parsing.LogicalOrExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
-	exprType := BoolTypeInstance
 	// TODO: ensure they're both boolean
 	// TODO: coerce integers
 	return &TypedLogicalOrExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       exprType,
-	}, exprType
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckMultiplicationExpr(expr *parsing.MultiplicationExpr) (ITypedExpression, IType) {
-	lhs, lhsType := typeCheckExpr(expr.Lhs)
+func typeCheckMultiplicationExpr(expr *parsing.MultiplicationExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
@@ -260,33 +240,31 @@ func typeCheckMultiplicationExpr(expr *parsing.MultiplicationExpr) (ITypedExpres
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhsType,
-	}, lhsType
+		TypeInfo:       lhs.GetTypeInfo(),
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckNegationOperationExpr(expr *parsing.NegationOperationExpr) (ITypedExpression, IType) {
-	operand, operandType := typeCheckExpr(expr.Operand)
+func typeCheckNegationOperationExpr(expr *parsing.NegationOperationExpr) ITypedExpression {
+	operand := TypeCheckExpr(expr.Operand)
 
 	return &TypedNegationOperationExpr{
 		SourcePosition: expr.SourcePosition,
 		Operand:        operand,
-		TypeInfo:       operandType,
-	}, operandType
+		TypeInfo:       operand.GetTypeInfo(),
+	}
 }
 
 //=====================================================================================================================
 
-func typeCheckParenthesizedExpr(expr *parsing.ParenthesizedExpr) (ITypedExpression, IType) {
+func typeCheckParenthesizedExpr(expr *parsing.ParenthesizedExpr) ITypedExpression {
 
 	var items []ITypedExpression
-	var itemTypes []IType
 
 	for _, item0 := range expr.Items {
-		item, itemType := typeCheckExpr(item0)
+		item := TypeCheckExpr(item0)
 		items = append(items, item)
-		itemTypes = append(itemTypes, itemType)
 	}
 
 	// TODO: lots more logic needed
@@ -295,15 +273,15 @@ func typeCheckParenthesizedExpr(expr *parsing.ParenthesizedExpr) (ITypedExpressi
 		SourcePosition: expr.SourcePosition,
 		Delimiters:     expr.Delimiters,
 		Items:          items,
-		TypeInfo:       itemTypes[0],
-	}, itemTypes[0]
+		TypeInfo:       items[0].GetTypeInfo(),
+	}
 
 }
 
 //=====================================================================================================================
 
-func typeCheckSubtractionExpr(expr *parsing.SubtractionExpr) (ITypedExpression, IType) {
-	lhs, lhsType := typeCheckExpr(expr.Lhs)
+func typeCheckSubtractionExpr(expr *parsing.SubtractionExpr) ITypedExpression {
+	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
@@ -311,8 +289,8 @@ func typeCheckSubtractionExpr(expr *parsing.SubtractionExpr) (ITypedExpression, 
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhsType,
-	}, lhsType
+		TypeInfo:       lhs.GetTypeInfo(),
+	}
 }
 
 //=====================================================================================================================

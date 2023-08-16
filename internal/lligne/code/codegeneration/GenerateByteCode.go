@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"lligne-cli/internal/lligne/code/typechecking"
 	"lligne-cli/internal/lligne/runtime/bytecode"
-	"strconv"
 )
 
 //=====================================================================================================================
@@ -38,14 +37,14 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.IType
 		buildDivisionCodeBlock(codeBlock, expr)
 	case *typechecking.TypedEqualsExpr:
 		buildEqualsCodeBlock(codeBlock, expr)
-	case *typechecking.TypedFloatingPointLiteralExpr:
-		buildFloatingPointLiteralCodeBlock(codeBlock, expr)
+	case *typechecking.TypedFloat64LiteralExpr:
+		buildFloat64LiteralCodeBlock(codeBlock, expr)
 	case *typechecking.TypedGreaterThanExpr:
 		buildGreaterThanCodeBlock(codeBlock, expr)
 	case *typechecking.TypedGreaterThanOrEqualsExpr:
 		buildGreaterThanOrEqualsCodeBlock(codeBlock, expr)
-	case *typechecking.TypedIntegerLiteralExpr:
-		buildIntegerLiteralCodeBlock(codeBlock, expr)
+	case *typechecking.TypedInt64LiteralExpr:
+		buildInt64LiteralCodeBlock(codeBlock, expr)
 	case *typechecking.TypedLessThanExpr:
 		buildLessThanCodeBlock(codeBlock, expr)
 	case *typechecking.TypedLessThanOrEqualsExpr:
@@ -75,10 +74,10 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.IType
 
 func buildAdditionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedAdditionExpr) {
 
-	if e, ok := expr.Lhs.(*typechecking.TypedIntegerLiteralExpr); ok && e.Text == "1" {
+	if e, ok := expr.Lhs.(*typechecking.TypedInt64LiteralExpr); ok && e.Value == 1 {
 		buildCodeBlock(codeBlock, expr.Rhs)
 		codeBlock.Int64Increment()
-	} else if e, ok := expr.Rhs.(*typechecking.TypedIntegerLiteralExpr); ok && e.Text == "1" {
+	} else if e, ok := expr.Rhs.(*typechecking.TypedInt64LiteralExpr); ok && e.Value == 1 {
 		buildCodeBlock(codeBlock, expr.Lhs)
 		codeBlock.Int64Increment()
 	} else {
@@ -125,7 +124,7 @@ func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedEqualsExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
-	switch expr.TypeInfo.(type) {
+	switch expr.Lhs.GetTypeInfo().(type) {
 	case *typechecking.Float64Type:
 		codeBlock.Float64Equals()
 	case *typechecking.Int64Type:
@@ -137,15 +136,14 @@ func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Type
 
 //=====================================================================================================================
 
-func buildFloatingPointLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedFloatingPointLiteralExpr) {
-	value, _ := strconv.ParseFloat(expr.Text, 64)
-	switch value {
+func buildFloat64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedFloat64LiteralExpr) {
+	switch expr.Value {
 	case 0:
 		codeBlock.Float64LoadZero()
 	case 1:
 		codeBlock.Float64LoadOne()
 	default:
-		codeBlock.Float64LoadFloat64(value)
+		codeBlock.Float64LoadFloat64(expr.Value)
 	}
 }
 
@@ -154,7 +152,7 @@ func buildFloatingPointLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typ
 func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedGreaterThanExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
-	switch expr.TypeInfo.(type) {
+	switch expr.Lhs.GetTypeInfo().(type) {
 	case *typechecking.Float64Type:
 		codeBlock.Float64GreaterThan()
 	case *typechecking.Int64Type:
@@ -169,7 +167,7 @@ func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking
 func buildGreaterThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedGreaterThanOrEqualsExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
-	switch expr.TypeInfo.(type) {
+	switch expr.Lhs.GetTypeInfo().(type) {
 	case *typechecking.Float64Type:
 		codeBlock.Float64GreaterThanOrEquals()
 	case *typechecking.Int64Type:
@@ -181,15 +179,14 @@ func buildGreaterThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *type
 
 //=====================================================================================================================
 
-func buildIntegerLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedIntegerLiteralExpr) {
-	value, _ := strconv.Atoi(expr.Text)
-	switch value {
+func buildInt64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedInt64LiteralExpr) {
+	switch expr.Value {
 	case 0:
 		codeBlock.Int64LoadZero()
 	case 1:
 		codeBlock.Int64LoadOne()
 	default:
-		codeBlock.Int64LoadInt16(int16(value))
+		codeBlock.Int64LoadInt16(int16(expr.Value))
 	}
 }
 
@@ -198,7 +195,7 @@ func buildIntegerLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheck
 func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedLessThanExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
-	switch expr.TypeInfo.(type) {
+	switch expr.Lhs.GetTypeInfo().(type) {
 	case *typechecking.Float64Type:
 		codeBlock.Float64LessThan()
 	case *typechecking.Int64Type:
@@ -213,7 +210,7 @@ func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 func buildLessThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedLessThanOrEqualsExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
-	switch expr.TypeInfo.(type) {
+	switch expr.Lhs.GetTypeInfo().(type) {
 	case *typechecking.Float64Type:
 		codeBlock.Float64LessThanOrEquals()
 	case *typechecking.Int64Type:
@@ -290,7 +287,7 @@ func buildParenthesizedCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecki
 func buildSubtractionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedSubtractionExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 
-	if e, ok := expr.Rhs.(*typechecking.TypedIntegerLiteralExpr); ok && e.Text == "1" {
+	if e, ok := expr.Rhs.(*typechecking.TypedInt64LiteralExpr); ok && e.Value == 1 {
 		codeBlock.Int64Decrement()
 	} else {
 		buildCodeBlock(codeBlock, expr.Rhs)
