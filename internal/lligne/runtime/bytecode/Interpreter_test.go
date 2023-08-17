@@ -17,7 +17,7 @@ import (
 func TestInterpreter(t *testing.T) {
 
 	t.Run("simple exercise", func(t *testing.T) {
-		codeBlock := &CodeBlock{}
+		codeBlock := NewCodeBlock()
 		machine := NewMachine()
 		interpreter := &Interpreter{}
 

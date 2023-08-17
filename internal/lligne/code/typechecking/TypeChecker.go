@@ -8,6 +8,7 @@
 package typechecking
 
 import (
+	"fmt"
 	"lligne-cli/internal/lligne/code/parsing"
 	"strconv"
 )
@@ -50,10 +51,13 @@ func TypeCheckExpr(expression parsing.IExpression) ITypedExpression {
 		return typeCheckNegationOperationExpr(expr)
 	case *parsing.ParenthesizedExpr:
 		return typeCheckParenthesizedExpr(expr)
+	case *parsing.StringLiteralExpr:
+		return typeCheckStringLiteralExpr(expr)
 	case *parsing.SubtractionExpr:
 		return typeCheckSubtractionExpr(expr)
+
 	default:
-		panic("Unhandled type check")
+		panic(fmt.Sprintf("Missing case in TypeCheckExpr: %T\n", expression))
 
 	}
 
@@ -276,6 +280,17 @@ func typeCheckParenthesizedExpr(expr *parsing.ParenthesizedExpr) ITypedExpressio
 		TypeInfo:       items[0].GetTypeInfo(),
 	}
 
+}
+
+//=====================================================================================================================
+
+func typeCheckStringLiteralExpr(expr *parsing.StringLiteralExpr) ITypedExpression {
+	// TODO: escape chars
+	value := expr.Text[1 : len(expr.Text)-1]
+	return &TypedStringLiteralExpr{
+		SourcePosition: expr.SourcePosition,
+		Value:          value,
+	}
 }
 
 //=====================================================================================================================

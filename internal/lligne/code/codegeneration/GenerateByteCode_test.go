@@ -215,3 +215,44 @@ func TestGenerateFloat64ByteCode(t *testing.T) {
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+
+func TestGenerateStringByteCode(t *testing.T) {
+
+	checkString := func(sourceCode string, expected string) {
+		tokens, _ := scanning.Scan(sourceCode)
+
+		model := parsing.ParseExpression(sourceCode, tokens)
+
+		typedModel := typechecking.TypeCheckExpr(model)
+
+		codeBlock := GenerateByteCode(typedModel)
+
+		//print(codeBlock.Disassemble())
+
+		interpreter := &bytecode.Interpreter{}
+		machine := bytecode.NewMachine()
+
+		interpreter.Execute(machine, codeBlock)
+
+		actual := interpreter.StringGetResult(machine, codeBlock)
+
+		assert.Equal(t, expected, actual, "For source code: "+sourceCode)
+	}
+
+	t.Run("String expression evaluations", func(t *testing.T) {
+		type exprOutcome struct {
+			sourceCode    string
+			expectedValue string
+		}
+
+		tests := []exprOutcome{
+			{"'A string'", "A string"},
+		}
+		for _, test := range tests {
+			checkString(test.sourceCode, test.expectedValue)
+		}
+	})
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------

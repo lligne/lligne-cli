@@ -51,13 +51,19 @@ func (n *Interpreter) Int64GetResult(machine *Machine) int64 {
 	return int64(machine.Stack[machine.Top])
 }
 
+//---------------------------------------------------------------------------------------------------------------------
+
+func (n *Interpreter) StringGetResult(machine *Machine, codeBlock *CodeBlock) string {
+	return codeBlock.Strings.Get(uint16(machine.Stack[machine.Top]))
+}
+
 //=====================================================================================================================
 
 const true64 uint64 = 0xFFFFFFFFFFFFFFFF
 
 //---------------------------------------------------------------------------------------------------------------------
 
-var dispatch [36]func(*Machine, *CodeBlock)
+var dispatch [OpCode_Count]func(*Machine, *CodeBlock)
 
 //---------------------------------------------------------------------------------------------------------------------
 
@@ -329,6 +335,12 @@ func init() {
 
 	dispatch[OpCodeStop] = func(m *Machine, c *CodeBlock) {
 		m.IsRunning = false
+	}
+
+	dispatch[OpCodeStringLoad] = func(m *Machine, c *CodeBlock) {
+		m.Top += 1
+		m.Stack[m.Top] = uint64(c.OpCodes[m.IP])
+		m.IP += 1
 	}
 
 }

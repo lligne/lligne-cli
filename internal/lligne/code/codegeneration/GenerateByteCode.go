@@ -9,12 +9,13 @@ import (
 	"fmt"
 	"lligne-cli/internal/lligne/code/typechecking"
 	"lligne-cli/internal/lligne/runtime/bytecode"
+	"lligne-cli/internal/lligne/runtime/types"
 )
 
 //=====================================================================================================================
 
 func GenerateByteCode(expression typechecking.ITypedExpression) *bytecode.CodeBlock {
-	result := &bytecode.CodeBlock{}
+	result := bytecode.NewCodeBlock()
 
 	buildCodeBlock(result, expression)
 
@@ -61,10 +62,12 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.IType
 		buildNegationCodeBlock(codeBlock, expr)
 	case *typechecking.TypedParenthesizedExpr:
 		buildParenthesizedCodeBlock(codeBlock, expr)
+	case *typechecking.TypedStringLiteralExpr:
+		buildStringLiteralCodeBlock(codeBlock, expr)
 	case *typechecking.TypedSubtractionExpr:
 		buildSubtractionCodeBlock(codeBlock, expr)
 	default:
-		panic(fmt.Sprintf("unmatched node %s", expression))
+		panic(fmt.Sprintf("Missing case in buildCodeBlock: %T\n", expression))
 
 	}
 
@@ -84,9 +87,9 @@ func buildAdditionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 		buildCodeBlock(codeBlock, expr.Lhs)
 		buildCodeBlock(codeBlock, expr.Rhs)
 		switch expr.TypeInfo.(type) {
-		case *typechecking.Float64Type:
+		case *types.Float64Type:
 			codeBlock.Float64Add()
-		case *typechecking.Int64Type:
+		case *types.Int64Type:
 			codeBlock.Int64Add()
 		default:
 			panic("Undefined addition type")
@@ -110,9 +113,9 @@ func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.TypeInfo.(type) {
-	case *typechecking.Float64Type:
+	case *types.Float64Type:
 		codeBlock.Float64Divide()
-	case *typechecking.Int64Type:
+	case *types.Int64Type:
 		codeBlock.Int64Divide()
 	default:
 		panic("Undefined division type")
@@ -125,9 +128,9 @@ func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Type
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
-	case *typechecking.Float64Type:
+	case *types.Float64Type:
 		codeBlock.Float64Equals()
-	case *typechecking.Int64Type:
+	case *types.Int64Type:
 		codeBlock.Int64Equals()
 	default:
 		panic("Undefined equality type")
@@ -153,9 +156,9 @@ func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
-	case *typechecking.Float64Type:
+	case *types.Float64Type:
 		codeBlock.Float64GreaterThan()
-	case *typechecking.Int64Type:
+	case *types.Int64Type:
 		codeBlock.Int64GreaterThan()
 	default:
 		panic("Undefined greater than type")
@@ -168,9 +171,9 @@ func buildGreaterThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *type
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
-	case *typechecking.Float64Type:
+	case *types.Float64Type:
 		codeBlock.Float64GreaterThanOrEquals()
-	case *typechecking.Int64Type:
+	case *types.Int64Type:
 		codeBlock.Int64GreaterThanOrEquals()
 	default:
 		panic("Undefined greater than or equals type")
@@ -196,9 +199,9 @@ func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
-	case *typechecking.Float64Type:
+	case *types.Float64Type:
 		codeBlock.Float64LessThan()
-	case *typechecking.Int64Type:
+	case *types.Int64Type:
 		codeBlock.Int64LessThan()
 	default:
 		panic("Undefined less than type")
@@ -211,9 +214,9 @@ func buildLessThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typeche
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
-	case *typechecking.Float64Type:
+	case *types.Float64Type:
 		codeBlock.Float64LessThanOrEquals()
-	case *typechecking.Int64Type:
+	case *types.Int64Type:
 		codeBlock.Int64LessThanOrEquals()
 	default:
 		panic("Undefined less than or equals type")
@@ -249,9 +252,9 @@ func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheck
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.TypeInfo.(type) {
-	case *typechecking.Float64Type:
+	case *types.Float64Type:
 		codeBlock.Float64Multiply()
-	case *typechecking.Int64Type:
+	case *types.Int64Type:
 		codeBlock.Int64Multiply()
 	default:
 		panic("Undefined multiplication type")
@@ -263,9 +266,9 @@ func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheck
 func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedNegationOperationExpr) {
 	buildCodeBlock(codeBlock, expr.Operand)
 	switch expr.TypeInfo.(type) {
-	case *typechecking.Float64Type:
+	case *types.Float64Type:
 		codeBlock.Float64Negate()
-	case *typechecking.Int64Type:
+	case *types.Int64Type:
 		codeBlock.Int64Negate()
 	default:
 		panic("Undefined negation type")
@@ -284,6 +287,12 @@ func buildParenthesizedCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecki
 
 //=====================================================================================================================
 
+func buildStringLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedStringLiteralExpr) {
+	codeBlock.StringLoad(expr.Value)
+}
+
+//=====================================================================================================================
+
 func buildSubtractionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedSubtractionExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 
@@ -292,9 +301,9 @@ func buildSubtractionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking
 	} else {
 		buildCodeBlock(codeBlock, expr.Rhs)
 		switch expr.TypeInfo.(type) {
-		case *typechecking.Float64Type:
+		case *types.Float64Type:
 			codeBlock.Float64Subtract()
-		case *typechecking.Int64Type:
+		case *types.Int64Type:
 			codeBlock.Int64Subtract()
 		default:
 			panic("Undefined subtraction type")

@@ -14,8 +14,20 @@ import (
 
 //=====================================================================================================================
 
+// CodeBlock consists of a sequence of op codes plus a string constant pool.
 type CodeBlock struct {
 	OpCodes []uint16
+	Strings StringConstantPool
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// NewCodeBlock constructs a new empty code block.
+func NewCodeBlock() *CodeBlock {
+	return &CodeBlock{
+		OpCodes: nil,
+		Strings: NewStringConstantPool(),
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -95,10 +107,7 @@ func (cb *CodeBlock) Float64LessThanOrEquals() {
 func (cb *CodeBlock) Float64LoadFloat64(operand float64) {
 	bits := math.Float64bits(operand)
 	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64LoadFloat64)
-	cb.OpCodes = append(cb.OpCodes, uint16(bits))
-	cb.OpCodes = append(cb.OpCodes, uint16(bits>>16))
-	cb.OpCodes = append(cb.OpCodes, uint16(bits>>32))
-	cb.OpCodes = append(cb.OpCodes, uint16(bits>>48))
+	cb.append64BitOperand(bits)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -240,12 +249,28 @@ func (cb *CodeBlock) Stop() {
 	cb.OpCodes = append(cb.OpCodes, OpCodeStop)
 }
 
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) StringLoad(value string) {
+	cb.OpCodes = append(cb.OpCodes, OpCodeStringLoad)
+	cb.OpCodes = append(cb.OpCodes, cb.Strings.Put(value))
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) append64BitOperand(bits uint64) {
+	cb.OpCodes = append(cb.OpCodes, uint16(bits))
+	cb.OpCodes = append(cb.OpCodes, uint16(bits>>16))
+	cb.OpCodes = append(cb.OpCodes, uint16(bits>>32))
+	cb.OpCodes = append(cb.OpCodes, uint16(bits>>48))
+}
+
 //=====================================================================================================================
 
+// Disassemble dumps out the code block op codes.
 func (cb *CodeBlock) Disassemble() string {
 
 	output := &strings.Builder{}
-	var line int
 
 	ip := 0
 
@@ -253,91 +278,95 @@ func (cb *CodeBlock) Disassemble() string {
 
 		opCode := cb.OpCodes[ip]
 		ip += 1
-		line += 1
 
 		switch opCode {
 
 		case OpCodeBoolAnd:
-			write(output, line, "BOOL_AND")
+			write(output, ip, "BOOL_AND")
 		case OpCodeBoolLoadFalse:
-			write(output, line, "BOOL_LOAD_FALSE")
+			write(output, ip, "BOOL_LOAD_FALSE")
 		case OpCodeBoolLoadTrue:
-			write(output, line, "BOOL_LOAD_TRUE")
+			write(output, ip, "BOOL_LOAD_TRUE")
 		case OpCodeBoolNot:
-			write(output, line, "BOOL_NOT")
+			write(output, ip, "BOOL_NOT")
 		case OpCodeBoolOr:
-			write(output, line, "BOOL_OR")
+			write(output, ip, "BOOL_OR")
 
 		case OpCodeFloat64Add:
-			write(output, line, "FLOAT64_ADD")
+			write(output, ip, "FLOAT64_ADD")
 		case OpCodeFloat64Divide:
-			write(output, line, "FLOAT64_DIVIDE")
+			write(output, ip, "FLOAT64_DIVIDE")
 		case OpCodeFloat64Equals:
-			write(output, line, "FLOAT64_EQUALS")
+			write(output, ip, "FLOAT64_EQUALS")
 		case OpCodeFloat64GreaterThan:
-			write(output, line, "FLOAT64_GREATER")
+			write(output, ip, "FLOAT64_GREATER")
 		case OpCodeFloat64GreaterThanOrEquals:
-			write(output, line, "FLOAT64_NOT_LESS")
+			write(output, ip, "FLOAT64_NOT_LESS")
 		case OpCodeFloat64LessThan:
-			write(output, line, "FLOAT64_LESS")
+			write(output, ip, "FLOAT64_LESS")
 		case OpCodeFloat64LessThanOrEquals:
-			write(output, line, "FLOAT64_NOT_GREATER")
+			write(output, ip, "FLOAT64_NOT_GREATER")
 		case OpCodeFloat64LoadFloat64:
 			value := *(*float64)(unsafe.Pointer(&cb.OpCodes[ip]))
+			writeFloat64(output, ip, "FLOAT64_LOAD_FLOAT64", value)
 			ip += 4
-			writeFloat64(output, line, "FLOAT64_LOAD_FLOAT64", value)
 		case OpCodeFloat64LoadOne:
-			write(output, line, "FLOAT64_LOAD_ONE")
+			write(output, ip, "FLOAT64_LOAD_ONE")
 		case OpCodeFloat64LoadZero:
-			write(output, line, "FLOAT64_LOAD_ZERO")
+			write(output, ip, "FLOAT64_LOAD_ZERO")
 		case OpCodeFloat64Multiply:
-			write(output, line, "FLOAT64_MULTIPLY")
+			write(output, ip, "FLOAT64_MULTIPLY")
 		case OpCodeFloat64Negate:
-			write(output, line, "FLOAT64_NEGATE")
+			write(output, ip, "FLOAT64_NEGATE")
 		case OpCodeFloat64Subtract:
-			write(output, line, "FLOAT64_SUBTRACT")
+			write(output, ip, "FLOAT64_SUBTRACT")
 
 		case OpCodeInt64Add:
-			write(output, line, "INT64_ADD")
+			write(output, ip, "INT64_ADD")
 		case OpCodeInt64Decrement:
-			write(output, line, "INT64_DECREMENT")
+			write(output, ip, "INT64_DECREMENT")
 		case OpCodeInt64Divide:
-			write(output, line, "INT64_DIVIDE")
+			write(output, ip, "INT64_DIVIDE")
 		case OpCodeInt64Equals:
-			write(output, line, "INT64_EQUALS")
+			write(output, ip, "INT64_EQUALS")
 		case OpCodeInt64GreaterThan:
-			write(output, line, "INT64_GREATER")
+			write(output, ip, "INT64_GREATER")
 		case OpCodeInt64GreaterThanOrEquals:
-			write(output, line, "INT64_NOT_LESS")
+			write(output, ip, "INT64_NOT_LESS")
 		case OpCodeInt64Increment:
-			write(output, line, "INT64_INCREMENT")
+			write(output, ip, "INT64_INCREMENT")
 		case OpCodeInt64LessThan:
-			write(output, line, "INT64_LESS")
+			write(output, ip, "INT64_LESS")
 		case OpCodeInt64LessThanOrEquals:
-			write(output, line, "INT64_NOT_GREATER")
+			write(output, ip, "INT64_NOT_GREATER")
 		case OpCodeInt64LoadInt16:
 			value := int16(cb.OpCodes[ip])
+			writeInt16(output, ip, "INT64_LOAD_INT16", value)
 			ip += 1
-			writeInt16(output, line, "INT64_LOAD_INT16", value)
 		case OpCodeInt64LoadOne:
-			write(output, line, "INT64_LOAD_ONE")
+			write(output, ip, "INT64_LOAD_ONE")
 		case OpCodeInt64LoadZero:
-			write(output, line, "INT64_LOAD_ZERO")
+			write(output, ip, "INT64_LOAD_ZERO")
 		case OpCodeInt64Multiply:
-			write(output, line, "INT64_MULTIPLY")
+			write(output, ip, "INT64_MULTIPLY")
 		case OpCodeInt64Negate:
-			write(output, line, "INT64_NEGATE")
+			write(output, ip, "INT64_NEGATE")
 		case OpCodeInt64Subtract:
-			write(output, line, "INT64_SUBTRACT")
+			write(output, ip, "INT64_SUBTRACT")
 
 		case OpCodeNoOp:
-			write(output, line, "NO_OP")
+			write(output, ip, "NO_OP")
 
 		case OpCodeReturn:
-			write(output, line, "RETURN")
+			write(output, ip, "RETURN")
 		case OpCodeStop:
-			write(output, line, "STOP")
+			write(output, ip, "STOP")
 			return output.String() + "\n"
+
+		case OpCodeStringLoad:
+			value := cb.Strings.Get(cb.OpCodes[ip])
+			writeString(output, ip, "STRING_LOAD", value)
+			ip += 1
 		}
 
 	}
@@ -363,6 +392,13 @@ func writeFloat64(output *strings.Builder, line int, opCode string, operand floa
 func writeInt16(output *strings.Builder, line int, opCode string, operand int16) {
 	output.WriteString("\n")
 	output.WriteString(fmt.Sprintf("%4d  %-20s %6d", line, opCode, operand))
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func writeString(output *strings.Builder, line int, opCode string, operand string) {
+	output.WriteString("\n")
+	output.WriteString(fmt.Sprintf("%4d  %-20s '%s'", line, opCode, operand))
 }
 
 //=====================================================================================================================

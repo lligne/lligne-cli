@@ -50,6 +50,11 @@ const (
 	OpCodeInt64Multiply
 	OpCodeInt64Negate
 	OpCodeInt64Subtract
+
+	// Strings
+	OpCodeStringLoad
+
+	OpCode_Count
 )
 
 //=====================================================================================================================

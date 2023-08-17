@@ -17,7 +17,7 @@ import (
 func TestCodeBlockDisassembly(t *testing.T) {
 
 	t.Run("simple output", func(t *testing.T) {
-		codeBlock := &CodeBlock{}
+		codeBlock := NewCodeBlock()
 
 		codeBlock.BoolAnd()
 		codeBlock.BoolLoadFalse()
@@ -53,6 +53,8 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.Int64Negate()
 		codeBlock.Int64Subtract()
 
+		codeBlock.StringLoad("Example")
+
 		codeBlock.Return()
 		codeBlock.Stop()
 
@@ -73,26 +75,27 @@ func TestCodeBlockDisassembly(t *testing.T) {
   11  FLOAT64_LESS
   12  FLOAT64_NOT_GREATER
   13  FLOAT64_LOAD_FLOAT64      3.000
-  14  FLOAT64_LOAD_ONE
-  15  FLOAT64_LOAD_ZERO
-  16  FLOAT64_MULTIPLY
-  17  FLOAT64_NEGATE
-  18  FLOAT64_SUBTRACT
-  19  INT64_ADD
-  20  INT64_DIVIDE
-  21  INT64_EQUALS
-  22  INT64_GREATER
-  23  INT64_NOT_LESS
-  24  INT64_LESS
-  25  INT64_NOT_GREATER
-  26  INT64_LOAD_INT16          3
-  27  INT64_LOAD_ONE
-  28  INT64_LOAD_ZERO
-  29  INT64_MULTIPLY
-  30  INT64_NEGATE
-  31  INT64_SUBTRACT
-  32  RETURN
-  33  STOP
+  18  FLOAT64_LOAD_ONE
+  19  FLOAT64_LOAD_ZERO
+  20  FLOAT64_MULTIPLY
+  21  FLOAT64_NEGATE
+  22  FLOAT64_SUBTRACT
+  23  INT64_ADD
+  24  INT64_DIVIDE
+  25  INT64_EQUALS
+  26  INT64_GREATER
+  27  INT64_NOT_LESS
+  28  INT64_LESS
+  29  INT64_NOT_GREATER
+  30  INT64_LOAD_INT16          3
+  32  INT64_LOAD_ONE
+  33  INT64_LOAD_ZERO
+  34  INT64_MULTIPLY
+  35  INT64_NEGATE
+  36  INT64_SUBTRACT
+  37  STRING_LOAD          'Example'
+  39  RETURN
+  40  STOP
 `
 
 		assert.Equal(t, expected, actual)
