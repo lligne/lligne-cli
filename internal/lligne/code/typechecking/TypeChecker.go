@@ -10,6 +10,7 @@ package typechecking
 import (
 	"fmt"
 	"lligne-cli/internal/lligne/code/parsing"
+	"lligne-cli/internal/lligne/runtime/types"
 	"strconv"
 )
 
@@ -68,13 +69,25 @@ func TypeCheckExpr(expression parsing.IExpression) ITypedExpression {
 func typeCheckAdditionExpr(expr *parsing.AdditionExpr) ITypedExpression {
 	lhs := TypeCheckExpr(expr.Lhs)
 	rhs := TypeCheckExpr(expr.Rhs)
-	// TODO: ensure they're the same
-	// TODO: coerce integers
-	return &TypedAdditionExpr{
-		SourcePosition: expr.SourcePosition,
-		Lhs:            lhs,
-		Rhs:            rhs,
-		TypeInfo:       lhs.GetTypeInfo(),
+	switch lhs.GetTypeInfo().(type) {
+	case *types.Float64Type, *types.Int64Type:
+		// TODO: ensure they're the same
+		// TODO: coerce integers
+		return &TypedAdditionExpr{
+			SourcePosition: expr.SourcePosition,
+			Lhs:            lhs,
+			Rhs:            rhs,
+			TypeInfo:       lhs.GetTypeInfo(),
+		}
+	case *types.StringType:
+		// TODO: ensure both strings
+		return &TypedStringConcatenationExpr{
+			SourcePosition: expr.SourcePosition,
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+	default:
+		panic(fmt.Sprintf("Missing case in typeCheckAdditionExpr: %T\n", lhs.GetTypeInfo()))
 	}
 }
 

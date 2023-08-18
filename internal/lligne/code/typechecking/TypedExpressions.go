@@ -312,15 +312,27 @@ func (e *TypedSequenceLiteralExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
+// TypedStringConcatenationExpr represents concatenation of two strings.
+type TypedStringConcatenationExpr struct {
+	SourcePosition parsing.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+}
+
+func (e *TypedStringConcatenationExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedStringConcatenationExpr) GetTypeInfo() types.IType             { return types.StringTypeInstance }
+func (e *TypedStringConcatenationExpr) isTypeExpression()                    {}
+
+//=====================================================================================================================
+
 // TypedStringLiteralExpr represents a single string literal.
 type TypedStringLiteralExpr struct {
 	SourcePosition parsing.SourcePos
-	TypeInfo       types.IType
 	Value          string
 }
 
 func (e *TypedStringLiteralExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
-func (e *TypedStringLiteralExpr) GetTypeInfo() types.IType             { return e.TypeInfo }
+func (e *TypedStringLiteralExpr) GetTypeInfo() types.IType             { return types.StringTypeInstance }
 func (e *TypedStringLiteralExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================

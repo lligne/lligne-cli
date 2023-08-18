@@ -251,6 +251,12 @@ func (cb *CodeBlock) Stop() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) StringConcatenate() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeStringConcatenate)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) StringLoad(value string) {
 	cb.OpCodes = append(cb.OpCodes, OpCodeStringLoad)
 	cb.OpCodes = append(cb.OpCodes, cb.Strings.Put(value))
@@ -363,6 +369,8 @@ func (cb *CodeBlock) Disassemble() string {
 			write(output, ip, "STOP")
 			return output.String() + "\n"
 
+		case OpCodeStringConcatenate:
+			write(output, ip, "STRING_CONCATENATE")
 		case OpCodeStringLoad:
 			value := cb.Strings.Get(cb.OpCodes[ip])
 			writeString(output, ip, "STRING_LOAD", value)

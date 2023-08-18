@@ -246,7 +246,8 @@ func TestGenerateStringByteCode(t *testing.T) {
 		}
 
 		tests := []exprOutcome{
-			{"'A string'", "A string"},
+			//{"'A string'", "A string"},
+			{"'one' + 'two'", "onetwo"},
 		}
 		for _, test := range tests {
 			checkString(test.sourceCode, test.expectedValue)

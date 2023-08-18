@@ -54,7 +54,8 @@ func (n *Interpreter) Int64GetResult(machine *Machine) int64 {
 //---------------------------------------------------------------------------------------------------------------------
 
 func (n *Interpreter) StringGetResult(machine *Machine, codeBlock *CodeBlock) string {
-	return codeBlock.Strings.Get(uint16(machine.Stack[machine.Top]))
+	ptr := unsafe.Pointer(&(machine.Stack[machine.Top]))
+	return ***(***string)(unsafe.Pointer(&ptr))
 }
 
 //=====================================================================================================================
@@ -337,12 +338,34 @@ func init() {
 		m.IsRunning = false
 	}
 
+	// TODO: The string pointers converted to uint64s on the stack will not work with the garbage collector
+
+	dispatch[OpCodeStringConcatenate] = func(m *Machine, c *CodeBlock) {
+		rhsPtr := unsafe.Pointer(&(m.Stack[m.Top]))
+		rhs := ***(***string)(unsafe.Pointer(&rhsPtr))
+		m.Top -= 1
+		lhsPtr := unsafe.Pointer(&(m.Stack[m.Top]))
+		lhs := ***(***string)(unsafe.Pointer(&lhsPtr))
+		value := stringOnHeap()
+		*value = lhs + rhs
+		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&value))
+	}
+
 	dispatch[OpCodeStringLoad] = func(m *Machine, c *CodeBlock) {
 		m.Top += 1
-		m.Stack[m.Top] = uint64(c.OpCodes[m.IP])
+		value := stringOnHeap()
+		*value = c.Strings.Get(c.OpCodes[m.IP])
+		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&value))
 		m.IP += 1
 	}
 
+}
+
+//=====================================================================================================================
+
+//go:noinline
+func stringOnHeap() *string {
+	return new(string)
 }
 
 //=====================================================================================================================

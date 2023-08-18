@@ -62,6 +62,8 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.IType
 		buildNegationCodeBlock(codeBlock, expr)
 	case *typechecking.TypedParenthesizedExpr:
 		buildParenthesizedCodeBlock(codeBlock, expr)
+	case *typechecking.TypedStringConcatenationExpr:
+		buildStringConcatenationCodeBlock(codeBlock, expr)
 	case *typechecking.TypedStringLiteralExpr:
 		buildStringLiteralCodeBlock(codeBlock, expr)
 	case *typechecking.TypedSubtractionExpr:
@@ -92,7 +94,7 @@ func buildAdditionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 		case *types.Int64Type:
 			codeBlock.Int64Add()
 		default:
-			panic("Undefined addition type")
+			panic(fmt.Sprintf("Missing case in buildAdditionCodeBlock: %T\n", expr.TypeInfo))
 		}
 	}
 }
@@ -219,7 +221,7 @@ func buildLessThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typeche
 	case *types.Int64Type:
 		codeBlock.Int64LessThanOrEquals()
 	default:
-		panic("Undefined less than or equals type")
+		panic(fmt.Sprintf("Missing case in buildLessThanOrEqualsCodeBlock: %T\n", expr.Lhs.GetTypeInfo()))
 	}
 }
 
@@ -257,7 +259,7 @@ func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheck
 	case *types.Int64Type:
 		codeBlock.Int64Multiply()
 	default:
-		panic("Undefined multiplication type")
+		panic(fmt.Sprintf("Missing case in buildMultiplicationCodeBlock: %T\n", expr.TypeInfo))
 	}
 }
 
@@ -271,7 +273,7 @@ func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 	case *types.Int64Type:
 		codeBlock.Int64Negate()
 	default:
-		panic("Undefined negation type")
+		panic(fmt.Sprintf("Missing case in buildNegationCodeBlock: %T\n", expr.TypeInfo))
 	}
 }
 
@@ -283,6 +285,14 @@ func buildParenthesizedCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecki
 	} else {
 		panic("Records not yet handled")
 	}
+}
+
+//=====================================================================================================================
+
+func buildStringConcatenationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedStringConcatenationExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
+	codeBlock.StringConcatenate()
 }
 
 //=====================================================================================================================
@@ -306,7 +316,7 @@ func buildSubtractionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking
 		case *types.Int64Type:
 			codeBlock.Int64Subtract()
 		default:
-			panic("Undefined subtraction type")
+			panic(fmt.Sprintf("Missing case in buildSubtractionCodeBlock: %T\n", expr.TypeInfo))
 		}
 	}
 }

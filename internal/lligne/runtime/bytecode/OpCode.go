@@ -52,6 +52,7 @@ const (
 	OpCodeInt64Subtract
 
 	// Strings
+	OpCodeStringConcatenate
 	OpCodeStringLoad
 
 	OpCode_Count
