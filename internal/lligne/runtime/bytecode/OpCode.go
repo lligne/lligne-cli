@@ -27,7 +27,7 @@ const (
 	OpCodeFloat64GreaterThanOrEquals
 	OpCodeFloat64LessThan
 	OpCodeFloat64LessThanOrEquals
-	OpCodeFloat64LoadFloat64
+	OpCodeFloat64Load
 	OpCodeFloat64LoadOne
 	OpCodeFloat64LoadZero
 	OpCodeFloat64Multiply
@@ -44,7 +44,7 @@ const (
 	OpCodeInt64Increment
 	OpCodeInt64LessThan
 	OpCodeInt64LessThanOrEquals
-	OpCodeInt64LoadInt16
+	OpCodeInt64Load
 	OpCodeInt64LoadOne
 	OpCodeInt64LoadZero
 	OpCodeInt64Multiply

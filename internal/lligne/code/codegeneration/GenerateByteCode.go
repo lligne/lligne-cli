@@ -148,7 +148,7 @@ func buildFloat64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheck
 	case 1:
 		codeBlock.Float64LoadOne()
 	default:
-		codeBlock.Float64LoadFloat64(expr.Value)
+		codeBlock.Float64Load(expr.Value)
 	}
 }
 
@@ -191,7 +191,7 @@ func buildInt64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheckin
 	case 1:
 		codeBlock.Int64LoadOne()
 	default:
-		codeBlock.Int64LoadInt16(int16(expr.Value))
+		codeBlock.Int64Load(expr.Value)
 	}
 }
 

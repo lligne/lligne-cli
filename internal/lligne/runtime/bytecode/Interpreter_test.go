@@ -21,8 +21,8 @@ func TestInterpreter(t *testing.T) {
 		machine := NewMachine()
 		interpreter := &Interpreter{}
 
-		codeBlock.Int64LoadInt16(2)
-		codeBlock.Int64LoadInt16(3)
+		codeBlock.Int64Load(2)
+		codeBlock.Int64Load(3)
 		codeBlock.Int64LoadZero()
 		codeBlock.Int64LoadOne()
 		codeBlock.Int64Add()

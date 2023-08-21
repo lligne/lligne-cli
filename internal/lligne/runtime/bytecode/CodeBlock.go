@@ -104,9 +104,9 @@ func (cb *CodeBlock) Float64LessThanOrEquals() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (cb *CodeBlock) Float64LoadFloat64(operand float64) {
+func (cb *CodeBlock) Float64Load(operand float64) {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64Load)
 	bits := math.Float64bits(operand)
-	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64LoadFloat64)
 	cb.append64BitOperand(bits)
 }
 
@@ -196,9 +196,9 @@ func (cb *CodeBlock) Int64LessThanOrEquals() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (cb *CodeBlock) Int64LoadInt16(operand int16) {
-	cb.OpCodes = append(cb.OpCodes, OpCodeInt64LoadInt16)
-	cb.OpCodes = append(cb.OpCodes, uint16(operand))
+func (cb *CodeBlock) Int64Load(operand int64) {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Load)
+	cb.append64BitOperand(uint64(operand))
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -259,7 +259,7 @@ func (cb *CodeBlock) StringConcatenate() {
 
 func (cb *CodeBlock) StringLoad(value string) {
 	cb.OpCodes = append(cb.OpCodes, OpCodeStringLoad)
-	cb.OpCodes = append(cb.OpCodes, cb.Strings.Put(value))
+	cb.append64BitOperand(cb.Strings.Put(value))
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -312,9 +312,9 @@ func (cb *CodeBlock) Disassemble() string {
 			write(output, ip, "FLOAT64_LESS")
 		case OpCodeFloat64LessThanOrEquals:
 			write(output, ip, "FLOAT64_NOT_GREATER")
-		case OpCodeFloat64LoadFloat64:
+		case OpCodeFloat64Load:
 			value := *(*float64)(unsafe.Pointer(&cb.OpCodes[ip]))
-			writeFloat64(output, ip, "FLOAT64_LOAD_FLOAT64", value)
+			writeFloat64(output, ip, "FLOAT64_LOAD", value)
 			ip += 4
 		case OpCodeFloat64LoadOne:
 			write(output, ip, "FLOAT64_LOAD_ONE")
@@ -345,10 +345,10 @@ func (cb *CodeBlock) Disassemble() string {
 			write(output, ip, "INT64_LESS")
 		case OpCodeInt64LessThanOrEquals:
 			write(output, ip, "INT64_NOT_GREATER")
-		case OpCodeInt64LoadInt16:
-			value := int16(cb.OpCodes[ip])
-			writeInt16(output, ip, "INT64_LOAD_INT16", value)
-			ip += 1
+		case OpCodeInt64Load:
+			value := *(*int64)(unsafe.Pointer(&cb.OpCodes[ip]))
+			writeInt64(output, ip, "INT64_LOAD", value)
+			ip += 4
 		case OpCodeInt64LoadOne:
 			write(output, ip, "INT64_LOAD_ONE")
 		case OpCodeInt64LoadZero:
@@ -372,9 +372,9 @@ func (cb *CodeBlock) Disassemble() string {
 		case OpCodeStringConcatenate:
 			write(output, ip, "STRING_CONCATENATE")
 		case OpCodeStringLoad:
-			value := cb.Strings.Get(cb.OpCodes[ip])
-			writeString(output, ip, "STRING_LOAD", value)
-			ip += 1
+			value := *(*uint64)(unsafe.Pointer(&cb.OpCodes[ip]))
+			writeString(output, ip, "STRING_LOAD", cb.Strings.Get(value))
+			ip += 4
 		}
 
 	}
@@ -397,7 +397,7 @@ func writeFloat64(output *strings.Builder, line int, opCode string, operand floa
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func writeInt16(output *strings.Builder, line int, opCode string, operand int16) {
+func writeInt64(output *strings.Builder, line int, opCode string, operand int64) {
 	output.WriteString("\n")
 	output.WriteString(fmt.Sprintf("%4d  %-20s %6d", line, opCode, operand))
 }

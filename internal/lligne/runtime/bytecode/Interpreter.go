@@ -18,12 +18,14 @@ type Interpreter struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// BoolGetResult returns a boolean result from the top of the value stack.
 func (n *Interpreter) BoolGetResult(machine *Machine) bool {
 	return machine.Stack[machine.Top] != 0
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// Execute runs the op code of the given code block within the given machine.
 func (n *Interpreter) Execute(machine *Machine, code *CodeBlock) {
 
 	machine.IP = 0
@@ -41,21 +43,23 @@ func (n *Interpreter) Execute(machine *Machine, code *CodeBlock) {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// Float64GetResult returns a 64 bit floating point result from the top of the value stack.
 func (n *Interpreter) Float64GetResult(machine *Machine) float64 {
 	return math.Float64frombits(machine.Stack[machine.Top])
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// Int64GetResult returns a 64 bit integer result from the top of the value stack.
 func (n *Interpreter) Int64GetResult(machine *Machine) int64 {
 	return int64(machine.Stack[machine.Top])
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// StringGetResult returns a string result from the top of the value stack.
 func (n *Interpreter) StringGetResult(machine *Machine, codeBlock *CodeBlock) string {
-	ptr := unsafe.Pointer(&(machine.Stack[machine.Top]))
-	return ***(***string)(unsafe.Pointer(&ptr))
+	return codeBlock.Strings.Get(machine.Stack[machine.Top])
 }
 
 //=====================================================================================================================
@@ -64,6 +68,7 @@ const true64 uint64 = 0xFFFFFFFFFFFFFFFF
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// dispatch is a jump table of op code handlers.
 var dispatch [OpCode_Count]func(*Machine, *CodeBlock)
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -179,7 +184,7 @@ func init() {
 		}
 	}
 
-	dispatch[OpCodeFloat64LoadFloat64] = func(m *Machine, c *CodeBlock) {
+	dispatch[OpCodeFloat64Load] = func(m *Machine, c *CodeBlock) {
 		m.Top += 1
 		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&c.OpCodes[m.IP]))
 		m.IP += 4
@@ -292,10 +297,10 @@ func init() {
 		}
 	}
 
-	dispatch[OpCodeInt64LoadInt16] = func(m *Machine, c *CodeBlock) {
+	dispatch[OpCodeInt64Load] = func(m *Machine, c *CodeBlock) {
 		m.Top += 1
-		m.Stack[m.Top] = uint64(c.OpCodes[m.IP])
-		m.IP += 1
+		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&c.OpCodes[m.IP]))
+		m.IP += 4
 	}
 
 	dispatch[OpCodeInt64LoadOne] = func(m *Machine, c *CodeBlock) {
@@ -338,34 +343,19 @@ func init() {
 		m.IsRunning = false
 	}
 
-	// TODO: The string pointers converted to uint64s on the stack will not work with the garbage collector
-
 	dispatch[OpCodeStringConcatenate] = func(m *Machine, c *CodeBlock) {
-		rhsPtr := unsafe.Pointer(&(m.Stack[m.Top]))
-		rhs := ***(***string)(unsafe.Pointer(&rhsPtr))
+		rhs := c.Strings.Get(m.Stack[m.Top])
 		m.Top -= 1
-		lhsPtr := unsafe.Pointer(&(m.Stack[m.Top]))
-		lhs := ***(***string)(unsafe.Pointer(&lhsPtr))
-		value := stringOnHeap()
-		*value = lhs + rhs
-		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&value))
+		lhs := c.Strings.Get(m.Stack[m.Top])
+		m.Stack[m.Top] = c.Strings.Put(lhs + rhs)
 	}
 
 	dispatch[OpCodeStringLoad] = func(m *Machine, c *CodeBlock) {
 		m.Top += 1
-		value := stringOnHeap()
-		*value = c.Strings.Get(c.OpCodes[m.IP])
-		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&value))
-		m.IP += 1
+		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&c.OpCodes[m.IP]))
+		m.IP += 4
 	}
 
-}
-
-//=====================================================================================================================
-
-//go:noinline
-func stringOnHeap() *string {
-	return new(string)
 }
 
 //=====================================================================================================================

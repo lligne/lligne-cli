@@ -32,7 +32,7 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.Float64GreaterThanOrEquals()
 		codeBlock.Float64LessThan()
 		codeBlock.Float64LessThanOrEquals()
-		codeBlock.Float64LoadFloat64(3)
+		codeBlock.Float64Load(3)
 		codeBlock.Float64LoadOne()
 		codeBlock.Float64LoadZero()
 		codeBlock.Float64Multiply()
@@ -46,7 +46,7 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.Int64GreaterThanOrEquals()
 		codeBlock.Int64LessThan()
 		codeBlock.Int64LessThanOrEquals()
-		codeBlock.Int64LoadInt16(3)
+		codeBlock.Int64Load(3)
 		codeBlock.Int64LoadOne()
 		codeBlock.Int64LoadZero()
 		codeBlock.Int64Multiply()
@@ -76,7 +76,7 @@ func TestCodeBlockDisassembly(t *testing.T) {
   10  FLOAT64_NOT_LESS
   11  FLOAT64_LESS
   12  FLOAT64_NOT_GREATER
-  13  FLOAT64_LOAD_FLOAT64      3.000
+  13  FLOAT64_LOAD              3.000
   18  FLOAT64_LOAD_ONE
   19  FLOAT64_LOAD_ZERO
   20  FLOAT64_MULTIPLY
@@ -89,17 +89,17 @@ func TestCodeBlockDisassembly(t *testing.T) {
   27  INT64_NOT_LESS
   28  INT64_LESS
   29  INT64_NOT_GREATER
-  30  INT64_LOAD_INT16          3
-  32  INT64_LOAD_ONE
-  33  INT64_LOAD_ZERO
-  34  INT64_MULTIPLY
-  35  INT64_NEGATE
-  36  INT64_SUBTRACT
-  37  STRING_CONCATENATE
-  38  STRING_LOAD          'Example'
-  40  STRING_LOAD          'Sample'
-  42  RETURN
-  43  STOP
+  30  INT64_LOAD                3
+  35  INT64_LOAD_ONE
+  36  INT64_LOAD_ZERO
+  37  INT64_MULTIPLY
+  38  INT64_NEGATE
+  39  INT64_SUBTRACT
+  40  STRING_CONCATENATE
+  41  STRING_LOAD          'Example'
+  46  STRING_LOAD          'Sample'
+  51  RETURN
+  52  STOP
 `
 
 		assert.Equal(t, expected, actual)

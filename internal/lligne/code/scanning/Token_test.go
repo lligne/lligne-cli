@@ -27,7 +27,9 @@ func TestLligneOrigin(t *testing.T) {
 		expected := uintptr(8)
 		actual := unsafe.Sizeof(token)
 
-		assert.Equal(t, expected, actual, "to string")
+		assert.Equal(t, expected, actual, "wrong token size")
+
+		assert.Equal(t, uintptr(16), unsafe.Sizeof("abc"), "wrong string size")
 	})
 
 }
