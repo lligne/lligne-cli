@@ -60,9 +60,7 @@ const (
 	TokenTypeIn
 	TokenTypeIs
 	TokenTypeNot
-	TokenTypeOf
 	TokenTypeOr
-	TokenTypeTo
 	TokenTypeTrue
 	TokenTypeWhen
 	TokenTypeWhere
@@ -178,12 +176,8 @@ func (tt TokenType) String() string {
 		return "is"
 	case TokenTypeNot:
 		return "not"
-	case TokenTypeOf:
-		return "of"
 	case TokenTypeOr:
 		return "or"
-	case TokenTypeTo:
-		return "to"
 	case TokenTypeTrue:
 		return "true"
 	case TokenTypeWhen:

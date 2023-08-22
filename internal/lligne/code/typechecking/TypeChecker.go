@@ -16,46 +16,46 @@ import (
 
 //=====================================================================================================================
 
-func TypeCheckExpr(expression parsing.IExpression) ITypedExpression {
+func TypeCheckExpr(sourceCode string, expression parsing.IExpression) ITypedExpression {
 
 	switch expr := expression.(type) {
 
 	case *parsing.AdditionExpr:
-		return typeCheckAdditionExpr(expr)
+		return typeCheckAdditionExpr(sourceCode, expr)
 	case *parsing.BooleanLiteralExpr:
 		return typeCheckBooleanLiteralExpr(expr)
 	case *parsing.DivisionExpr:
-		return typeCheckDivisionExpr(expr)
+		return typeCheckDivisionExpr(sourceCode, expr)
 	case *parsing.EqualsExpr:
-		return typeCheckEqualsExpr(expr)
+		return typeCheckEqualsExpr(sourceCode, expr)
 	case *parsing.FloatingPointLiteralExpr:
-		return typeCheckFloatingPointLiteralExpr(expr)
+		return typeCheckFloatingPointLiteralExpr(sourceCode, expr)
 	case *parsing.GreaterThanExpr:
-		return typeCheckGreaterThanExpr(expr)
+		return typeCheckGreaterThanExpr(sourceCode, expr)
 	case *parsing.GreaterThanOrEqualsExpr:
-		return typeCheckGreaterThanOrEqualsExpr(expr)
+		return typeCheckGreaterThanOrEqualsExpr(sourceCode, expr)
 	case *parsing.IntegerLiteralExpr:
-		return typeCheckIntegerLiteralExpr(expr)
+		return typeCheckIntegerLiteralExpr(sourceCode, expr)
 	case *parsing.LessThanExpr:
-		return typeCheckLessThanExpr(expr)
+		return typeCheckLessThanExpr(sourceCode, expr)
 	case *parsing.LessThanOrEqualsExpr:
-		return typeCheckLessThanOrEqualsExpr(expr)
+		return typeCheckLessThanOrEqualsExpr(sourceCode, expr)
 	case *parsing.LogicalAndExpr:
-		return typeCheckLogicalAndExpr(expr)
+		return typeCheckLogicalAndExpr(sourceCode, expr)
 	case *parsing.LogicalNotOperationExpr:
-		return typeCheckLogicalNotOperationExpr(expr)
+		return typeCheckLogicalNotOperationExpr(sourceCode, expr)
 	case *parsing.LogicalOrExpr:
-		return typeCheckLogicalOrExpr(expr)
+		return typeCheckLogicalOrExpr(sourceCode, expr)
 	case *parsing.MultiplicationExpr:
-		return typeCheckMultiplicationExpr(expr)
+		return typeCheckMultiplicationExpr(sourceCode, expr)
 	case *parsing.NegationOperationExpr:
-		return typeCheckNegationOperationExpr(expr)
+		return typeCheckNegationOperationExpr(sourceCode, expr)
 	case *parsing.ParenthesizedExpr:
-		return typeCheckParenthesizedExpr(expr)
+		return typeCheckParenthesizedExpr(sourceCode, expr)
 	case *parsing.StringLiteralExpr:
-		return typeCheckStringLiteralExpr(expr)
+		return typeCheckStringLiteralExpr(sourceCode, expr)
 	case *parsing.SubtractionExpr:
-		return typeCheckSubtractionExpr(expr)
+		return typeCheckSubtractionExpr(sourceCode, expr)
 
 	default:
 		panic(fmt.Sprintf("Missing case in TypeCheckExpr: %T\n", expression))
@@ -66,9 +66,9 @@ func TypeCheckExpr(expression parsing.IExpression) ITypedExpression {
 
 //=====================================================================================================================
 
-func typeCheckAdditionExpr(expr *parsing.AdditionExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckAdditionExpr(sourceCode string, expr *parsing.AdditionExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	switch lhs.GetTypeInfo().(type) {
 	case *types.Float64Type, *types.Int64Type:
 		// TODO: ensure they're the same
@@ -102,9 +102,9 @@ func typeCheckBooleanLiteralExpr(expr *parsing.BooleanLiteralExpr) ITypedExpress
 
 //=====================================================================================================================
 
-func typeCheckDivisionExpr(expr *parsing.DivisionExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckDivisionExpr(sourceCode string, expr *parsing.DivisionExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
 	return &TypedDivisionExpr{
@@ -117,9 +117,9 @@ func typeCheckDivisionExpr(expr *parsing.DivisionExpr) ITypedExpression {
 
 //=====================================================================================================================
 
-func typeCheckEqualsExpr(expr *parsing.EqualsExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckEqualsExpr(sourceCode string, expr *parsing.EqualsExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
 	return &TypedEqualsExpr{
@@ -131,8 +131,9 @@ func typeCheckEqualsExpr(expr *parsing.EqualsExpr) ITypedExpression {
 
 //=====================================================================================================================
 
-func typeCheckFloatingPointLiteralExpr(expr *parsing.FloatingPointLiteralExpr) ITypedExpression {
-	value, _ := strconv.ParseFloat(expr.Text, 64)
+func typeCheckFloatingPointLiteralExpr(sourceCode string, expr *parsing.FloatingPointLiteralExpr) ITypedExpression {
+	valueStr := expr.SourcePosition.GetText(sourceCode)
+	value, _ := strconv.ParseFloat(valueStr, 64)
 	return &TypedFloat64LiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          value,
@@ -141,9 +142,9 @@ func typeCheckFloatingPointLiteralExpr(expr *parsing.FloatingPointLiteralExpr) I
 
 //=====================================================================================================================
 
-func typeCheckGreaterThanExpr(expr *parsing.GreaterThanExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckGreaterThanExpr(sourceCode string, expr *parsing.GreaterThanExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
 	return &TypedGreaterThanExpr{
@@ -155,9 +156,9 @@ func typeCheckGreaterThanExpr(expr *parsing.GreaterThanExpr) ITypedExpression {
 
 //=====================================================================================================================
 
-func typeCheckGreaterThanOrEqualsExpr(expr *parsing.GreaterThanOrEqualsExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckGreaterThanOrEqualsExpr(sourceCode string, expr *parsing.GreaterThanOrEqualsExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
 	return &TypedGreaterThanOrEqualsExpr{
@@ -169,8 +170,9 @@ func typeCheckGreaterThanOrEqualsExpr(expr *parsing.GreaterThanOrEqualsExpr) ITy
 
 //=====================================================================================================================
 
-func typeCheckIntegerLiteralExpr(expr *parsing.IntegerLiteralExpr) ITypedExpression {
-	value, _ := strconv.ParseInt(expr.Text, 10, 64)
+func typeCheckIntegerLiteralExpr(sourceCode string, expr *parsing.IntegerLiteralExpr) ITypedExpression {
+	valueStr := expr.SourcePosition.GetText(sourceCode)
+	value, _ := strconv.ParseInt(valueStr, 10, 64)
 	return &TypedInt64LiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          value,
@@ -179,9 +181,9 @@ func typeCheckIntegerLiteralExpr(expr *parsing.IntegerLiteralExpr) ITypedExpress
 
 //=====================================================================================================================
 
-func typeCheckLessThanExpr(expr *parsing.LessThanExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckLessThanExpr(sourceCode string, expr *parsing.LessThanExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
 	return &TypedLessThanExpr{
@@ -193,9 +195,9 @@ func typeCheckLessThanExpr(expr *parsing.LessThanExpr) ITypedExpression {
 
 //=====================================================================================================================
 
-func typeCheckLessThanOrEqualsExpr(expr *parsing.LessThanOrEqualsExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckLessThanOrEqualsExpr(sourceCode string, expr *parsing.LessThanOrEqualsExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
 	return &TypedLessThanOrEqualsExpr{
@@ -207,9 +209,9 @@ func typeCheckLessThanOrEqualsExpr(expr *parsing.LessThanOrEqualsExpr) ITypedExp
 
 //=====================================================================================================================
 
-func typeCheckLogicalAndExpr(expr *parsing.LogicalAndExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckLogicalAndExpr(sourceCode string, expr *parsing.LogicalAndExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	// TODO: ensure they're both boolean
 	// TODO: coerce integers
 	return &TypedLogicalAndExpr{
@@ -221,8 +223,8 @@ func typeCheckLogicalAndExpr(expr *parsing.LogicalAndExpr) ITypedExpression {
 
 //=====================================================================================================================
 
-func typeCheckLogicalNotOperationExpr(expr *parsing.LogicalNotOperationExpr) ITypedExpression {
-	operand := TypeCheckExpr(expr.Operand)
+func typeCheckLogicalNotOperationExpr(sourceCode string, expr *parsing.LogicalNotOperationExpr) ITypedExpression {
+	operand := TypeCheckExpr(sourceCode, expr.Operand)
 
 	// TODO: validate that operands are boolean
 
@@ -234,9 +236,9 @@ func typeCheckLogicalNotOperationExpr(expr *parsing.LogicalNotOperationExpr) ITy
 
 //=====================================================================================================================
 
-func typeCheckLogicalOrExpr(expr *parsing.LogicalOrExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckLogicalOrExpr(sourceCode string, expr *parsing.LogicalOrExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	// TODO: ensure they're both boolean
 	// TODO: coerce integers
 	return &TypedLogicalOrExpr{
@@ -248,9 +250,9 @@ func typeCheckLogicalOrExpr(expr *parsing.LogicalOrExpr) ITypedExpression {
 
 //=====================================================================================================================
 
-func typeCheckMultiplicationExpr(expr *parsing.MultiplicationExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckMultiplicationExpr(sourceCode string, expr *parsing.MultiplicationExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
 	return &TypedMultiplicationExpr{
@@ -263,8 +265,8 @@ func typeCheckMultiplicationExpr(expr *parsing.MultiplicationExpr) ITypedExpress
 
 //=====================================================================================================================
 
-func typeCheckNegationOperationExpr(expr *parsing.NegationOperationExpr) ITypedExpression {
-	operand := TypeCheckExpr(expr.Operand)
+func typeCheckNegationOperationExpr(sourceCode string, expr *parsing.NegationOperationExpr) ITypedExpression {
+	operand := TypeCheckExpr(sourceCode, expr.Operand)
 
 	return &TypedNegationOperationExpr{
 		SourcePosition: expr.SourcePosition,
@@ -275,12 +277,12 @@ func typeCheckNegationOperationExpr(expr *parsing.NegationOperationExpr) ITypedE
 
 //=====================================================================================================================
 
-func typeCheckParenthesizedExpr(expr *parsing.ParenthesizedExpr) ITypedExpression {
+func typeCheckParenthesizedExpr(sourceCode string, expr *parsing.ParenthesizedExpr) ITypedExpression {
 
 	var items []ITypedExpression
 
 	for _, item0 := range expr.Items {
-		item := TypeCheckExpr(item0)
+		item := TypeCheckExpr(sourceCode, item0)
 		items = append(items, item)
 	}
 
@@ -297,9 +299,20 @@ func typeCheckParenthesizedExpr(expr *parsing.ParenthesizedExpr) ITypedExpressio
 
 //=====================================================================================================================
 
-func typeCheckStringLiteralExpr(expr *parsing.StringLiteralExpr) ITypedExpression {
+func typeCheckStringLiteralExpr(sourceCode string, expr *parsing.StringLiteralExpr) ITypedExpression {
+	text := expr.SourcePosition.GetText(sourceCode)
+	var value string
+
+	switch expr.Delimiters {
+	case parsing.StringDelimitersDoubleQuotes:
+		value = text[1 : len(text)-1]
+	case parsing.StringDelimitersSingleQuotes:
+		value = text[1 : len(text)-1]
+	default:
+		panic("TODO: Unhandled string delimiters")
+	}
+
 	// TODO: escape chars
-	value := expr.Text[1 : len(expr.Text)-1]
 	return &TypedStringLiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          value,
@@ -308,9 +321,9 @@ func typeCheckStringLiteralExpr(expr *parsing.StringLiteralExpr) ITypedExpressio
 
 //=====================================================================================================================
 
-func typeCheckSubtractionExpr(expr *parsing.SubtractionExpr) ITypedExpression {
-	lhs := TypeCheckExpr(expr.Lhs)
-	rhs := TypeCheckExpr(expr.Rhs)
+func typeCheckSubtractionExpr(sourceCode string, expr *parsing.SubtractionExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
 	// TODO: ensure they're the same
 	// TODO: coerce integers
 	return &TypedSubtractionExpr{

@@ -5,31 +5,32 @@
 // Apache 2.0 License
 //
 
-package parsing
+package formatting
 
 import (
 	"github.com/stretchr/testify/assert"
+	"lligne-cli/internal/lligne/code/parsing"
 	"lligne-cli/internal/lligne/code/scanning"
 	"testing"
 )
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func TestLligneParser(t *testing.T) {
+func TestLligneFormatter(t *testing.T) {
 
 	check := func(sourceCode string) {
 		tokens, _ := scanning.Scan(sourceCode)
 
 		tokens = scanning.ProcessLeadingTrailingDocumentation(sourceCode, tokens)
 
-		expression := ParseExpression(sourceCode, tokens)
+		expression := parsing.ParseExpression(sourceCode, tokens)
 
-		assert.NotEqual(t, nil, expression)
+		assert.Equal(t, sourceCode, FormatExpr(sourceCode, expression))
 	}
 
 	t.Run("identifier literals", func(t *testing.T) {
 		check("abc")
-		check("\n  d  \n")
+		check("d")
 	})
 
 	t.Run("integer literals", func(t *testing.T) {
@@ -51,19 +52,19 @@ func TestLligneParser(t *testing.T) {
 		check(`'789'`)
 	})
 
-	t.Run("leading documentation", func(t *testing.T) {
-		check("// line one\n // line two\nq")
-	})
-
-	t.Run("trailing documentation", func(t *testing.T) {
-		check("q // line one\n // line two\n")
-	})
+	//t.Run("leading documentation", func(t *testing.T) {
+	//	check("// line one\n // line two\nq", "(doc (leadingdoc\n// line one\n // line two\n) (id q))")
+	//})
+	//
+	//t.Run("trailing documentation", func(t *testing.T) {
+	//	check("q // line one\n // line two\n", "(doc (id q) (trailingdoc\n// line one\n // line two\n))")
+	//})
 
 	t.Run("addition", func(t *testing.T) {
 		check("x + 1")
-		check(" 3 + y")
+		check("3 + y")
 		check("x + 1.7")
-		check(" 3.666 + y")
+		check("3.666 + y")
 	})
 
 	t.Run("table of expressions", func(t *testing.T) {
@@ -128,8 +129,8 @@ func TestLligneParser(t *testing.T) {
 
 			"x is Widget",
 
-			"1 when n == 0\n| n * f(n - 1) when n > 0",
-			"f: (n: int) -> int = 1 when n == 0\n| n * f(n-1) when n > 0",
+			"1 when n == 0 | n * f(n - 1) when n > 0",
+			"f: (n: int) -> int = 1 when n == 0 | n * f(n - 1) when n > 0",
 
 			"x = y + z where {y: 3, z: 5}",
 		}

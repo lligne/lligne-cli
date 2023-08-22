@@ -17,7 +17,7 @@ import (
 // CodeBlock consists of a sequence of op codes plus a string constant pool.
 type CodeBlock struct {
 	OpCodes []uint16
-	Strings StringConstantPool
+	Strings StringPool
 }
 
 //---------------------------------------------------------------------------------------------------------------------

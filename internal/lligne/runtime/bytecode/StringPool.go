@@ -7,8 +7,8 @@ package bytecode
 
 //=====================================================================================================================
 
-// StringConstantPool holds a list of strings interned so that they can be retrieved by index.
-type StringConstantPool struct {
+// StringPool holds a list of strings interned so that they can be retrieved by index.
+type StringPool struct {
 	strings []string
 	indexes map[string]uint64
 }
@@ -16,8 +16,8 @@ type StringConstantPool struct {
 //---------------------------------------------------------------------------------------------------------------------
 
 // NewStringConstantPool creates a new empty string pool.
-func NewStringConstantPool() StringConstantPool {
-	return StringConstantPool{
+func NewStringConstantPool() StringPool {
+	return StringPool{
 		strings: nil,
 		indexes: make(map[string]uint64),
 	}
@@ -26,7 +26,7 @@ func NewStringConstantPool() StringConstantPool {
 //---------------------------------------------------------------------------------------------------------------------
 
 // Get returns the string at the given index.
-func (p *StringConstantPool) Get(index uint64) string {
+func (p *StringPool) Get(index uint64) string {
 	return p.strings[index]
 }
 
@@ -34,7 +34,7 @@ func (p *StringConstantPool) Get(index uint64) string {
 
 // Put looks for the string already in the pool. It adds it if not there.
 // Returns the index of the new or existing entry.
-func (p *StringConstantPool) Put(value string) uint64 {
+func (p *StringPool) Put(value string) uint64 {
 	result, found := p.indexes[value]
 
 	if !found {

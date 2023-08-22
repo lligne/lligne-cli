@@ -14,7 +14,7 @@ import (
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func TestStringConstantPool(t *testing.T) {
+func TestStringPool(t *testing.T) {
 
 	t.Run("pooled strings", func(t *testing.T) {
 		pool := NewStringConstantPool()

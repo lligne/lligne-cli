@@ -27,7 +27,7 @@ func TestGenerateBoolByteCode(t *testing.T) {
 
 		model := parsing.ParseExpression(sourceCode, tokens)
 
-		typedModel := typechecking.TypeCheckExpr(model)
+		typedModel := typechecking.TypeCheckExpr(sourceCode, model)
 
 		codeBlock := GenerateByteCode(typedModel)
 
@@ -112,7 +112,7 @@ func TestGenerateInt64ByteCode(t *testing.T) {
 
 		model := parsing.ParseExpression(sourceCode, tokens)
 
-		typedModel := typechecking.TypeCheckExpr(model)
+		typedModel := typechecking.TypeCheckExpr(sourceCode, model)
 
 		codeBlock := GenerateByteCode(typedModel)
 
@@ -169,7 +169,7 @@ func TestGenerateFloat64ByteCode(t *testing.T) {
 
 		model := parsing.ParseExpression(sourceCode, tokens)
 
-		typedModel := typechecking.TypeCheckExpr(model)
+		typedModel := typechecking.TypeCheckExpr(sourceCode, model)
 
 		codeBlock := GenerateByteCode(typedModel)
 
@@ -223,7 +223,7 @@ func TestGenerateStringByteCode(t *testing.T) {
 
 		model := parsing.ParseExpression(sourceCode, tokens)
 
-		typedModel := typechecking.TypeCheckExpr(model)
+		typedModel := typechecking.TypeCheckExpr(sourceCode, model)
 
 		codeBlock := GenerateByteCode(typedModel)
 
@@ -246,9 +246,12 @@ func TestGenerateStringByteCode(t *testing.T) {
 		}
 
 		tests := []exprOutcome{
-			{"'A string'", "A string"},
-			{"'one' + 'two'", "onetwo"},
-			{"'one' + ('two' + 'three')", "onetwothree"},
+			{`'A string'`, "A string"},
+			{`'one' + 'two'`, "onetwo"},
+			{`'one' + ('two' + 'three')`, "onetwothree"},
+			{`"A string"`, "A string"},
+			{`"one" + "two"`, "onetwo"},
+			{`"one" + ("two" + "three")`, "onetwothree"},
 		}
 		for _, test := range tests {
 			checkString(test.sourceCode, test.expectedValue)

@@ -26,6 +26,20 @@ const (
 
 //=====================================================================================================================
 
+// StringDelimiters is an enumeration of start/stop delimiters for string literal expressions.
+type StringDelimiters int
+
+const (
+	StringDelimitersSingleQuotes StringDelimiters = 1 + iota
+	StringDelimitersDoubleQuotes
+	StringDelimitersBackTicks
+	StringDelimitersSingleQuotesMultiline
+	StringDelimitersDoubleQuotesMultiline
+	StringDelimitersBackTicksMultiline
+)
+
+//=====================================================================================================================
+
 // AdditionExpr represents an addition ("+") operation.
 type AdditionExpr struct {
 	SourcePosition SourcePos
@@ -100,7 +114,6 @@ func (e *FieldReferenceExpr) isExpression()                {}
 // FloatingPointLiteralExpr represents a single integer literal.
 type FloatingPointLiteralExpr struct {
 	SourcePosition SourcePos
-	Text           string
 }
 
 func (e *FloatingPointLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
@@ -159,7 +172,6 @@ func (e *GreaterThanOrEqualsExpr) isExpression()                {}
 // IdentifierExpr represents a single identifier.
 type IdentifierExpr struct {
 	SourcePosition SourcePos
-	Name           string
 }
 
 func (e *IdentifierExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
@@ -182,7 +194,6 @@ func (e *InExpr) isExpression()                {}
 // IntegerLiteralExpr represents a single integer literal.
 type IntegerLiteralExpr struct {
 	SourcePosition SourcePos
-	Text           string
 }
 
 func (e *IntegerLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
@@ -253,7 +264,6 @@ func (e *IsExpr) isExpression()                {}
 // LeadingDocumentationExpr represents lines of leading documentation.
 type LeadingDocumentationExpr struct {
 	SourcePosition SourcePos
-	Text           string
 }
 
 func (e *LeadingDocumentationExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
@@ -329,17 +339,6 @@ type MatchExpr struct {
 
 func (e *MatchExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
 func (e *MatchExpr) isExpression()                {}
-
-//=====================================================================================================================
-
-// MultilineStringLiteralExpr represents a multiline (back-ticked) string literal.
-type MultilineStringLiteralExpr struct {
-	SourcePosition SourcePos
-	Text           string
-}
-
-func (e *MultilineStringLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
-func (e *MultilineStringLiteralExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -439,7 +438,7 @@ func (e *SequenceLiteralExpr) isExpression()                {}
 // StringLiteralExpr represents a single string literal.
 type StringLiteralExpr struct {
 	SourcePosition SourcePos
-	Text           string
+	Delimiters     StringDelimiters
 }
 
 func (e *StringLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
@@ -462,7 +461,6 @@ func (e *SubtractionExpr) isExpression()                {}
 // TrailingDocumentationExpr represents lines of trailing documentation.
 type TrailingDocumentationExpr struct {
 	SourcePosition SourcePos
-	Text           string
 }
 
 func (e *TrailingDocumentationExpr) GetSourcePosition() SourcePos { return e.SourcePosition }

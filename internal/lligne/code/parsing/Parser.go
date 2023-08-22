@@ -314,9 +314,9 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 	switch token.TokenType {
 
 	case scanning.TokenTypeBackTickedString:
-		return &MultilineStringLiteralExpr{
+		return &StringLiteralExpr{
 			SourcePosition: NewSourcePos(token),
-			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
+			Delimiters:     StringDelimitersBackTicksMultiline,
 		}
 
 	case scanning.TokenTypeDash:
@@ -325,7 +325,7 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 	case scanning.TokenTypeDoubleQuotedString:
 		return &StringLiteralExpr{
 			SourcePosition: NewSourcePos(token),
-			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
+			Delimiters:     StringDelimitersDoubleQuotes,
 		}
 
 	case scanning.TokenTypeFalse:
@@ -337,25 +337,21 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 	case scanning.TokenTypeFloatingPointLiteral:
 		return &FloatingPointLiteralExpr{
 			SourcePosition: NewSourcePos(token),
-			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeIdentifier:
 		return &IdentifierExpr{
 			SourcePosition: NewSourcePos(token),
-			Name:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeIntegerLiteral:
 		return &IntegerLiteralExpr{
 			SourcePosition: NewSourcePos(token),
-			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeLeadingDocumentation:
 		return &LeadingDocumentationExpr{
 			SourcePosition: NewSourcePos(token),
-			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeLeftBrace:
@@ -373,13 +369,12 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 	case scanning.TokenTypeSingleQuotedString:
 		return &StringLiteralExpr{
 			SourcePosition: NewSourcePos(token),
-			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
+			Delimiters:     StringDelimitersSingleQuotes,
 		}
 
 	case scanning.TokenTypeTrailingDocumentation:
 		return &TrailingDocumentationExpr{
 			SourcePosition: NewSourcePos(token),
-			Text:           p.sourceCode[token.SourceOffset : token.SourceOffset+uint32(token.SourceLength)],
 		}
 
 	case scanning.TokenTypeTrue:
