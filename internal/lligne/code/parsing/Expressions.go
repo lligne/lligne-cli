@@ -15,17 +15,6 @@ type IExpression interface {
 
 //=====================================================================================================================
 
-// ParenExprDelimiters is an enumeration of start/stop delimiters for parenthesized expressions.
-type ParenExprDelimiters int
-
-const (
-	ParenExprDelimitersParentheses ParenExprDelimiters = 1 + iota
-	ParenExprDelimitersBraces
-	ParenExprDelimitersWholeFile
-)
-
-//=====================================================================================================================
-
 // StringDelimiters is an enumeration of start/stop delimiters for string literal expressions.
 type StringDelimiters int
 
@@ -118,6 +107,18 @@ type FloatingPointLiteralExpr struct {
 
 func (e *FloatingPointLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
 func (e *FloatingPointLiteralExpr) isExpression()                {}
+
+//=====================================================================================================================
+
+// FunctionArgumentsExpr represents a parenthesized, comma-separated sequence of expressions postfix to
+// a function reference.
+type FunctionArgumentsExpr struct {
+	SourcePosition SourcePos
+	Items          []IExpression
+}
+
+func (e *FunctionArgumentsExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *FunctionArgumentsExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -391,8 +392,7 @@ func (e *OptionalExpr) isExpression()                {}
 // ParenthesizedExpr represents a parenthesized expression or comma-separated sequence of expressions.
 type ParenthesizedExpr struct {
 	SourcePosition SourcePos
-	Delimiters     ParenExprDelimiters
-	Items          []IExpression
+	InnerExpr      IExpression
 }
 
 func (e *ParenthesizedExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
@@ -421,6 +421,17 @@ type RangeExpr struct {
 
 func (e *RangeExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
 func (e *RangeExpr) isExpression()                {}
+
+//=====================================================================================================================
+
+// RecordExpr represents a record literal expression.
+type RecordExpr struct {
+	SourcePosition SourcePos
+	Items          []IExpression
+}
+
+func (e *RecordExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *RecordExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -477,6 +488,16 @@ type UnionExpr struct {
 
 func (e *UnionExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
 func (e *UnionExpr) isExpression()                {}
+
+//=====================================================================================================================
+
+// UnitExpr represents a parenthesized expression with nothing in it.
+type UnitExpr struct {
+	SourcePosition SourcePos
+}
+
+func (e *UnitExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *UnitExpr) isExpression()                {}
 
 //=====================================================================================================================
 

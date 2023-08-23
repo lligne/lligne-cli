@@ -20,13 +20,14 @@ func ParseExpression(sourceCode string, tokens []scanning.Token) (model IExpress
 
 //---------------------------------------------------------------------------------------------------------------------
 
+// TODO: ParseTopLevel
 // ParseParenthesizedItems parses a non-empty sequence of code expected to be the items within a record literal, e.g.
 // the top level of a file.
-func ParseParenthesizedItems(sourceCode string, tokens []scanning.Token) IExpression {
-	parser := newParser(sourceCode, tokens)
-
-	return parser.parseParenthesizedExpression(tokens[0], scanning.TokenTypeEof)
-}
+//func ParseParenthesizedItems(sourceCode string, tokens []scanning.Token) IExpression {
+//	parser := newParser(sourceCode, tokens)
+//
+//	return parser.parseParenthesizedExpression(tokens[0], scanning.TokenTypeEof)
+//}
 
 //=====================================================================================================================
 
@@ -95,6 +96,37 @@ func (p *lligneParser) parseExprBindingPower(minBindingPower int) IExpression {
 	}
 
 	return lhs
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (p *lligneParser) parseFunctionArgumentsExpression(
+	token scanning.Token,
+) IExpression {
+
+	var items []IExpression
+
+	for p.tokens[p.index].TokenType != scanning.TokenTypeRightParenthesis {
+		// Parse one expression.
+		items = append(items, p.parseExprBindingPower(0))
+
+		if p.tokens[p.index].TokenType != scanning.TokenTypeComma {
+			break
+		}
+		p.index += 1
+	}
+
+	if p.tokens[p.index].TokenType != scanning.TokenTypeRightParenthesis {
+		panic("Expected " + scanning.TokenTypeRightParenthesis.String())
+	}
+	endSourcePos := NewSourcePos(p.tokens[p.index])
+	p.index += 1
+
+	return &FunctionArgumentsExpr{
+		SourcePosition: NewSourcePos(token).Thru(endSourcePos),
+		Items:          items,
+	}
+
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -355,13 +387,13 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 		}
 
 	case scanning.TokenTypeLeftBrace:
-		return p.parseParenthesizedExpression(token, scanning.TokenTypeRightBrace)
+		return p.parseRecordExpression(token)
 
 	case scanning.TokenTypeLeftBracket:
 		return p.parseSequenceLiteral(token)
 
 	case scanning.TokenTypeLeftParenthesis:
-		return p.parseParenthesizedExpression(token, scanning.TokenTypeRightParenthesis)
+		return p.parseParenthesizedExpression(token)
 
 	case scanning.TokenTypeNot:
 		return p.parseLogicalNotOperationExpression(token)
@@ -428,41 +460,62 @@ func (p *lligneParser) parseNegationOperationExpression(
 
 func (p *lligneParser) parseParenthesizedExpression(
 	token scanning.Token,
-	endingTokenType scanning.TokenType,
 ) IExpression {
 
-	var items []IExpression
-
-	for p.tokens[p.index].TokenType != endingTokenType {
-		// Parse one expression.
-		items = append(items, p.parseExprBindingPower(0))
-
-		if p.tokens[p.index].TokenType != scanning.TokenTypeComma {
-			break
-		}
+	// Handle empty parentheses specially.
+	if p.tokens[p.index].TokenType == scanning.TokenTypeRightParenthesis {
+		endSourcePos := NewSourcePos(p.tokens[p.index])
 		p.index += 1
+
+		return &UnitExpr{
+			SourcePosition: NewSourcePos(token).Thru(endSourcePos),
+		}
 	}
 
-	if p.tokens[p.index].TokenType != endingTokenType {
-		panic("Expected " + endingTokenType.String())
+	// Parse one expression.
+	inner := p.parseExprBindingPower(0)
+
+	// Comma means function parameters
+	if p.tokens[p.index].TokenType == scanning.TokenTypeComma {
+
+		p.index += 1
+
+		var items []IExpression
+		items = append(items, inner)
+
+		for p.tokens[p.index].TokenType != scanning.TokenTypeRightParenthesis {
+			// Parse one expression.
+			items = append(items, p.parseExprBindingPower(0))
+
+			if p.tokens[p.index].TokenType != scanning.TokenTypeComma {
+				break
+			}
+			p.index += 1
+		}
+
+		if p.tokens[p.index].TokenType != scanning.TokenTypeRightParenthesis {
+			panic("Expected " + scanning.TokenTypeRightParenthesis.String())
+		}
+		endSourcePos := NewSourcePos(p.tokens[p.index])
+		p.index += 1
+
+		return &FunctionArgumentsExpr{
+			SourcePosition: NewSourcePos(token).Thru(endSourcePos),
+			Items:          items,
+		}
+
 	}
+
+	if p.tokens[p.index].TokenType != scanning.TokenTypeRightParenthesis {
+		panic("Expected " + scanning.TokenTypeRightParenthesis.String())
+	}
+
 	endSourcePos := NewSourcePos(p.tokens[p.index])
 	p.index += 1
 
-	var delimiters ParenExprDelimiters
-	switch endingTokenType {
-	case scanning.TokenTypeEof:
-		delimiters = ParenExprDelimitersWholeFile
-	case scanning.TokenTypeRightBrace:
-		delimiters = ParenExprDelimitersBraces
-	case scanning.TokenTypeRightParenthesis:
-		delimiters = ParenExprDelimitersParentheses
-	}
-
 	return &ParenthesizedExpr{
 		SourcePosition: NewSourcePos(token).Thru(endSourcePos),
-		Delimiters:     delimiters,
-		Items:          items,
+		InnerExpr:      inner,
 	}
 
 }
@@ -474,7 +527,7 @@ func (p *lligneParser) parsePostfixExpression(opToken scanning.Token, lhs IExpre
 	switch opToken.TokenType {
 
 	case scanning.TokenTypeLeftParenthesis:
-		args := p.parseParenthesizedExpression(opToken, scanning.TokenTypeRightParenthesis)
+		args := p.parseFunctionArgumentsExpression(opToken)
 		return &FunctionCallExpr{
 			SourcePosition:    lhs.GetSourcePosition().Thru(args.GetSourcePosition()),
 			FunctionReference: lhs,
@@ -489,7 +542,38 @@ func (p *lligneParser) parsePostfixExpression(opToken scanning.Token, lhs IExpre
 
 	}
 
-	panic("Unfinished parsing code: '" + strconv.Itoa(int(opToken.TokenType)) + "'.")
+	panic("Unfinished postfix parsing code: '" + strconv.Itoa(int(opToken.TokenType)) + "'.")
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (p *lligneParser) parseRecordExpression(
+	token scanning.Token,
+) IExpression {
+
+	var items []IExpression
+
+	for p.tokens[p.index].TokenType != scanning.TokenTypeRightBrace {
+		// Parse one expression.
+		items = append(items, p.parseExprBindingPower(0))
+
+		if p.tokens[p.index].TokenType != scanning.TokenTypeComma {
+			break
+		}
+		p.index += 1
+	}
+
+	if p.tokens[p.index].TokenType != scanning.TokenTypeRightBrace {
+		panic("Expected " + scanning.TokenTypeRightBrace.String())
+	}
+	endSourcePos := NewSourcePos(p.tokens[p.index])
+	p.index += 1
+
+	return &RecordExpr{
+		SourcePosition: NewSourcePos(token).Thru(endSourcePos),
+		Items:          items,
+	}
 
 }
 

@@ -288,8 +288,7 @@ func (e *TypedOptionalExpr) isTypeExpression()                    {}
 // TypedParenthesizedExpr represents a parenthesized expression or comma-separated sequence of expressions.
 type TypedParenthesizedExpr struct {
 	SourcePosition parsing.SourcePos
-	Delimiters     parsing.ParenExprDelimiters
-	Items          []ITypedExpression
+	InnerExpr      ITypedExpression
 	TypeInfo       types.IType
 }
 

@@ -31,6 +31,8 @@ func FormatExpr(origSourceCode string, expression parsing.IExpression) string {
 		return formatFieldReferenceExpr(origSourceCode, expr)
 	case *parsing.FloatingPointLiteralExpr:
 		return formatFloatingPointLiteralExpr(origSourceCode, expr)
+	case *parsing.FunctionArgumentsExpr:
+		return formatFunctionArgumentsExpr(origSourceCode, expr)
 	case *parsing.FunctionArrowExpr:
 		return formatFunctionArrowExpr(origSourceCode, expr)
 	case *parsing.FunctionCallExpr:
@@ -81,6 +83,8 @@ func FormatExpr(origSourceCode string, expression parsing.IExpression) string {
 		return formatQualifyExpr(origSourceCode, expr)
 	case *parsing.RangeExpr:
 		return formatRangeExpr(origSourceCode, expr)
+	case *parsing.RecordExpr:
+		return formatRecordExpr(origSourceCode, expr)
 	case *parsing.SequenceLiteralExpr:
 		return formatSequenceLiteralExpr(origSourceCode, expr)
 	case *parsing.StringLiteralExpr:
@@ -89,6 +93,8 @@ func FormatExpr(origSourceCode string, expression parsing.IExpression) string {
 		return formatSubtractionExpr(origSourceCode, expr)
 	case *parsing.UnionExpr:
 		return formatUnionExpr(origSourceCode, expr)
+	case *parsing.UnitExpr:
+		return formatUnitExpr(origSourceCode, expr)
 	case *parsing.WhenExpr:
 		return formatWhenExpr(origSourceCode, expr)
 	case *parsing.WhereExpr:
@@ -150,10 +156,27 @@ func formatFloatingPointLiteralExpr(sourceCode string, expr *parsing.FloatingPoi
 
 //=====================================================================================================================
 
-func formatFunctionCallExpr(sourceCode string, expr *parsing.FunctionCallExpr) string {
-	fun := FormatExpr(sourceCode, expr.FunctionReference)
-	arg := FormatExpr(sourceCode, expr.Argument)
-	return fun + arg
+func formatFunctionArgumentsExpr(sourceCode string, expr *parsing.FunctionArgumentsExpr) string {
+
+	sb := strings.Builder{}
+
+	sb.WriteString("(")
+
+	if len(expr.Items) > 0 {
+
+		sb.WriteString(FormatExpr(sourceCode, expr.Items[0]))
+
+		for _, item := range expr.Items[1:] {
+			sb.WriteString(", ")
+			sb.WriteString(FormatExpr(sourceCode, item))
+		}
+
+	}
+
+	sb.WriteString(")")
+
+	return sb.String()
+
 }
 
 //=====================================================================================================================
@@ -162,6 +185,14 @@ func formatFunctionArrowExpr(sourceCode string, expr *parsing.FunctionArrowExpr)
 	arg := FormatExpr(sourceCode, expr.Argument)
 	result := FormatExpr(sourceCode, expr.Result)
 	return arg + " -> " + result
+}
+
+//=====================================================================================================================
+
+func formatFunctionCallExpr(sourceCode string, expr *parsing.FunctionCallExpr) string {
+	fun := FormatExpr(sourceCode, expr.FunctionReference)
+	arg := FormatExpr(sourceCode, expr.Argument)
+	return fun + arg
 }
 
 //=====================================================================================================================
@@ -318,30 +349,13 @@ func formatOptionalExpr(sourceCode string, expr *parsing.OptionalExpr) string {
 
 func formatParenthesizedExpr(sourceCode string, expr *parsing.ParenthesizedExpr) string {
 
-	start := "("
-	end := ")"
-
-	if expr.Delimiters == parsing.ParenExprDelimitersBraces {
-		start = "{"
-		end = "}"
-	}
-
 	sb := strings.Builder{}
 
-	sb.WriteString(start)
+	sb.WriteString("(")
 
-	if len(expr.Items) > 0 {
+	sb.WriteString(FormatExpr(sourceCode, expr.InnerExpr))
 
-		sb.WriteString(FormatExpr(sourceCode, expr.Items[0]))
-
-		for _, item := range expr.Items[1:] {
-			sb.WriteString(", ")
-			sb.WriteString(FormatExpr(sourceCode, item))
-		}
-
-	}
-
-	sb.WriteString(end)
+	sb.WriteString(")")
 
 	return sb.String()
 
@@ -361,6 +375,31 @@ func formatRangeExpr(sourceCode string, expr *parsing.RangeExpr) string {
 	first := FormatExpr(sourceCode, expr.First)
 	last := FormatExpr(sourceCode, expr.Last)
 	return first + ".." + last
+}
+
+//=====================================================================================================================
+
+func formatRecordExpr(sourceCode string, expr *parsing.RecordExpr) string {
+
+	sb := strings.Builder{}
+
+	sb.WriteString("{")
+
+	if len(expr.Items) > 0 {
+
+		sb.WriteString(FormatExpr(sourceCode, expr.Items[0]))
+
+		for _, item := range expr.Items[1:] {
+			sb.WriteString(", ")
+			sb.WriteString(FormatExpr(sourceCode, item))
+		}
+
+	}
+
+	sb.WriteString("}")
+
+	return sb.String()
+
 }
 
 //=====================================================================================================================
@@ -408,6 +447,12 @@ func formatUnionExpr(sourceCode string, expr *parsing.UnionExpr) string {
 	lhs := FormatExpr(sourceCode, expr.Lhs)
 	rhs := FormatExpr(sourceCode, expr.Rhs)
 	return lhs + " | " + rhs
+}
+
+//=====================================================================================================================
+
+func formatUnitExpr(sourceCode string, expr *parsing.UnitExpr) string {
+	return "()"
 }
 
 //=====================================================================================================================

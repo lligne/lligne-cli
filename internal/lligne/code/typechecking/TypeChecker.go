@@ -279,20 +279,12 @@ func typeCheckNegationOperationExpr(sourceCode string, expr *parsing.NegationOpe
 
 func typeCheckParenthesizedExpr(sourceCode string, expr *parsing.ParenthesizedExpr) ITypedExpression {
 
-	var items []ITypedExpression
-
-	for _, item0 := range expr.Items {
-		item := TypeCheckExpr(sourceCode, item0)
-		items = append(items, item)
-	}
-
-	// TODO: lots more logic needed
+	inner := TypeCheckExpr(sourceCode, expr.InnerExpr)
 
 	return &TypedParenthesizedExpr{
 		SourcePosition: expr.SourcePosition,
-		Delimiters:     expr.Delimiters,
-		Items:          items,
-		TypeInfo:       items[0].GetTypeInfo(),
+		InnerExpr:      inner,
+		TypeInfo:       inner.GetTypeInfo(),
 	}
 
 }

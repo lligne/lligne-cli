@@ -280,11 +280,7 @@ func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 //=====================================================================================================================
 
 func buildParenthesizedCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedParenthesizedExpr) {
-	if len(expr.Items) == 1 {
-		buildCodeBlock(codeBlock, expr.Items[0])
-	} else {
-		panic("Records not yet handled")
-	}
+	buildCodeBlock(codeBlock, expr.InnerExpr)
 }
 
 //=====================================================================================================================

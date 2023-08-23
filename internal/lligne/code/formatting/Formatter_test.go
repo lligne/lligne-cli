@@ -86,12 +86,7 @@ func TestLligneFormatter(t *testing.T) {
 
 			"(x + 5)",
 			"((x + 5) / 3)",
-
 			"()",
-			"(x: int && 5)",
-			"(x: int && 5, y: string && \"s\")",
-			"(1, 2, 3, 4, 5)",
-			"(1.0, 2.0, 3.0, 4.0, 5.0)",
 
 			"{}",
 			"{x: int && 5}",
@@ -122,7 +117,7 @@ func TestLligneFormatter(t *testing.T) {
 			"float & 7.0",
 
 			"f(x: 0)",
-			"(a: f(x: 0))",
+			"{a: f(x: 0)}",
 
 			"1..9",
 			"x in 1..9",
@@ -131,6 +126,7 @@ func TestLligneFormatter(t *testing.T) {
 
 			"1 when n == 0 | n * f(n - 1) when n > 0",
 			"f: (n: int) -> int = 1 when n == 0 | n * f(n - 1) when n > 0",
+			"f: (n: int, m: int) -> int = m when n == 0 | n * f(n - 1) when n > 0",
 
 			"x = y + z where {y: 3, z: 5}",
 		}
