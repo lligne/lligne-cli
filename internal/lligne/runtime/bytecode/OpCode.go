@@ -32,6 +32,7 @@ const (
 	OpCodeFloat64LoadZero
 	OpCodeFloat64Multiply
 	OpCodeFloat64Negate
+	OpCodeFloat64NotEquals
 	OpCodeFloat64Subtract
 
 	// 64 Bit Integers
@@ -49,12 +50,14 @@ const (
 	OpCodeInt64LoadZero
 	OpCodeInt64Multiply
 	OpCodeInt64Negate
+	OpCodeInt64NotEquals
 	OpCodeInt64Subtract
 
 	// Strings
 	OpCodeStringConcatenate
 	OpCodeStringEquals
 	OpCodeStringLoad
+	OpCodeStringNotEquals
 
 	OpCode_Count
 )

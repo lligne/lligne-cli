@@ -6,6 +6,7 @@
 package parsing
 
 import (
+	"fmt"
 	"lligne-cli/internal/lligne/code/scanning"
 	"strconv"
 )
@@ -211,6 +212,27 @@ func (p *lligneParser) parseInfixOperation(
 			Rhs:            rhs,
 		}
 
+	case scanning.TokenTypeEqualsTilde:
+		return &MatchExpr{
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeExclamationEquals:
+		return &NotEqualsExpr{
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
+	case scanning.TokenTypeExclamationTilde:
+		return &NotMatchExpr{
+			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
+			Lhs:            lhs,
+			Rhs:            rhs,
+		}
+
 	case scanning.TokenTypeGreaterThan:
 		return &GreaterThanExpr{
 			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
@@ -253,20 +275,6 @@ func (p *lligneParser) parseInfixOperation(
 			Rhs:            rhs,
 		}
 
-	case scanning.TokenTypeMatches:
-		return &MatchExpr{
-			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
-			Lhs:            lhs,
-			Rhs:            rhs,
-		}
-
-	case scanning.TokenTypeNotMatches:
-		return &NotMatchExpr{
-			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
-			Lhs:            lhs,
-			Rhs:            rhs,
-		}
-
 	case scanning.TokenTypeOr:
 		return &LogicalOrExpr{
 			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
@@ -281,7 +289,7 @@ func (p *lligneParser) parseInfixOperation(
 			Rhs:            rhs,
 		}
 
-	case scanning.TokenTypeQuestionMarkColon:
+	case scanning.TokenTypeQuestionColon:
 		return &IntersectDefaultValueExpr{
 			SourcePosition: lhs.GetSourcePosition().Thru(rhs.GetSourcePosition()),
 			Lhs:            lhs,
@@ -330,9 +338,10 @@ func (p *lligneParser) parseInfixOperation(
 			Rhs:            rhs,
 		}
 
-	}
+	default:
+		panic(fmt.Sprintf("Missing case in parseInfixOperation: " + strconv.Itoa(int(opToken.TokenType)) + "'."))
 
-	panic(opToken.TokenType)
+	}
 
 }
 
@@ -534,7 +543,7 @@ func (p *lligneParser) parsePostfixExpression(opToken scanning.Token, lhs IExpre
 			Argument:          args,
 		}
 
-	case scanning.TokenTypeQuestionMark:
+	case scanning.TokenTypeQuestion:
 		return &OptionalExpr{
 			SourcePosition: lhs.GetSourcePosition(),
 			Operand:        lhs,
@@ -649,7 +658,7 @@ func init() {
 
 	infixBindingPowers[scanning.TokenTypeColon] = infixBindingPower{level, level + 1}
 	infixBindingPowers[scanning.TokenTypeEquals] = infixBindingPower{level, level + 1}
-	infixBindingPowers[scanning.TokenTypeQuestionMarkColon] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeQuestionColon] = infixBindingPower{level, level + 1}
 
 	level += 2
 
@@ -687,6 +696,7 @@ func init() {
 	level += 2
 
 	infixBindingPowers[scanning.TokenTypeEqualsEquals] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeExclamationEquals] = infixBindingPower{level, level + 1}
 	infixBindingPowers[scanning.TokenTypeGreaterThan] = infixBindingPower{level, level + 1}
 	infixBindingPowers[scanning.TokenTypeGreaterThanOrEquals] = infixBindingPower{level, level + 1}
 	infixBindingPowers[scanning.TokenTypeLessThan] = infixBindingPower{level, level + 1}
@@ -696,8 +706,8 @@ func init() {
 
 	infixBindingPowers[scanning.TokenTypeIn] = infixBindingPower{level, level + 1}
 	infixBindingPowers[scanning.TokenTypeIs] = infixBindingPower{level, level + 1}
-	infixBindingPowers[scanning.TokenTypeMatches] = infixBindingPower{level, level + 1}
-	infixBindingPowers[scanning.TokenTypeNotMatches] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeEqualsTilde] = infixBindingPower{level, level + 1}
+	infixBindingPowers[scanning.TokenTypeExclamationTilde] = infixBindingPower{level, level + 1}
 
 	level += 2
 
@@ -729,7 +739,7 @@ func init() {
 
 	postfixBindingPowers[scanning.TokenTypeLeftParenthesis] = postfixBindingPower{level}
 	postfixBindingPowers[scanning.TokenTypeLeftBracket] = postfixBindingPower{level}
-	postfixBindingPowers[scanning.TokenTypeQuestionMark] = postfixBindingPower{level}
+	postfixBindingPowers[scanning.TokenTypeQuestion] = postfixBindingPower{level}
 
 }
 

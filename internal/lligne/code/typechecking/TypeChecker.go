@@ -50,6 +50,8 @@ func TypeCheckExpr(sourceCode string, expression parsing.IExpression) ITypedExpr
 		return typeCheckMultiplicationExpr(sourceCode, expr)
 	case *parsing.NegationOperationExpr:
 		return typeCheckNegationOperationExpr(sourceCode, expr)
+	case *parsing.NotEqualsExpr:
+		return typeCheckNotEqualsExpr(sourceCode, expr)
 	case *parsing.ParenthesizedExpr:
 		return typeCheckParenthesizedExpr(sourceCode, expr)
 	case *parsing.StringLiteralExpr:
@@ -272,6 +274,20 @@ func typeCheckNegationOperationExpr(sourceCode string, expr *parsing.NegationOpe
 		SourcePosition: expr.SourcePosition,
 		Operand:        operand,
 		TypeInfo:       operand.GetTypeInfo(),
+	}
+}
+
+//=====================================================================================================================
+
+func typeCheckNotEqualsExpr(sourceCode string, expr *parsing.NotEqualsExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
+	// TODO: ensure they're the same
+	// TODO: coerce integers
+	return &TypedNotEqualsExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
 	}
 }
 

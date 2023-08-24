@@ -32,7 +32,10 @@ const (
 	TokenTypeEquals
 	TokenTypeEqualsEquals
 	TokenTypeEqualsEqualsEquals
-	TokenTypeExclamationMark
+	TokenTypeEqualsTilde
+	TokenTypeExclamation
+	TokenTypeExclamationEquals
+	TokenTypeExclamationTilde
 	TokenTypeGreaterThan
 	TokenTypeGreaterThanOrEquals
 	TokenTypeLeftBrace
@@ -40,11 +43,9 @@ const (
 	TokenTypeLeftParenthesis
 	TokenTypeLessThan
 	TokenTypeLessThanOrEquals
-	TokenTypeMatches
-	TokenTypeNotMatches
 	TokenTypePlus
-	TokenTypeQuestionMark
-	TokenTypeQuestionMarkColon
+	TokenTypeQuestion
+	TokenTypeQuestionColon
 	TokenTypeRightArrow
 	TokenTypeRightBrace
 	TokenTypeRightBracket
@@ -122,8 +123,14 @@ func (tt TokenType) String() string {
 		return "=="
 	case TokenTypeEqualsEqualsEquals:
 		return "==="
-	case TokenTypeExclamationMark:
+	case TokenTypeEqualsTilde:
+		return "=~"
+	case TokenTypeExclamation:
 		return "!"
+	case TokenTypeExclamationEquals:
+		return "!="
+	case TokenTypeExclamationTilde:
+		return "!~"
 	case TokenTypeGreaterThan:
 		return ">"
 	case TokenTypeGreaterThanOrEquals:
@@ -138,15 +145,11 @@ func (tt TokenType) String() string {
 		return "<"
 	case TokenTypeLessThanOrEquals:
 		return "<="
-	case TokenTypeMatches:
-		return "=~"
-	case TokenTypeNotMatches:
-		return "!~"
 	case TokenTypePlus:
 		return "+"
-	case TokenTypeQuestionMark:
+	case TokenTypeQuestion:
 		return "?"
-	case TokenTypeQuestionMarkColon:
+	case TokenTypeQuestionColon:
 		return "?:"
 	case TokenTypeRightArrow:
 		return "->"

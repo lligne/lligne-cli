@@ -211,6 +211,17 @@ func init() {
 		m.Stack[m.Top] = math.Float64bits(-math.Float64frombits(m.Stack[m.Top]))
 	}
 
+	dispatch[OpCodeFloat64NotEquals] = func(m *Machine, c *CodeBlock) {
+		rhs := math.Float64frombits(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := math.Float64frombits(m.Stack[m.Top])
+		if lhs == rhs {
+			m.Stack[m.Top] = 0
+		} else {
+			m.Stack[m.Top] = true64
+		}
+	}
+
 	dispatch[OpCodeFloat64Subtract] = func(m *Machine, c *CodeBlock) {
 		rhs := math.Float64frombits(m.Stack[m.Top])
 		m.Top -= 1
@@ -324,6 +335,17 @@ func init() {
 		m.Stack[m.Top] = uint64(-int64(m.Stack[m.Top]))
 	}
 
+	dispatch[OpCodeInt64NotEquals] = func(m *Machine, c *CodeBlock) {
+		rhs := int64(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := int64(m.Stack[m.Top])
+		if lhs == rhs {
+			m.Stack[m.Top] = 0
+		} else {
+			m.Stack[m.Top] = true64
+		}
+	}
+
 	dispatch[OpCodeInt64Subtract] = func(m *Machine, c *CodeBlock) {
 		rhs := int64(m.Stack[m.Top])
 		m.Top -= 1
@@ -358,6 +380,17 @@ func init() {
 			m.Stack[m.Top] = true64
 		} else {
 			m.Stack[m.Top] = 0
+		}
+	}
+
+	dispatch[OpCodeStringNotEquals] = func(m *Machine, c *CodeBlock) {
+		rhs := c.Strings.Get(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := c.Strings.Get(m.Stack[m.Top])
+		if lhs == rhs {
+			m.Stack[m.Top] = 0
+		} else {
+			m.Stack[m.Top] = true64
 		}
 	}
 

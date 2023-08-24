@@ -133,7 +133,7 @@ func (s *scanner) readToken() Token {
 	case '=':
 		return s.scanAfterEquals()
 	case '!':
-		return s.oneOrTwoRuneToken(TokenTypeExclamationMark, '~', TokenTypeNotMatches)
+		return s.scanAfterExclamationMark()
 	case '<':
 		return s.oneOrTwoRuneToken(TokenTypeLessThan, '=', TokenTypeLessThanOrEquals)
 	case '>':
@@ -147,7 +147,7 @@ func (s *scanner) readToken() Token {
 	case '+':
 		return s.token(TokenTypePlus)
 	case '?':
-		return s.oneOrTwoRuneToken(TokenTypeQuestionMark, ':', TokenTypeQuestionMarkColon)
+		return s.oneOrTwoRuneToken(TokenTypeQuestion, ':', TokenTypeQuestionColon)
 	case '}':
 		return s.token(TokenTypeRightBrace)
 	case ']':
@@ -280,10 +280,29 @@ func (s *scanner) scanAfterEquals() Token {
 
 	if s.runeAhead1 == '~' {
 		s.advance()
-		return s.token(TokenTypeMatches)
+		return s.token(TokenTypeEqualsTilde)
 	}
 
 	return s.token(TokenTypeEquals)
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// scanAfterExclamationMark scans one of: '!', '!=', '!~'.
+func (s *scanner) scanAfterExclamationMark() Token {
+
+	if s.runeAhead1 == '=' {
+		s.advance()
+		return s.token(TokenTypeExclamationEquals)
+	}
+
+	if s.runeAhead1 == '~' {
+		s.advance()
+		return s.token(TokenTypeExclamationTilde)
+	}
+
+	return s.token(TokenTypeExclamation)
 
 }
 

@@ -73,6 +73,8 @@ func FormatExpr(origSourceCode string, expression parsing.IExpression) string {
 		return formatMultiplicationExpr(origSourceCode, expr)
 	case *parsing.NegationOperationExpr:
 		return formatNegationOperationExpr(origSourceCode, expr)
+	case *parsing.NotEqualsExpr:
+		return formatNotEqualsExpr(origSourceCode, expr)
 	case *parsing.NotMatchExpr:
 		return formatNotMatchExpr(origSourceCode, expr)
 	case *parsing.OptionalExpr:
@@ -329,6 +331,14 @@ func formatMultiplicationExpr(sourceCode string, expr *parsing.MultiplicationExp
 
 func formatNegationOperationExpr(sourceCode string, expr *parsing.NegationOperationExpr) string {
 	return "-" + FormatExpr(sourceCode, expr.Operand)
+}
+
+//=====================================================================================================================
+
+func formatNotEqualsExpr(sourceCode string, expr *parsing.NotEqualsExpr) string {
+	lhs := FormatExpr(sourceCode, expr.Lhs)
+	rhs := FormatExpr(sourceCode, expr.Rhs)
+	return lhs + " != " + rhs
 }
 
 //=====================================================================================================================

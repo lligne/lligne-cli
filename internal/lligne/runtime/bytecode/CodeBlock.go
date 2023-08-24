@@ -136,6 +136,12 @@ func (cb *CodeBlock) Float64Negate() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) Float64NotEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64NotEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) Float64Subtract() {
 	cb.OpCodes = append(cb.OpCodes, OpCodeFloat64Subtract)
 }
@@ -227,6 +233,12 @@ func (cb *CodeBlock) Int64Negate() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) Int64NotEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeInt64NotEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) Int64Subtract() {
 	cb.OpCodes = append(cb.OpCodes, OpCodeInt64Subtract)
 }
@@ -266,6 +278,12 @@ func (cb *CodeBlock) StringEquals() {
 func (cb *CodeBlock) StringLoad(value string) {
 	cb.OpCodes = append(cb.OpCodes, OpCodeStringLoad)
 	cb.append64BitOperand(cb.Strings.Put(value))
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) StringNotEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeStringNotEquals)
 }
 
 //---------------------------------------------------------------------------------------------------------------------

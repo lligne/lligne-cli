@@ -4,3 +4,4 @@
 "A string" == "A string"
 "one" + "two" == "onetwo"
 "one" + ("two" + "three") == "onetwothree"
+"A string" != "The string"

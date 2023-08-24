@@ -272,6 +272,19 @@ func (e *TypedNegationOperationExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
+// TypedNotEqualsExpr represents a equals operation.
+type TypedNotEqualsExpr struct {
+	SourcePosition parsing.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+}
+
+func (e *TypedNotEqualsExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedNotEqualsExpr) GetTypeInfo() types.IType             { return types.BoolTypeInstance }
+func (e *TypedNotEqualsExpr) isTypeExpression()                    {}
+
+//=====================================================================================================================
+
 // TypedOptionalExpr represents a parenthesized expression or comma-separated sequence of expressions.
 type TypedOptionalExpr struct {
 	SourcePosition parsing.SourcePos

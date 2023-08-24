@@ -60,6 +60,8 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.IType
 		buildMultiplicationCodeBlock(codeBlock, expr)
 	case *typechecking.TypedNegationOperationExpr:
 		buildNegationCodeBlock(codeBlock, expr)
+	case *typechecking.TypedNotEqualsExpr:
+		buildNotEqualsCodeBlock(codeBlock, expr)
 	case *typechecking.TypedParenthesizedExpr:
 		buildParenthesizedCodeBlock(codeBlock, expr)
 	case *typechecking.TypedStringConcatenationExpr:
@@ -276,6 +278,23 @@ func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 		codeBlock.Int64Negate()
 	default:
 		panic(fmt.Sprintf("Missing case in buildNegationCodeBlock: %T\n", expr.TypeInfo))
+	}
+}
+
+//=====================================================================================================================
+
+func buildNotEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedNotEqualsExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
+	switch expr.Lhs.GetTypeInfo().(type) {
+	case *types.Float64Type:
+		codeBlock.Float64NotEquals()
+	case *types.Int64Type:
+		codeBlock.Int64NotEquals()
+	case *types.StringType:
+		codeBlock.StringNotEquals()
+	default:
+		panic("Undefined inequality type")
 	}
 }
 

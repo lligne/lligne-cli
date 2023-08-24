@@ -366,6 +366,18 @@ func (e *NegationOperationExpr) isExpression()                {}
 
 //=====================================================================================================================
 
+// NotEqualsExpr represents an equality comparison ("==") operation.
+type NotEqualsExpr struct {
+	SourcePosition SourcePos
+	Lhs            IExpression
+	Rhs            IExpression
+}
+
+func (e *NotEqualsExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *NotEqualsExpr) isExpression()                {}
+
+//=====================================================================================================================
+
 // NotMatchExpr represents a pattern nonmatch ("!~") operation.
 type NotMatchExpr struct {
 	SourcePosition SourcePos
