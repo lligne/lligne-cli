@@ -54,6 +54,7 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.Int64Subtract()
 
 		codeBlock.StringConcatenate()
+		codeBlock.StringEquals()
 		codeBlock.StringLoad("Example")
 		codeBlock.StringLoad("Sample")
 
@@ -96,10 +97,11 @@ func TestCodeBlockDisassembly(t *testing.T) {
   38  INT64_NEGATE
   39  INT64_SUBTRACT
   40  STRING_CONCATENATE
-  41  STRING_LOAD          'Example'
-  46  STRING_LOAD          'Sample'
-  51  RETURN
-  52  STOP
+  41  STRING_EQUALS
+  42  STRING_LOAD          'Example'
+  47  STRING_LOAD          'Sample'
+  52  RETURN
+  53  STOP
 `
 
 		assert.Equal(t, expected, actual)

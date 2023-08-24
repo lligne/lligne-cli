@@ -67,6 +67,7 @@ func TestExpressionEvaluation(t *testing.T) {
 		checkSampleFile(t, sample1)
 		checkSampleFile(t, sample2)
 		checkSampleFile(t, sample3)
+		checkSampleFile(t, sample4)
 
 	})
 
@@ -82,5 +83,8 @@ var sample2 string
 
 //go:embed bool/logic-true.lligne-tests
 var sample3 string
+
+//go:embed string/string-concatenation.lligne-tests
+var sample4 string
 
 //---------------------------------------------------------------------------------------------------------------------

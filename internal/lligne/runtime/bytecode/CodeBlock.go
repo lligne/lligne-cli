@@ -257,6 +257,12 @@ func (cb *CodeBlock) StringConcatenate() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) StringEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeStringEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) StringLoad(value string) {
 	cb.OpCodes = append(cb.OpCodes, OpCodeStringLoad)
 	cb.append64BitOperand(cb.Strings.Put(value))
@@ -371,6 +377,8 @@ func (cb *CodeBlock) Disassemble() string {
 
 		case OpCodeStringConcatenate:
 			write(output, ip, "STRING_CONCATENATE")
+		case OpCodeStringEquals:
+			write(output, ip, "STRING_EQUALS")
 		case OpCodeStringLoad:
 			value := *(*uint64)(unsafe.Pointer(&cb.OpCodes[ip]))
 			writeString(output, ip, "STRING_LOAD", cb.Strings.Get(value))

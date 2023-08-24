@@ -350,6 +350,17 @@ func init() {
 		m.Stack[m.Top] = c.Strings.Put(lhs + rhs)
 	}
 
+	dispatch[OpCodeStringEquals] = func(m *Machine, c *CodeBlock) {
+		rhs := c.Strings.Get(m.Stack[m.Top])
+		m.Top -= 1
+		lhs := c.Strings.Get(m.Stack[m.Top])
+		if lhs == rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
+
 	dispatch[OpCodeStringLoad] = func(m *Machine, c *CodeBlock) {
 		m.Top += 1
 		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&c.OpCodes[m.IP]))

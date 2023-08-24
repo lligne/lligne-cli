@@ -134,6 +134,8 @@ func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Type
 		codeBlock.Float64Equals()
 	case *types.Int64Type:
 		codeBlock.Int64Equals()
+	case *types.StringType:
+		codeBlock.StringEquals()
 	default:
 		panic("Undefined equality type")
 	}

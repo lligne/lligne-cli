@@ -53,6 +53,7 @@ const (
 
 	// Strings
 	OpCodeStringConcatenate
+	OpCodeStringEquals
 	OpCodeStringLoad
 
 	OpCode_Count
