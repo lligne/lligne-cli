@@ -47,6 +47,18 @@ func (e *TypedBooleanLiteralExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
+// TypedBuiltInTypeExpr represents a pre-defined base type.
+type TypedBuiltInTypeExpr struct {
+	SourcePosition parsing.SourcePos
+	Value          types.BuiltInType
+}
+
+func (e *TypedBuiltInTypeExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedBuiltInTypeExpr) GetTypeInfo() types.IType             { return types.TypeTypeInstance }
+func (e *TypedBuiltInTypeExpr) isTypeExpression()                    {}
+
+//=====================================================================================================================
+
 // TypedDivisionExpr represents a division operation.
 type TypedDivisionExpr struct {
 	SourcePosition parsing.SourcePos

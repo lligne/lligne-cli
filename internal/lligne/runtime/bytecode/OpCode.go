@@ -59,6 +59,10 @@ const (
 	OpCodeStringLoad
 	OpCodeStringNotEquals
 
+	// Types
+	OpCodeTypeEquals
+	OpCodeTypeLoad
+
 	OpCode_Count
 )
 

@@ -21,8 +21,12 @@ func FormatExpr(origSourceCode string, expression parsing.IExpression) string {
 
 	case *parsing.AdditionExpr:
 		return formatAdditionExpr(origSourceCode, expr)
+	case *parsing.ArrayLiteralExpr:
+		return formatSequenceLiteralExpr(origSourceCode, expr)
 	case *parsing.BooleanLiteralExpr:
 		return formatBooleanLiteralExpr(expr)
+	case *parsing.BuiltInTypeExpr:
+		return formatBuiltInTypeExpr(origSourceCode, expr)
 	case *parsing.DivisionExpr:
 		return formatDivisionExpr(origSourceCode, expr)
 	case *parsing.EqualsExpr:
@@ -87,8 +91,6 @@ func FormatExpr(origSourceCode string, expression parsing.IExpression) string {
 		return formatRangeExpr(origSourceCode, expr)
 	case *parsing.RecordExpr:
 		return formatRecordExpr(origSourceCode, expr)
-	case *parsing.SequenceLiteralExpr:
-		return formatSequenceLiteralExpr(origSourceCode, expr)
 	case *parsing.StringLiteralExpr:
 		return formatStringLiteralExpr(origSourceCode, expr)
 	case *parsing.SubtractionExpr:
@@ -124,6 +126,12 @@ func formatBooleanLiteralExpr(expr *parsing.BooleanLiteralExpr) string {
 		return "true"
 	}
 	return "false"
+}
+
+//=====================================================================================================================
+
+func formatBuiltInTypeExpr(sourceCode string, expr *parsing.BuiltInTypeExpr) string {
+	return expr.SourcePosition.GetText(sourceCode)
 }
 
 //=====================================================================================================================
@@ -414,7 +422,7 @@ func formatRecordExpr(sourceCode string, expr *parsing.RecordExpr) string {
 
 //=====================================================================================================================
 
-func formatSequenceLiteralExpr(sourceCode string, expr *parsing.SequenceLiteralExpr) string {
+func formatSequenceLiteralExpr(sourceCode string, expr *parsing.ArrayLiteralExpr) string {
 
 	sb := strings.Builder{}
 

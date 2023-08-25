@@ -176,6 +176,19 @@ func TestLligneScanner(t *testing.T) {
 		assert.Equal(t, 0, len(newLineOffsets))
 	})
 
+	t.Run("built in types", func(t *testing.T) {
+		tokens, newLineOffsets := Scan(
+			"Bool Float64 Int64 String",
+		)
+
+		expectToken(tokens[0], TokenTypeBuiltInType, 0, 4)
+		expectToken(tokens[1], TokenTypeBuiltInType, 5, 7)
+		expectToken(tokens[2], TokenTypeBuiltInType, 13, 5)
+		expectToken(tokens[3], TokenTypeBuiltInType, 19, 6)
+		expectToken(tokens[4], TokenTypeEof, 25, 0)
+		assert.Equal(t, 0, len(newLineOffsets))
+	})
+
 }
 
 //---------------------------------------------------------------------------------------------------------------------

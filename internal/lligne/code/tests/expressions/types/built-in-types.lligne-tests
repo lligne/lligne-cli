@@ -1,0 +1,4 @@
+• Bool == Bool
+• Float64 == Float64
+• Int64 == Int64
+• String == String

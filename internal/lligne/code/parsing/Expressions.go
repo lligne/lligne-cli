@@ -41,6 +41,17 @@ func (e *AdditionExpr) isExpression()                {}
 
 //=====================================================================================================================
 
+// ArrayLiteralExpr represents an array literal.
+type ArrayLiteralExpr struct {
+	SourcePosition SourcePos
+	Elements       []IExpression
+}
+
+func (e *ArrayLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *ArrayLiteralExpr) isExpression()                {}
+
+//=====================================================================================================================
+
 // BooleanLiteralExpr represents a single boolean literal.
 type BooleanLiteralExpr struct {
 	SourcePosition SourcePos
@@ -49,6 +60,16 @@ type BooleanLiteralExpr struct {
 
 func (e *BooleanLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
 func (e *BooleanLiteralExpr) isExpression()                {}
+
+//=====================================================================================================================
+
+// BuiltInTypeExpr represents a single fundamental type name.
+type BuiltInTypeExpr struct {
+	SourcePosition SourcePos
+}
+
+func (e *BuiltInTypeExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
+func (e *BuiltInTypeExpr) isExpression()                {}
 
 //=====================================================================================================================
 
@@ -444,17 +465,6 @@ type RecordExpr struct {
 
 func (e *RecordExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
 func (e *RecordExpr) isExpression()                {}
-
-//=====================================================================================================================
-
-// SequenceLiteralExpr represents an array literal.
-type SequenceLiteralExpr struct {
-	SourcePosition SourcePos
-	Elements       []IExpression
-}
-
-func (e *SequenceLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
-func (e *SequenceLiteralExpr) isExpression()                {}
 
 //=====================================================================================================================
 

@@ -6,6 +6,7 @@
 package bytecode
 
 import (
+	"fmt"
 	"math"
 	"unsafe"
 )
@@ -383,6 +384,12 @@ func init() {
 		}
 	}
 
+	dispatch[OpCodeStringLoad] = func(m *Machine, c *CodeBlock) {
+		m.Top += 1
+		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&c.OpCodes[m.IP]))
+		m.IP += 4
+	}
+
 	dispatch[OpCodeStringNotEquals] = func(m *Machine, c *CodeBlock) {
 		rhs := c.Strings.Get(m.Stack[m.Top])
 		m.Top -= 1
@@ -394,10 +401,27 @@ func init() {
 		}
 	}
 
-	dispatch[OpCodeStringLoad] = func(m *Machine, c *CodeBlock) {
+	dispatch[OpCodeTypeEquals] = func(m *Machine, c *CodeBlock) {
+		rhs := m.Stack[m.Top]
+		m.Top -= 1
+		lhs := m.Stack[m.Top]
+		if lhs == rhs {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
+
+	dispatch[OpCodeTypeLoad] = func(m *Machine, c *CodeBlock) {
 		m.Top += 1
-		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&c.OpCodes[m.IP]))
-		m.IP += 4
+		m.Stack[m.Top] = uint64(c.OpCodes[m.IP])
+		m.IP += 1
+	}
+
+	for i := uint16(0); i < OpCode_Count; i += 1 {
+		if dispatch[i] == nil {
+			panic(fmt.Sprintf("Missing dispatch function %d", i))
+		}
 	}
 
 }

@@ -454,6 +454,15 @@ func (s *scanner) scanIdentifierOrKeyword() Token {
 		}
 	}
 
+	_, isBuiltInType := builtInTypes[text]
+	if isBuiltInType {
+		return Token{
+			SourceOffset: uint32(s.markedPos),
+			SourceLength: uint16(s.currentPos - s.markedPos),
+			TokenType:    TokenTypeBuiltInType,
+		}
+	}
+
 	return Token{
 		SourceOffset: uint32(s.markedPos),
 		SourceLength: uint16(s.currentPos - s.markedPos),
@@ -527,6 +536,15 @@ func (s *scanner) token(tokenType TokenType) Token {
 		SourceLength: uint16(s.currentPos - s.markedPos),
 		TokenType:    tokenType,
 	}
+}
+
+//=====================================================================================================================
+
+var builtInTypes = map[string]bool{
+	"Bool":    true,
+	"Float64": true,
+	"Int64":   true,
+	"String":  true,
 }
 
 //=====================================================================================================================

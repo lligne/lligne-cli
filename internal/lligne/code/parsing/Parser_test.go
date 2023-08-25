@@ -66,6 +66,13 @@ func TestLligneParser(t *testing.T) {
 		check(" 3.666 + y")
 	})
 
+	t.Run("built in types", func(t *testing.T) {
+		check("x: Int64")
+		check("isWorking: Bool")
+		check("amount: Float64")
+		check("name: String")
+	})
+
 	t.Run("table of expressions", func(t *testing.T) {
 		tests := []string{
 			"x + 1",

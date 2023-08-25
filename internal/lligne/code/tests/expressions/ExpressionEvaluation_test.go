@@ -51,7 +51,7 @@ func TestExpressionEvaluation(t *testing.T) {
 
 	checkSampleFile := func(t *testing.T, sampleContent string) {
 
-		samples := strings.Split(sampleContent, "\n")
+		samples := strings.Split(sampleContent, "•")
 
 		for _, sample := range samples {
 			expression := strings.TrimSpace(sample)
@@ -68,6 +68,7 @@ func TestExpressionEvaluation(t *testing.T) {
 		checkSampleFile(t, sample2)
 		checkSampleFile(t, sample3)
 		checkSampleFile(t, sample4)
+		checkSampleFile(t, sample5)
 
 	})
 
@@ -86,5 +87,8 @@ var sample3 string
 
 //go:embed string/string-concatenation.lligne-tests
 var sample4 string
+
+//go:embed types/built-in-types.lligne-tests
+var sample5 string
 
 //---------------------------------------------------------------------------------------------------------------------

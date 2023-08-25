@@ -7,6 +7,7 @@ package bytecode
 
 import (
 	"fmt"
+	"lligne-cli/internal/lligne/runtime/types"
 	"math"
 	"strings"
 	"unsafe"
@@ -18,16 +19,27 @@ import (
 type CodeBlock struct {
 	OpCodes []uint16
 	Strings StringPool
+	Types   []types.IType
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 // NewCodeBlock constructs a new empty code block.
 func NewCodeBlock() *CodeBlock {
-	return &CodeBlock{
+	result := &CodeBlock{
 		OpCodes: nil,
 		Strings: NewStringConstantPool(),
+		Types:   nil,
 	}
+
+	// Note: These mus be in the same order as BuiltInType constants
+	result.Types = append(result.Types, types.TypeTypeInstance)
+	result.Types = append(result.Types, types.BoolTypeInstance)
+	result.Types = append(result.Types, types.Float64TypeInstance)
+	result.Types = append(result.Types, types.Int64TypeInstance)
+	result.Types = append(result.Types, types.StringTypeInstance)
+
+	return result
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -288,6 +300,19 @@ func (cb *CodeBlock) StringNotEquals() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) TypeEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeTypeEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) TypeLoad(value types.BuiltInType) {
+	cb.OpCodes = append(cb.OpCodes, OpCodeTypeLoad)
+	cb.OpCodes = append(cb.OpCodes, uint16(value))
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) append64BitOperand(bits uint64) {
 	cb.OpCodes = append(cb.OpCodes, uint16(bits))
 	cb.OpCodes = append(cb.OpCodes, uint16(bits>>16))
@@ -401,6 +426,12 @@ func (cb *CodeBlock) Disassemble() string {
 			value := *(*uint64)(unsafe.Pointer(&cb.OpCodes[ip]))
 			writeString(output, ip, "STRING_LOAD", cb.Strings.Get(value))
 			ip += 4
+
+		case OpCodeTypeEquals:
+			write(output, ip, "TYPE_EQUALS")
+		case OpCodeTypeLoad:
+			writeType(output, ip, "TYPE_LOAD", cb.Types[cb.OpCodes[ip]])
+			ip += 1
 		}
 
 	}
@@ -433,6 +464,13 @@ func writeInt64(output *strings.Builder, line int, opCode string, operand int64)
 func writeString(output *strings.Builder, line int, opCode string, operand string) {
 	output.WriteString("\n")
 	output.WriteString(fmt.Sprintf("%4d  %-20s '%s'", line, opCode, operand))
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func writeType(output *strings.Builder, line int, opCode string, operand types.IType) {
+	output.WriteString("\n")
+	output.WriteString(fmt.Sprintf("%4d  %-20s %s", line, opCode, operand.Name()))
 }
 
 //=====================================================================================================================

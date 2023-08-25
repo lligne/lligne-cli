@@ -68,6 +68,7 @@ const (
 
 	// Others
 	TokenTypeBackTickedString
+	TokenTypeBuiltInType
 	TokenTypeDocumentation
 	TokenTypeDoubleQuotedString
 	TokenTypeFloatingPointLiteral
@@ -191,6 +192,8 @@ func (tt TokenType) String() string {
 	// Others
 	case TokenTypeBackTickedString:
 		return "[back-ticked string]"
+	case TokenTypeBuiltInType:
+		return "[built in type]"
 	case TokenTypeDocumentation:
 		return "[documentation]"
 	case TokenTypeDoubleQuotedString:

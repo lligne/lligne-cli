@@ -34,6 +34,8 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.IType
 		buildAdditionCodeBlock(codeBlock, expr)
 	case *typechecking.TypedBooleanLiteralExpr:
 		buildBooleanLiteralCodeBlock(codeBlock, expr)
+	case *typechecking.TypedBuiltInTypeExpr:
+		buildBuiltInTypeCodeBlock(codeBlock, expr)
 	case *typechecking.TypedDivisionExpr:
 		buildDivisionCodeBlock(codeBlock, expr)
 	case *typechecking.TypedEqualsExpr:
@@ -113,6 +115,12 @@ func buildBooleanLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheck
 
 //=====================================================================================================================
 
+func buildBuiltInTypeCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedBuiltInTypeExpr) {
+	codeBlock.TypeLoad(expr.Value)
+}
+
+//=====================================================================================================================
+
 func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedDivisionExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
@@ -138,6 +146,8 @@ func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Type
 		codeBlock.Int64Equals()
 	case *types.StringType:
 		codeBlock.StringEquals()
+	case *types.TypeType:
+		codeBlock.TypeEquals()
 	default:
 		panic("Undefined equality type")
 	}

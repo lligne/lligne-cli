@@ -9,6 +9,7 @@ package bytecode
 
 import (
 	"github.com/stretchr/testify/assert"
+	"lligne-cli/internal/lligne/runtime/types"
 	"testing"
 )
 
@@ -58,6 +59,12 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.StringLoad("Example")
 		codeBlock.StringLoad("Sample")
 
+		codeBlock.TypeLoad(types.BuiltInTypeBool)
+		codeBlock.TypeLoad(types.BuiltInTypeFloat64)
+		codeBlock.TypeLoad(types.BuiltInTypeInt64)
+		codeBlock.TypeLoad(types.BuiltInTypeString)
+		codeBlock.TypeEquals()
+
 		codeBlock.Return()
 		codeBlock.Stop()
 
@@ -100,8 +107,13 @@ func TestCodeBlockDisassembly(t *testing.T) {
   41  STRING_EQUALS
   42  STRING_LOAD          'Example'
   47  STRING_LOAD          'Sample'
-  52  RETURN
-  53  STOP
+  52  TYPE_LOAD            Bool
+  54  TYPE_LOAD            Float64
+  56  TYPE_LOAD            Int64
+  58  TYPE_LOAD            String
+  60  TYPE_EQUALS
+  61  RETURN
+  62  STOP
 `
 
 		assert.Equal(t, expected, actual)

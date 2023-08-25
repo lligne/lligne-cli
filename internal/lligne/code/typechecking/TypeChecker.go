@@ -24,6 +24,8 @@ func TypeCheckExpr(sourceCode string, expression parsing.IExpression) ITypedExpr
 		return typeCheckAdditionExpr(sourceCode, expr)
 	case *parsing.BooleanLiteralExpr:
 		return typeCheckBooleanLiteralExpr(expr)
+	case *parsing.BuiltInTypeExpr:
+		return typeCheckBuiltInTypeExpr(sourceCode, expr)
 	case *parsing.DivisionExpr:
 		return typeCheckDivisionExpr(sourceCode, expr)
 	case *parsing.EqualsExpr:
@@ -99,6 +101,16 @@ func typeCheckBooleanLiteralExpr(expr *parsing.BooleanLiteralExpr) ITypedExpress
 	return &TypedBooleanLiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          expr.Value,
+	}
+}
+
+//=====================================================================================================================
+
+func typeCheckBuiltInTypeExpr(sourceCode string, expr *parsing.BuiltInTypeExpr) ITypedExpression {
+	name := expr.SourcePosition.GetText(sourceCode)
+	return &TypedBuiltInTypeExpr{
+		SourcePosition: expr.SourcePosition,
+		Value:          types.BuiltInTypesByName[name],
 	}
 }
 

@@ -360,6 +360,11 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 			Delimiters:     StringDelimitersBackTicksMultiline,
 		}
 
+	case scanning.TokenTypeBuiltInType:
+		return &BuiltInTypeExpr{
+			SourcePosition: NewSourcePos(token),
+		}
+
 	case scanning.TokenTypeDash:
 		return p.parseNegationOperationExpression(token)
 
@@ -596,7 +601,7 @@ func (p *lligneParser) parseSequenceLiteral(token scanning.Token) IExpression {
 	if p.tokens[p.index].TokenType == scanning.TokenTypeRightBracket {
 		endSourcePos := NewSourcePos(p.tokens[p.index])
 		p.index += 1
-		return &SequenceLiteralExpr{
+		return &ArrayLiteralExpr{
 			SourcePosition: startSourcePos.Thru(endSourcePos),
 			Elements:       items,
 		}
@@ -618,7 +623,7 @@ func (p *lligneParser) parseSequenceLiteral(token scanning.Token) IExpression {
 	endSourcePos := NewSourcePos(p.tokens[p.index])
 	p.index += 1
 
-	return &SequenceLiteralExpr{
+	return &ArrayLiteralExpr{
 		SourcePosition: startSourcePos.Thru(endSourcePos),
 		Elements:       items,
 	}

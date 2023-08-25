@@ -1,11 +1,11 @@
-true
-not false
-true and true
-true or true
-false or true
-true or false
-not not true
-not (false and false)
-not (true and false)
-not (false and true)
-not (false or false)
+• true
+• not false
+• true and true
+• true or true
+• false or true
+• true or false
+• not not true
+• not (false and false)
+• not (true and false)
+• not (false and true)
+• not (false or false)
