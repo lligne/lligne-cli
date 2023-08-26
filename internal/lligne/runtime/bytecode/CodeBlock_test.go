@@ -64,6 +64,7 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.TypeLoad(types.BuiltInTypeInt64)
 		codeBlock.TypeLoad(types.BuiltInTypeString)
 		codeBlock.TypeEquals()
+		codeBlock.TypeNotEquals()
 
 		codeBlock.Return()
 		codeBlock.Stop()
@@ -112,8 +113,9 @@ func TestCodeBlockDisassembly(t *testing.T) {
   56  TYPE_LOAD            Int64
   58  TYPE_LOAD            String
   60  TYPE_EQUALS
-  61  RETURN
-  62  STOP
+  61  TYPE_NOT_EQUALS
+  62  RETURN
+  63  STOP
 `
 
 		assert.Equal(t, expected, actual)

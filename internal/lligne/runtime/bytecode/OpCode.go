@@ -62,6 +62,7 @@ const (
 	// Types
 	OpCodeTypeEquals
 	OpCodeTypeLoad
+	OpCodeTypeNotEquals
 
 	OpCode_Count
 )

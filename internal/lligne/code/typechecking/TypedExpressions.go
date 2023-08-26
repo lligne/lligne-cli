@@ -163,6 +163,19 @@ func (e *TypedInt64LiteralExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
+// TypedIsExpr represents an "is" test.
+type TypedIsExpr struct {
+	SourcePosition parsing.SourcePos
+	Lhs            ITypedExpression
+	Rhs            ITypedExpression
+}
+
+func (e *TypedIsExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedIsExpr) GetTypeInfo() types.IType             { return types.BoolTypeInstance }
+func (e *TypedIsExpr) isTypeExpression()                    {}
+
+//=====================================================================================================================
+
 // TypedLeadingDocumentationExpr represents lines of leading documentation.
 type TypedLeadingDocumentationExpr struct {
 	SourcePosition parsing.SourcePos

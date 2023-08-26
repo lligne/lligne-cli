@@ -313,6 +313,12 @@ func (cb *CodeBlock) TypeLoad(value types.BuiltInType) {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) TypeNotEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeTypeNotEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) append64BitOperand(bits uint64) {
 	cb.OpCodes = append(cb.OpCodes, uint16(bits))
 	cb.OpCodes = append(cb.OpCodes, uint16(bits>>16))
@@ -432,6 +438,8 @@ func (cb *CodeBlock) Disassemble() string {
 		case OpCodeTypeLoad:
 			writeType(output, ip, "TYPE_LOAD", cb.Types[cb.OpCodes[ip]])
 			ip += 1
+		case OpCodeTypeNotEquals:
+			write(output, ip, "TYPE_NOT_EQUALS")
 		}
 
 	}

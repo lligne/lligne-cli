@@ -48,6 +48,8 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.IType
 		buildGreaterThanOrEqualsCodeBlock(codeBlock, expr)
 	case *typechecking.TypedInt64LiteralExpr:
 		buildInt64LiteralCodeBlock(codeBlock, expr)
+	case *typechecking.TypedIsExpr:
+		buildIsCodeBlock(codeBlock, expr)
 	case *typechecking.TypedLessThanExpr:
 		buildLessThanCodeBlock(codeBlock, expr)
 	case *typechecking.TypedLessThanOrEqualsExpr:
@@ -211,6 +213,66 @@ func buildInt64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheckin
 
 //=====================================================================================================================
 
+// TODO: This will evolve into a module unto itself
+func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedIsExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
+	switch expr.Lhs.GetTypeInfo().(type) {
+	case *types.BoolType:
+		switch rhs := expr.Rhs.(type) {
+		case *typechecking.TypedBuiltInTypeExpr:
+			switch rhs.Value {
+			case types.BuiltInTypeBool:
+				codeBlock.BoolLoadTrue()
+			default:
+				codeBlock.BoolLoadFalse()
+			}
+		default:
+			panic(fmt.Sprintf("Missing case in buildIsCodeBlock for BoolType: %T\n", expr.Rhs))
+		}
+	case *types.Float64Type:
+		switch rhs := expr.Rhs.(type) {
+		case *typechecking.TypedBuiltInTypeExpr:
+			switch rhs.Value {
+			case types.BuiltInTypeFloat64:
+				codeBlock.BoolLoadTrue()
+			default:
+				codeBlock.BoolLoadFalse()
+			}
+		default:
+			panic(fmt.Sprintf("Missing case in buildIsCodeBlock for Float64Type: %T\n", expr.Rhs))
+		}
+	case *types.Int64Type:
+		switch rhs := expr.Rhs.(type) {
+		case *typechecking.TypedBuiltInTypeExpr:
+			switch rhs.Value {
+			case types.BuiltInTypeInt64:
+				codeBlock.BoolLoadTrue()
+			default:
+				codeBlock.BoolLoadFalse()
+			}
+		default:
+			panic(fmt.Sprintf("Missing case in buildIsCodeBlock for Int64Type: %T\n", expr.Rhs))
+		}
+	case *types.StringType:
+		switch rhs := expr.Rhs.(type) {
+		case *typechecking.TypedBuiltInTypeExpr:
+			switch rhs.Value {
+			case types.BuiltInTypeString:
+				codeBlock.BoolLoadTrue()
+			default:
+				codeBlock.BoolLoadFalse()
+			}
+		default:
+			panic(fmt.Sprintf("Missing case in buildIsCodeBlock for StringType: %T\n", expr.Rhs))
+		}
+	default:
+		panic(fmt.Sprintf("Missing case in buildIsCodeBlock: %T\n", expr.Lhs.GetTypeInfo()))
+	}
+}
+
+//=====================================================================================================================
+
 func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedLessThanExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
@@ -303,6 +365,8 @@ func buildNotEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.T
 		codeBlock.Int64NotEquals()
 	case *types.StringType:
 		codeBlock.StringNotEquals()
+	case *types.TypeType:
+		codeBlock.TypeNotEquals()
 	default:
 		panic("Undefined inequality type")
 	}

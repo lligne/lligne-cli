@@ -418,6 +418,17 @@ func init() {
 		m.IP += 1
 	}
 
+	dispatch[OpCodeTypeNotEquals] = func(m *Machine, c *CodeBlock) {
+		rhs := m.Stack[m.Top]
+		m.Top -= 1
+		lhs := m.Stack[m.Top]
+		if lhs == rhs {
+			m.Stack[m.Top] = 0
+		} else {
+			m.Stack[m.Top] = true64
+		}
+	}
+
 	for i := uint16(0); i < OpCode_Count; i += 1 {
 		if dispatch[i] == nil {
 			panic(fmt.Sprintf("Missing dispatch function %d", i))

@@ -2,3 +2,11 @@
 • Float64 == Float64
 • Int64 == Int64
 • String == String
+• String != Bool
+• Float64 != Int64
+• 123 is Int64
+• 123.456 is Float64
+• true is Bool
+• false is Bool
+• "abc" is String
+

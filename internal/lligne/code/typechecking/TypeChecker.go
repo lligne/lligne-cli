@@ -38,6 +38,8 @@ func TypeCheckExpr(sourceCode string, expression parsing.IExpression) ITypedExpr
 		return typeCheckGreaterThanOrEqualsExpr(sourceCode, expr)
 	case *parsing.IntegerLiteralExpr:
 		return typeCheckIntegerLiteralExpr(sourceCode, expr)
+	case *parsing.IsExpr:
+		return typeCheckIsExpr(sourceCode, expr)
 	case *parsing.LessThanExpr:
 		return typeCheckLessThanExpr(sourceCode, expr)
 	case *parsing.LessThanOrEqualsExpr:
@@ -190,6 +192,19 @@ func typeCheckIntegerLiteralExpr(sourceCode string, expr *parsing.IntegerLiteral
 	return &TypedInt64LiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          value,
+	}
+}
+
+//=====================================================================================================================
+
+func typeCheckIsExpr(sourceCode string, expr *parsing.IsExpr) ITypedExpression {
+	lhs := TypeCheckExpr(sourceCode, expr.Lhs)
+	rhs := TypeCheckExpr(sourceCode, expr.Rhs)
+	// TODO: ensure the lhs and rhs are compatible
+	return &TypedIsExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
 	}
 }
 
