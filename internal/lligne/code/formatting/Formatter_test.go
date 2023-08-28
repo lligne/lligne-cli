@@ -31,6 +31,8 @@ func TestLligneFormatter(t *testing.T) {
 	t.Run("identifier literals", func(t *testing.T) {
 		check("abc")
 		check("d")
+		check("a_bc")
+		check("ab-c")
 	})
 
 	t.Run("integer literals", func(t *testing.T) {

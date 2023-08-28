@@ -35,6 +35,19 @@ func (e *TypedAdditionExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
+// TypedArrayLiteralExpr represents a parenthesized expression or comma-separated sequence of expressions.
+type TypedArrayLiteralExpr struct {
+	SourcePosition parsing.SourcePos
+	Elements       []ITypedExpression // TODO: Should be element type
+	TypeInfo       types.IType
+}
+
+func (e *TypedArrayLiteralExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedArrayLiteralExpr) GetTypeInfo() types.IType             { return e.TypeInfo }
+func (e *TypedArrayLiteralExpr) isTypeExpression()                    {}
+
+//=====================================================================================================================
+
 // TypedBooleanLiteralExpr represents a single boolean literal.
 type TypedBooleanLiteralExpr struct {
 	SourcePosition parsing.SourcePos
@@ -336,16 +349,15 @@ func (e *TypedParenthesizedExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 
-// TypedSequenceLiteralExpr represents a parenthesized expression or comma-separated sequence of expressions.
-type TypedSequenceLiteralExpr struct {
+// TypedRecordExpr represents a record.
+type TypedRecordExpr struct {
 	SourcePosition parsing.SourcePos
-	Elements       []ITypedExpression
 	TypeInfo       types.IType
 }
 
-func (e *TypedSequenceLiteralExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
-func (e *TypedSequenceLiteralExpr) GetTypeInfo() types.IType             { return e.TypeInfo }
-func (e *TypedSequenceLiteralExpr) isTypeExpression()                    {}
+func (e *TypedRecordExpr) GetSourcePosition() parsing.SourcePos { return e.SourcePosition }
+func (e *TypedRecordExpr) GetTypeInfo() types.IType             { return e.TypeInfo }
+func (e *TypedRecordExpr) isTypeExpression()                    {}
 
 //=====================================================================================================================
 

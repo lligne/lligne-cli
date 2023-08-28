@@ -54,14 +54,15 @@ func TestLligneScanner(t *testing.T) {
 
 	t.Run("a few identifier tokens", func(t *testing.T) {
 		tokens, newLineOffsets := Scan(
-			"a bb c23_f _dfg",
+			"a bb c23_f q-code _dfg",
 		)
 
 		expectToken(tokens[0], TokenTypeIdentifier, 0, 1)
 		expectToken(tokens[1], TokenTypeIdentifier, 2, 2)
 		expectToken(tokens[2], TokenTypeIdentifier, 5, 5)
-		expectToken(tokens[3], TokenTypeIdentifier, 11, 4)
-		expectToken(tokens[4], TokenTypeEof, 15, 0)
+		expectToken(tokens[3], TokenTypeIdentifier, 11, 6)
+		expectToken(tokens[4], TokenTypeIdentifier, 18, 4)
+		expectToken(tokens[5], TokenTypeEof, 22, 0)
 		assert.Equal(t, 0, len(newLineOffsets))
 	})
 

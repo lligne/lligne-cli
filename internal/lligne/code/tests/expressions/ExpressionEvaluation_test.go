@@ -67,8 +67,10 @@ func TestExpressionEvaluation(t *testing.T) {
 		checkSampleFile(t, sample1)
 		checkSampleFile(t, sample2)
 		checkSampleFile(t, sample3)
-		checkSampleFile(t, sample4)
+		//checkSampleFile(t, sample4)
 		checkSampleFile(t, sample5)
+		checkSampleFile(t, sample6)
+		checkSampleFile(t, sample7)
 
 	})
 
@@ -76,19 +78,25 @@ func TestExpressionEvaluation(t *testing.T) {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-//go:embed float64/float64-comparisons-true.lligne-tests
+//go:embed bool/logic-true.lligne-tests
 var sample1 string
 
-//go:embed int64/int64-comparisons-true.lligne-tests
+//go:embed float64/float64-comparisons-true.lligne-tests
 var sample2 string
 
-//go:embed bool/logic-true.lligne-tests
+//go:embed int64/int64-comparisons-true.lligne-tests
 var sample3 string
 
-//go:embed string/string-concatenation.lligne-tests
+//go:embed record/record-comparisons.lligne-tests
 var sample4 string
 
-//go:embed types/built-in-types.lligne-tests
+//go:embed string/string-comparisons.lligne-tests
 var sample5 string
+
+//go:embed string/string-concatenation.lligne-tests
+var sample6 string
+
+//go:embed types/built-in-types.lligne-tests
+var sample7 string
 
 //---------------------------------------------------------------------------------------------------------------------

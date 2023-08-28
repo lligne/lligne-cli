@@ -58,6 +58,8 @@ func TypeCheckExpr(sourceCode string, expression parsing.IExpression) ITypedExpr
 		return typeCheckNotEqualsExpr(sourceCode, expr)
 	case *parsing.ParenthesizedExpr:
 		return typeCheckParenthesizedExpr(sourceCode, expr)
+	case *parsing.RecordExpr:
+		return typeCheckRecordExpr(sourceCode, expr)
 	case *parsing.StringLiteralExpr:
 		return typeCheckStringLiteralExpr(sourceCode, expr)
 	case *parsing.SubtractionExpr:
@@ -328,6 +330,17 @@ func typeCheckParenthesizedExpr(sourceCode string, expr *parsing.ParenthesizedEx
 		SourcePosition: expr.SourcePosition,
 		InnerExpr:      inner,
 		TypeInfo:       inner.GetTypeInfo(),
+	}
+
+}
+
+//=====================================================================================================================
+
+func typeCheckRecordExpr(sourceCode string, expr *parsing.RecordExpr) ITypedExpression {
+
+	return &TypedRecordExpr{
+		SourcePosition: expr.SourcePosition,
+		TypeInfo:       types.Int64TypeInstance, // TODO (obviously)
 	}
 
 }

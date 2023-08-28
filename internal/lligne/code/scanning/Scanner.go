@@ -203,8 +203,9 @@ func isDigit(ch rune) bool {
 //---------------------------------------------------------------------------------------------------------------------
 
 // isIdentifierPart determines whether a given rune could be the second or later character of an identifier.
-func isIdentifierPart(ch rune) bool {
-	return isIdentifierStart(ch) || isDigit(ch)
+func isIdentifierPart(ch rune, chNext rune) bool {
+	return isIdentifierStart(ch) || isDigit(ch) ||
+		ch == '-' && (isIdentifierStart(chNext) || isDigit(chNext))
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -439,7 +440,7 @@ func (s *scanner) scanDoubleQuotedString() Token {
 // scanIdentifierOrKeyword scans the remainder of an identifier after the opening letter has been consumed.
 func (s *scanner) scanIdentifierOrKeyword() Token {
 
-	for isIdentifierPart(s.runeAhead1) {
+	for isIdentifierPart(s.runeAhead1, s.runeAhead2) {
 		s.advance()
 	}
 

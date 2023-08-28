@@ -1,0 +1,6 @@
+• 'A string' == "A string"
+• "A string" == "A string"
+
+• "A string" != "The string"
+
+

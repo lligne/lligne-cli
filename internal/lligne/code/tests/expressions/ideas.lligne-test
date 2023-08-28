@@ -1,0 +1,17 @@
+
+// Case insensitive string comparison
+• "A string" ==[Aa]== "a string"
+
+• "A string" =![Aa]!= "the string"
+
+// Format operator
+i fmt "%d"
+
+// Constraints
+Int32 && val <= 100
+
+// Arithmetic by field
+a: {x:1, y:2}
+b: {x:3, y:4}
+c = a + b
+c == {x:4, y:6}
