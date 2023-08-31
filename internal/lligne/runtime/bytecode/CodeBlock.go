@@ -7,6 +7,7 @@ package bytecode
 
 import (
 	"fmt"
+	"lligne-cli/internal/lligne/runtime/pools"
 	"lligne-cli/internal/lligne/runtime/types"
 	"math"
 	"strings"
@@ -18,8 +19,7 @@ import (
 // CodeBlock consists of a sequence of op codes plus a string constant pool.
 type CodeBlock struct {
 	OpCodes []uint16
-	Strings StringPool
-	Types   []types.IType
+	Types   []types.IType // TODO: Move out to typechecking.Result
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -28,7 +28,6 @@ type CodeBlock struct {
 func NewCodeBlock() *CodeBlock {
 	result := &CodeBlock{
 		OpCodes: nil,
-		Strings: NewStringConstantPool(),
 		Types:   nil,
 	}
 
@@ -287,9 +286,9 @@ func (cb *CodeBlock) StringEquals() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (cb *CodeBlock) StringLoad(value string) {
+func (cb *CodeBlock) StringLoad(valueIndex uint64) {
 	cb.OpCodes = append(cb.OpCodes, OpCodeStringLoad)
-	cb.append64BitOperand(cb.Strings.Put(value))
+	cb.append64BitOperand(valueIndex)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -329,7 +328,7 @@ func (cb *CodeBlock) append64BitOperand(bits uint64) {
 //=====================================================================================================================
 
 // Disassemble dumps out the code block op codes.
-func (cb *CodeBlock) Disassemble() string {
+func (cb *CodeBlock) Disassemble(stringPool *pools.StringPool) string {
 
 	output := &strings.Builder{}
 
@@ -429,8 +428,8 @@ func (cb *CodeBlock) Disassemble() string {
 		case OpCodeStringEquals:
 			write(output, ip, "STRING_EQUALS")
 		case OpCodeStringLoad:
-			value := *(*uint64)(unsafe.Pointer(&cb.OpCodes[ip]))
-			writeString(output, ip, "STRING_LOAD", cb.Strings.Get(value))
+			valueIndex := *(*uint64)(unsafe.Pointer(&cb.OpCodes[ip]))
+			writeString(output, ip, "STRING_LOAD", stringPool.Get(valueIndex))
 			ip += 4
 
 		case OpCodeTypeEquals:

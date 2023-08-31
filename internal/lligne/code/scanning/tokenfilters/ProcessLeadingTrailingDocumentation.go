@@ -5,73 +5,62 @@
 // Apache 2.0 License
 //
 
-package scanning
+package tokenfilters
 
-import "strings"
-
-//=====================================================================================================================
-
-// RemoveDocumentation removes all documentation tokens from a given token array.
-func RemoveDocumentation(tokens []Token) []Token {
-	result := make([]Token, 0)
-
-	for _, token := range tokens {
-		if token.TokenType != TokenTypeDocumentation {
-			result = append(result, token)
-		}
-	}
-
-	return result
-}
+import (
+	"lligne-cli/internal/lligne/code/scanning"
+	"strings"
+)
 
 //=====================================================================================================================
 
 // ProcessLeadingTrailingDocumentation converts multiline documentation tokens to leading or trailing documentation.
-func ProcessLeadingTrailingDocumentation(sourceCode string, tokens []Token) []Token {
-	result := make([]Token, 0)
+func ProcessLeadingTrailingDocumentation(scanResult *scanning.Outcome) *scanning.Outcome {
+	tokens := scanResult.Tokens
+	result := make([]scanning.Token, 0)
 
 	index := 0
 	for index < len(tokens)-1 {
-		if tokens[index].TokenType == TokenTypeDocumentation {
-			result = append(result, Token{
+		if tokens[index].TokenType == scanning.TokenTypeDocumentation {
+			result = append(result, scanning.Token{
 				SourceOffset: tokens[index].SourceOffset,
 				SourceLength: tokens[index].SourceLength,
-				TokenType:    TokenTypeLeadingDocumentation,
+				TokenType:    scanning.TokenTypeLeadingDocumentation,
 			})
-			result = append(result, Token{
+			result = append(result, scanning.Token{
 				SourceOffset: tokens[index].SourceOffset,
 				SourceLength: 0,
-				TokenType:    TokenTypeSynthDocument,
+				TokenType:    scanning.TokenTypeSynthDocument,
 			})
 			index += 1
-		} else if tokens[index+1].TokenType == TokenTypeDocumentation {
-			if tokensOnSameLine(sourceCode, tokens[index].SourceOffset, tokens[index+1].SourceOffset) {
+		} else if tokens[index+1].TokenType == scanning.TokenTypeDocumentation {
+			if tokensOnSameLine(scanResult.SourceCode, tokens[index].SourceOffset, tokens[index+1].SourceOffset) {
 
-				if tokens[index].TokenType == TokenTypeComma || tokens[index].TokenType == TokenTypeSemicolon {
-					result = append(result, Token{
+				if tokens[index].TokenType == scanning.TokenTypeComma || tokens[index].TokenType == scanning.TokenTypeSemicolon {
+					result = append(result, scanning.Token{
 						SourceOffset: tokens[index+1].SourceOffset,
 						SourceLength: 0,
-						TokenType:    TokenTypeSynthDocument,
+						TokenType:    scanning.TokenTypeSynthDocument,
 					})
-					result = append(result, Token{
+					result = append(result, scanning.Token{
 						SourceOffset: tokens[index+1].SourceOffset,
 						SourceLength: tokens[index+1].SourceLength,
-						TokenType:    TokenTypeTrailingDocumentation,
+						TokenType:    scanning.TokenTypeTrailingDocumentation,
 					})
 				}
 
 				result = append(result, tokens[index])
 
-				if tokens[index].TokenType != TokenTypeComma && tokens[index].TokenType != TokenTypeSemicolon {
-					result = append(result, Token{
+				if tokens[index].TokenType != scanning.TokenTypeComma && tokens[index].TokenType != scanning.TokenTypeSemicolon {
+					result = append(result, scanning.Token{
 						SourceOffset: tokens[index+1].SourceOffset,
 						SourceLength: 0,
-						TokenType:    TokenTypeSynthDocument,
+						TokenType:    scanning.TokenTypeSynthDocument,
 					})
-					result = append(result, Token{
+					result = append(result, scanning.Token{
 						SourceOffset: tokens[index+1].SourceOffset,
 						SourceLength: tokens[index+1].SourceLength,
-						TokenType:    TokenTypeTrailingDocumentation,
+						TokenType:    scanning.TokenTypeTrailingDocumentation,
 					})
 				}
 
@@ -79,15 +68,15 @@ func ProcessLeadingTrailingDocumentation(sourceCode string, tokens []Token) []To
 			} else {
 				result = append(result, tokens[index])
 
-				result = append(result, Token{
+				result = append(result, scanning.Token{
 					SourceOffset: tokens[index+1].SourceOffset,
 					SourceLength: tokens[index+1].SourceLength,
-					TokenType:    TokenTypeLeadingDocumentation,
+					TokenType:    scanning.TokenTypeLeadingDocumentation,
 				})
-				result = append(result, Token{
+				result = append(result, scanning.Token{
 					SourceOffset: tokens[index+1].SourceOffset,
 					SourceLength: 0,
-					TokenType:    TokenTypeSynthDocument,
+					TokenType:    scanning.TokenTypeSynthDocument,
 				})
 				index += 2
 
@@ -98,7 +87,11 @@ func ProcessLeadingTrailingDocumentation(sourceCode string, tokens []Token) []To
 		}
 	}
 
-	return result
+	return &scanning.Outcome{
+		SourceCode:     scanResult.SourceCode,
+		Tokens:         result,
+		NewLineOffsets: scanResult.NewLineOffsets,
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------

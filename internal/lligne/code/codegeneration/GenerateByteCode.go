@@ -7,72 +7,92 @@ package codegeneration
 
 import (
 	"fmt"
-	"lligne-cli/internal/lligne/code/typechecking"
+	prior "lligne-cli/internal/lligne/code/analysis/typechecking"
 	"lligne-cli/internal/lligne/runtime/bytecode"
+	"lligne-cli/internal/lligne/runtime/pools"
 	"lligne-cli/internal/lligne/runtime/types"
 )
 
 //=====================================================================================================================
 
-func GenerateByteCode(expression typechecking.ITypedExpression) *bytecode.CodeBlock {
-	result := bytecode.NewCodeBlock()
-
-	buildCodeBlock(result, expression)
-
-	result.Stop()
-
-	return result
+type Outcome struct {
+	SourceCode      string
+	NewLineOffsets  []uint32
+	Model           prior.IExpression
+	StringConstants *pools.StringConstantPool
+	IdentifierNames *pools.StringConstantPool
+	// TODO: TypesPool
+	CodeBlock *bytecode.CodeBlock
 }
 
 //=====================================================================================================================
 
-func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.ITypedExpression) {
+func GenerateByteCode(priorOutcome *prior.Outcome) *Outcome {
+	codeBlock := bytecode.NewCodeBlock()
+
+	buildCodeBlock(codeBlock, priorOutcome.Model)
+
+	codeBlock.Stop()
+
+	return &Outcome{
+		SourceCode:      priorOutcome.SourceCode,
+		NewLineOffsets:  priorOutcome.NewLineOffsets,
+		Model:           priorOutcome.Model,
+		StringConstants: priorOutcome.StringConstants,
+		IdentifierNames: priorOutcome.IdentifierNames,
+		CodeBlock:       codeBlock,
+	}
+}
+
+//=====================================================================================================================
+
+func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression prior.IExpression) {
 
 	switch expr := expression.(type) {
 
-	case *typechecking.TypedAdditionExpr:
+	case *prior.AdditionExpr:
 		buildAdditionCodeBlock(codeBlock, expr)
-	case *typechecking.TypedBooleanLiteralExpr:
+	case *prior.BooleanLiteralExpr:
 		buildBooleanLiteralCodeBlock(codeBlock, expr)
-	case *typechecking.TypedBuiltInTypeExpr:
+	case *prior.BuiltInTypeExpr:
 		buildBuiltInTypeCodeBlock(codeBlock, expr)
-	case *typechecking.TypedDivisionExpr:
+	case *prior.DivisionExpr:
 		buildDivisionCodeBlock(codeBlock, expr)
-	case *typechecking.TypedEqualsExpr:
+	case *prior.EqualsExpr:
 		buildEqualsCodeBlock(codeBlock, expr)
-	case *typechecking.TypedFloat64LiteralExpr:
+	case *prior.Float64LiteralExpr:
 		buildFloat64LiteralCodeBlock(codeBlock, expr)
-	case *typechecking.TypedGreaterThanExpr:
+	case *prior.GreaterThanExpr:
 		buildGreaterThanCodeBlock(codeBlock, expr)
-	case *typechecking.TypedGreaterThanOrEqualsExpr:
+	case *prior.GreaterThanOrEqualsExpr:
 		buildGreaterThanOrEqualsCodeBlock(codeBlock, expr)
-	case *typechecking.TypedInt64LiteralExpr:
+	case *prior.Int64LiteralExpr:
 		buildInt64LiteralCodeBlock(codeBlock, expr)
-	case *typechecking.TypedIsExpr:
+	case *prior.IsExpr:
 		buildIsCodeBlock(codeBlock, expr)
-	case *typechecking.TypedLessThanExpr:
+	case *prior.LessThanExpr:
 		buildLessThanCodeBlock(codeBlock, expr)
-	case *typechecking.TypedLessThanOrEqualsExpr:
+	case *prior.LessThanOrEqualsExpr:
 		buildLessThanOrEqualsCodeBlock(codeBlock, expr)
-	case *typechecking.TypedLogicalAndExpr:
+	case *prior.LogicalAndExpr:
 		buildLogicalAndCodeBlock(codeBlock, expr)
-	case *typechecking.TypedLogicalNotOperationExpr:
+	case *prior.LogicalNotOperationExpr:
 		buildLogicalNotCodeBlock(codeBlock, expr)
-	case *typechecking.TypedLogicalOrExpr:
+	case *prior.LogicalOrExpr:
 		buildLogicalOrCodeBlock(codeBlock, expr)
-	case *typechecking.TypedMultiplicationExpr:
+	case *prior.MultiplicationExpr:
 		buildMultiplicationCodeBlock(codeBlock, expr)
-	case *typechecking.TypedNegationOperationExpr:
+	case *prior.NegationOperationExpr:
 		buildNegationCodeBlock(codeBlock, expr)
-	case *typechecking.TypedNotEqualsExpr:
+	case *prior.NotEqualsExpr:
 		buildNotEqualsCodeBlock(codeBlock, expr)
-	case *typechecking.TypedParenthesizedExpr:
+	case *prior.ParenthesizedExpr:
 		buildParenthesizedCodeBlock(codeBlock, expr)
-	case *typechecking.TypedStringConcatenationExpr:
+	case *prior.StringConcatenationExpr:
 		buildStringConcatenationCodeBlock(codeBlock, expr)
-	case *typechecking.TypedStringLiteralExpr:
+	case *prior.StringLiteralExpr:
 		buildStringLiteralCodeBlock(codeBlock, expr)
-	case *typechecking.TypedSubtractionExpr:
+	case *prior.SubtractionExpr:
 		buildSubtractionCodeBlock(codeBlock, expr)
 	default:
 		panic(fmt.Sprintf("Missing case in buildCodeBlock: %T\n", expression))
@@ -83,12 +103,12 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression typechecking.IType
 
 //=====================================================================================================================
 
-func buildAdditionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedAdditionExpr) {
+func buildAdditionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.AdditionExpr) {
 
-	if e, ok := expr.Lhs.(*typechecking.TypedInt64LiteralExpr); ok && e.Value == 1 {
+	if e, ok := expr.Lhs.(*prior.Int64LiteralExpr); ok && e.Value == 1 {
 		buildCodeBlock(codeBlock, expr.Rhs)
 		codeBlock.Int64Increment()
-	} else if e, ok := expr.Rhs.(*typechecking.TypedInt64LiteralExpr); ok && e.Value == 1 {
+	} else if e, ok := expr.Rhs.(*prior.Int64LiteralExpr); ok && e.Value == 1 {
 		buildCodeBlock(codeBlock, expr.Lhs)
 		codeBlock.Int64Increment()
 	} else {
@@ -107,7 +127,7 @@ func buildAdditionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 
 //=====================================================================================================================
 
-func buildBooleanLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedBooleanLiteralExpr) {
+func buildBooleanLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.BooleanLiteralExpr) {
 	if expr.Value {
 		codeBlock.BoolLoadTrue()
 	} else {
@@ -117,13 +137,13 @@ func buildBooleanLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheck
 
 //=====================================================================================================================
 
-func buildBuiltInTypeCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedBuiltInTypeExpr) {
+func buildBuiltInTypeCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.BuiltInTypeExpr) {
 	codeBlock.TypeLoad(expr.Value)
 }
 
 //=====================================================================================================================
 
-func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedDivisionExpr) {
+func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.DivisionExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.TypeInfo.(type) {
@@ -138,7 +158,7 @@ func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 
 //=====================================================================================================================
 
-func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedEqualsExpr) {
+func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.EqualsExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
@@ -157,7 +177,7 @@ func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Type
 
 //=====================================================================================================================
 
-func buildFloat64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedFloat64LiteralExpr) {
+func buildFloat64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Float64LiteralExpr) {
 	switch expr.Value {
 	case 0:
 		codeBlock.Float64LoadZero()
@@ -170,7 +190,7 @@ func buildFloat64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheck
 
 //=====================================================================================================================
 
-func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedGreaterThanExpr) {
+func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.GreaterThanExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
@@ -185,7 +205,7 @@ func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking
 
 //=====================================================================================================================
 
-func buildGreaterThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedGreaterThanOrEqualsExpr) {
+func buildGreaterThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.GreaterThanOrEqualsExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
@@ -200,7 +220,7 @@ func buildGreaterThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *type
 
 //=====================================================================================================================
 
-func buildInt64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedInt64LiteralExpr) {
+func buildInt64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Int64LiteralExpr) {
 	switch expr.Value {
 	case 0:
 		codeBlock.Int64LoadZero()
@@ -214,13 +234,13 @@ func buildInt64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheckin
 //=====================================================================================================================
 
 // TODO: This will evolve into a module unto itself
-func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedIsExpr) {
+func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IsExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
 	case *types.BoolType:
 		switch rhs := expr.Rhs.(type) {
-		case *typechecking.TypedBuiltInTypeExpr:
+		case *prior.BuiltInTypeExpr:
 			switch rhs.Value {
 			case types.BuiltInTypeBool:
 				codeBlock.BoolLoadTrue()
@@ -232,7 +252,7 @@ func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedIsE
 		}
 	case *types.Float64Type:
 		switch rhs := expr.Rhs.(type) {
-		case *typechecking.TypedBuiltInTypeExpr:
+		case *prior.BuiltInTypeExpr:
 			switch rhs.Value {
 			case types.BuiltInTypeFloat64:
 				codeBlock.BoolLoadTrue()
@@ -244,7 +264,7 @@ func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedIsE
 		}
 	case *types.Int64Type:
 		switch rhs := expr.Rhs.(type) {
-		case *typechecking.TypedBuiltInTypeExpr:
+		case *prior.BuiltInTypeExpr:
 			switch rhs.Value {
 			case types.BuiltInTypeInt64:
 				codeBlock.BoolLoadTrue()
@@ -256,7 +276,7 @@ func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedIsE
 		}
 	case *types.StringType:
 		switch rhs := expr.Rhs.(type) {
-		case *typechecking.TypedBuiltInTypeExpr:
+		case *prior.BuiltInTypeExpr:
 			switch rhs.Value {
 			case types.BuiltInTypeString:
 				codeBlock.BoolLoadTrue()
@@ -273,7 +293,7 @@ func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedIsE
 
 //=====================================================================================================================
 
-func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedLessThanExpr) {
+func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LessThanExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
@@ -288,7 +308,7 @@ func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 
 //=====================================================================================================================
 
-func buildLessThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedLessThanOrEqualsExpr) {
+func buildLessThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LessThanOrEqualsExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
@@ -303,7 +323,7 @@ func buildLessThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typeche
 
 //=====================================================================================================================
 
-func buildLogicalAndCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedLogicalAndExpr) {
+func buildLogicalAndCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LogicalAndExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	codeBlock.BoolAnd()
@@ -311,14 +331,14 @@ func buildLogicalAndCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.
 
 //=====================================================================================================================
 
-func buildLogicalNotCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedLogicalNotOperationExpr) {
+func buildLogicalNotCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LogicalNotOperationExpr) {
 	buildCodeBlock(codeBlock, expr.Operand)
 	codeBlock.BoolNot()
 }
 
 //=====================================================================================================================
 
-func buildLogicalOrCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedLogicalOrExpr) {
+func buildLogicalOrCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LogicalOrExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	codeBlock.BoolOr()
@@ -326,7 +346,7 @@ func buildLogicalOrCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.T
 
 //=====================================================================================================================
 
-func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedMultiplicationExpr) {
+func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.MultiplicationExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.TypeInfo.(type) {
@@ -341,7 +361,7 @@ func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typecheck
 
 //=====================================================================================================================
 
-func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedNegationOperationExpr) {
+func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NegationOperationExpr) {
 	buildCodeBlock(codeBlock, expr.Operand)
 	switch expr.TypeInfo.(type) {
 	case *types.Float64Type:
@@ -355,7 +375,7 @@ func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.Ty
 
 //=====================================================================================================================
 
-func buildNotEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedNotEqualsExpr) {
+func buildNotEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NotEqualsExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeInfo().(type) {
@@ -374,13 +394,13 @@ func buildNotEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.T
 
 //=====================================================================================================================
 
-func buildParenthesizedCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedParenthesizedExpr) {
+func buildParenthesizedCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.ParenthesizedExpr) {
 	buildCodeBlock(codeBlock, expr.InnerExpr)
 }
 
 //=====================================================================================================================
 
-func buildStringConcatenationCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedStringConcatenationExpr) {
+func buildStringConcatenationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.StringConcatenationExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 	buildCodeBlock(codeBlock, expr.Rhs)
 	codeBlock.StringConcatenate()
@@ -388,16 +408,16 @@ func buildStringConcatenationCodeBlock(codeBlock *bytecode.CodeBlock, expr *type
 
 //=====================================================================================================================
 
-func buildStringLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedStringLiteralExpr) {
-	codeBlock.StringLoad(expr.Value)
+func buildStringLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.StringLiteralExpr) {
+	codeBlock.StringLoad(expr.ValueIndex)
 }
 
 //=====================================================================================================================
 
-func buildSubtractionCodeBlock(codeBlock *bytecode.CodeBlock, expr *typechecking.TypedSubtractionExpr) {
+func buildSubtractionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.SubtractionExpr) {
 	buildCodeBlock(codeBlock, expr.Lhs)
 
-	if e, ok := expr.Rhs.(*typechecking.TypedInt64LiteralExpr); ok && e.Value == 1 {
+	if e, ok := expr.Rhs.(*prior.Int64LiteralExpr); ok && e.Value == 1 {
 		codeBlock.Int64Decrement()
 	} else {
 		buildCodeBlock(codeBlock, expr.Rhs)

@@ -14,8 +14,16 @@ import (
 
 //=====================================================================================================================
 
+type Outcome struct {
+	SourceCode     string
+	Tokens         []Token
+	NewLineOffsets []uint32
+}
+
+//=====================================================================================================================
+
 // Scan converts the given source code to an array of tokens plus an array of new line character offsets.
-func Scan(sourceCode string) (tokens []Token, newLineOffsets []uint32) {
+func Scan(sourceCode string) *Outcome {
 
 	// Create a scanner.
 	scanner := newScanner(sourceCode)
@@ -24,10 +32,11 @@ func Scan(sourceCode string) (tokens []Token, newLineOffsets []uint32) {
 	scanner.scan()
 
 	// Extract the results.
-	tokens = scanner.tokens
-	newLineOffsets = scanner.newLineOffsets
-
-	return
+	return &Outcome{
+		SourceCode:     sourceCode,
+		Tokens:         scanner.tokens,
+		NewLineOffsets: scanner.newLineOffsets,
+	}
 
 }
 

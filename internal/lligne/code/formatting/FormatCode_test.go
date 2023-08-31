@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"lligne-cli/internal/lligne/code/parsing"
 	"lligne-cli/internal/lligne/code/scanning"
+	"lligne-cli/internal/lligne/code/scanning/tokenfilters"
 	"testing"
 )
 
@@ -19,13 +20,13 @@ import (
 func TestLligneFormatter(t *testing.T) {
 
 	check := func(sourceCode string) {
-		tokens, _ := scanning.Scan(sourceCode)
+		scanOutcome := scanning.Scan(sourceCode)
 
-		tokens = scanning.ProcessLeadingTrailingDocumentation(sourceCode, tokens)
+		scanOutcome = tokenfilters.ProcessLeadingTrailingDocumentation(scanOutcome)
 
-		expression := parsing.ParseExpression(sourceCode, tokens)
+		parseOutcome := parsing.ParseExpression(scanOutcome)
 
-		assert.Equal(t, sourceCode, FormatExpr(sourceCode, expression))
+		assert.Equal(t, sourceCode, FormatCode(parseOutcome))
 	}
 
 	t.Run("identifier literals", func(t *testing.T) {

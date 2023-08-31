@@ -124,6 +124,7 @@ func (e *FieldReferenceExpr) isExpression()                {}
 // FloatingPointLiteralExpr represents a single integer literal.
 type FloatingPointLiteralExpr struct {
 	SourcePosition SourcePos
+	Value          float64
 }
 
 func (e *FloatingPointLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }
@@ -216,6 +217,7 @@ func (e *InExpr) isExpression()                {}
 // IntegerLiteralExpr represents a single integer literal.
 type IntegerLiteralExpr struct {
 	SourcePosition SourcePos
+	Value          int64
 }
 
 func (e *IntegerLiteralExpr) GetSourcePosition() SourcePos { return e.SourcePosition }

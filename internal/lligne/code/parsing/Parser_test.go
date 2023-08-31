@@ -10,6 +10,7 @@ package parsing
 import (
 	"github.com/stretchr/testify/assert"
 	"lligne-cli/internal/lligne/code/scanning"
+	"lligne-cli/internal/lligne/code/scanning/tokenfilters"
 	"testing"
 )
 
@@ -18,11 +19,11 @@ import (
 func TestLligneParser(t *testing.T) {
 
 	check := func(sourceCode string) {
-		tokens, _ := scanning.Scan(sourceCode)
+		scanResult := scanning.Scan(sourceCode)
 
-		tokens = scanning.ProcessLeadingTrailingDocumentation(sourceCode, tokens)
+		scanResult = tokenfilters.ProcessLeadingTrailingDocumentation(scanResult)
 
-		expression := ParseExpression(sourceCode, tokens)
+		expression := ParseExpression(scanResult)
 
 		assert.NotEqual(t, nil, expression)
 	}

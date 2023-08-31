@@ -9,6 +9,7 @@ package bytecode
 
 import (
 	"github.com/stretchr/testify/assert"
+	"lligne-cli/internal/lligne/runtime/pools"
 	"lligne-cli/internal/lligne/runtime/types"
 	"testing"
 )
@@ -56,8 +57,8 @@ func TestCodeBlockDisassembly(t *testing.T) {
 
 		codeBlock.StringConcatenate()
 		codeBlock.StringEquals()
-		codeBlock.StringLoad("Example")
-		codeBlock.StringLoad("Sample")
+		codeBlock.StringLoad(0)
+		codeBlock.StringLoad(1)
 
 		codeBlock.TypeLoad(types.BuiltInTypeBool)
 		codeBlock.TypeLoad(types.BuiltInTypeFloat64)
@@ -69,7 +70,11 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.Return()
 		codeBlock.Stop()
 
-		actual := codeBlock.Disassemble()
+		stringPool := pools.NewStringPool()
+		stringPool.Put("String0")
+		stringPool.Put("String1")
+
+		actual := codeBlock.Disassemble(stringPool)
 
 		expected :=
 			`
@@ -106,8 +111,8 @@ func TestCodeBlockDisassembly(t *testing.T) {
   39  INT64_SUBTRACT
   40  STRING_CONCATENATE
   41  STRING_EQUALS
-  42  STRING_LOAD          'Example'
-  47  STRING_LOAD          'Sample'
+  42  STRING_LOAD          'String0'
+  47  STRING_LOAD          'String1'
   52  TYPE_LOAD            Bool
   54  TYPE_LOAD            Float64
   56  TYPE_LOAD            Int64

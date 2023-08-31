@@ -10,11 +10,13 @@ package tests
 import (
 	_ "embed"
 	"github.com/stretchr/testify/assert"
+	"lligne-cli/internal/lligne/code/analysis/pooling"
+	"lligne-cli/internal/lligne/code/analysis/typechecking"
 	"lligne-cli/internal/lligne/code/codegeneration"
 	"lligne-cli/internal/lligne/code/formatting"
 	"lligne-cli/internal/lligne/code/parsing"
 	"lligne-cli/internal/lligne/code/scanning"
-	"lligne-cli/internal/lligne/code/typechecking"
+	"lligne-cli/internal/lligne/code/scanning/tokenfilters"
 	"lligne-cli/internal/lligne/runtime/bytecode"
 	"strings"
 	"testing"
@@ -25,26 +27,26 @@ import (
 func TestExpressionEvaluation(t *testing.T) {
 
 	checkBool := func(sourceCode string) {
-		tokens, _ := scanning.Scan(sourceCode)
+		scanOutcome := scanning.Scan(sourceCode)
+		scanOutcome = tokenfilters.RemoveDocumentation(scanOutcome)
+		parseOutcome := parsing.ParseExpression(scanOutcome)
 
-		tokens = scanning.RemoveDocumentation(tokens)
+		assert.Equal(t, sourceCode, formatting.FormatCode(parseOutcome))
 
-		expression := parsing.ParseExpression(sourceCode, tokens)
-
-		assert.Equal(t, sourceCode, formatting.FormatExpr(sourceCode, expression))
-
-		typedModel := typechecking.TypeCheckExpr(sourceCode, expression)
-
-		codeBlock := codegeneration.GenerateByteCode(typedModel)
+		poolOutcome := pooling.PoolConstants(parseOutcome)
+		typeCheckOutcome := typechecking.CheckTypes(poolOutcome)
+		codeGenOutcome := codegeneration.GenerateByteCode(typeCheckOutcome)
 
 		//print(codeBlock.Disassemble())
 
-		interpreter := &bytecode.Interpreter{}
+		stringPool := codeGenOutcome.StringConstants.Clone()
+
+		interpreter := bytecode.NewInterpreter(codeGenOutcome.CodeBlock, stringPool)
 		machine := bytecode.NewMachine()
 
-		interpreter.Execute(machine, codeBlock)
+		interpreter.Execute(machine)
 
-		actual := interpreter.BoolGetResult(machine)
+		actual := machine.BoolGetResult()
 
 		assert.True(t, actual, "For source code: "+sourceCode)
 	}

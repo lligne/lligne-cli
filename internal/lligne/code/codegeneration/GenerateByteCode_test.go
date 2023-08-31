@@ -9,36 +9,46 @@ package codegeneration
 
 import (
 	"github.com/stretchr/testify/assert"
+	"lligne-cli/internal/lligne/code/analysis/pooling"
+	"lligne-cli/internal/lligne/code/analysis/typechecking"
 	"lligne-cli/internal/lligne/code/parsing"
 	"lligne-cli/internal/lligne/code/scanning"
-	"lligne-cli/internal/lligne/code/typechecking"
+	"lligne-cli/internal/lligne/code/scanning/tokenfilters"
 	"lligne-cli/internal/lligne/runtime/bytecode"
+	"lligne-cli/internal/lligne/runtime/pools"
 	"testing"
 )
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func runInterpreter(sourceCode string) (*bytecode.Machine, *pools.StringPool) {
+	scanOutcome := scanning.Scan(sourceCode)
+	scanOutcome = tokenfilters.RemoveDocumentation(scanOutcome)
+	parseOutcome := parsing.ParseExpression(scanOutcome)
+	poolOutcome := pooling.PoolConstants(parseOutcome)
+	typeCheckOutcome := typechecking.CheckTypes(poolOutcome)
+	codeGenOutcome := GenerateByteCode(typeCheckOutcome)
+
+	//print(codeBlock.Disassemble())
+
+	stringPool := codeGenOutcome.StringConstants.Clone()
+
+	interpreter := bytecode.NewInterpreter(codeGenOutcome.CodeBlock, stringPool)
+	machine := bytecode.NewMachine()
+
+	interpreter.Execute(machine)
+
+	return machine, stringPool
+}
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func TestGenerateBoolByteCode(t *testing.T) {
 
 	checkBool := func(sourceCode string, expected bool) {
-		tokens, _ := scanning.Scan(sourceCode)
+		machine, _ := runInterpreter(sourceCode)
 
-		tokens = scanning.RemoveDocumentation(tokens)
-
-		model := parsing.ParseExpression(sourceCode, tokens)
-
-		typedModel := typechecking.TypeCheckExpr(sourceCode, model)
-
-		codeBlock := GenerateByteCode(typedModel)
-
-		//print(codeBlock.Disassemble())
-
-		interpreter := &bytecode.Interpreter{}
-		machine := bytecode.NewMachine()
-
-		interpreter.Execute(machine, codeBlock)
-
-		actual := interpreter.BoolGetResult(machine)
+		actual := machine.BoolGetResult()
 
 		assert.Equal(t, expected, actual, "For source code: "+sourceCode)
 	}
@@ -108,22 +118,9 @@ func TestGenerateBoolByteCode(t *testing.T) {
 func TestGenerateInt64ByteCode(t *testing.T) {
 
 	checkInt64 := func(sourceCode string, expected int64) {
-		tokens, _ := scanning.Scan(sourceCode)
+		machine, _ := runInterpreter(sourceCode)
 
-		model := parsing.ParseExpression(sourceCode, tokens)
-
-		typedModel := typechecking.TypeCheckExpr(sourceCode, model)
-
-		codeBlock := GenerateByteCode(typedModel)
-
-		//print(codeBlock.Disassemble())
-
-		interpreter := &bytecode.Interpreter{}
-		machine := bytecode.NewMachine()
-
-		interpreter.Execute(machine, codeBlock)
-
-		actual := interpreter.Int64GetResult(machine)
+		actual := machine.Int64GetResult()
 
 		assert.Equal(t, expected, actual, "For source code: "+sourceCode)
 	}
@@ -165,22 +162,9 @@ func TestGenerateInt64ByteCode(t *testing.T) {
 func TestGenerateFloat64ByteCode(t *testing.T) {
 
 	checkFloat64 := func(sourceCode string, expected float64) {
-		tokens, _ := scanning.Scan(sourceCode)
+		machine, _ := runInterpreter(sourceCode)
 
-		model := parsing.ParseExpression(sourceCode, tokens)
-
-		typedModel := typechecking.TypeCheckExpr(sourceCode, model)
-
-		codeBlock := GenerateByteCode(typedModel)
-
-		//print(codeBlock.Disassemble())
-
-		interpreter := &bytecode.Interpreter{}
-		machine := bytecode.NewMachine()
-
-		interpreter.Execute(machine, codeBlock)
-
-		actual := interpreter.Float64GetResult(machine)
+		actual := machine.Float64GetResult()
 
 		assert.Equal(t, expected, actual, "For source code: "+sourceCode)
 	}
@@ -219,22 +203,9 @@ func TestGenerateFloat64ByteCode(t *testing.T) {
 func TestGenerateStringByteCode(t *testing.T) {
 
 	checkString := func(sourceCode string, expected string) {
-		tokens, _ := scanning.Scan(sourceCode)
+		machine, stringPool := runInterpreter(sourceCode)
 
-		model := parsing.ParseExpression(sourceCode, tokens)
-
-		typedModel := typechecking.TypeCheckExpr(sourceCode, model)
-
-		codeBlock := GenerateByteCode(typedModel)
-
-		//print(codeBlock.Disassemble())
-
-		interpreter := &bytecode.Interpreter{}
-		machine := bytecode.NewMachine()
-
-		interpreter.Execute(machine, codeBlock)
-
-		actual := interpreter.StringGetResult(machine, codeBlock)
+		actual := machine.StringGetResult(stringPool)
 
 		assert.Equal(t, expected, actual, "For source code: "+sourceCode)
 	}

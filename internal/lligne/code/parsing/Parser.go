@@ -13,10 +13,24 @@ import (
 
 //=====================================================================================================================
 
-func ParseExpression(sourceCode string, tokens []scanning.Token) (model IExpression) {
-	parser := newParser(sourceCode, tokens)
+type Outcome struct {
+	SourceCode     string
+	NewLineOffsets []uint32
+	Model          IExpression
+}
 
-	return parser.parseExprBindingPower(0)
+//=====================================================================================================================
+
+func ParseExpression(scanResult *scanning.Outcome) *Outcome {
+	parser := newParser(scanResult)
+
+	model := parser.parseExprBindingPower(0)
+
+	return &Outcome{
+		SourceCode:     scanResult.SourceCode,
+		NewLineOffsets: scanResult.NewLineOffsets,
+		Model:          model,
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -32,10 +46,10 @@ func ParseExpression(sourceCode string, tokens []scanning.Token) (model IExpress
 
 //=====================================================================================================================
 
-func newParser(sourceCode string, tokens []scanning.Token) *lligneParser {
+func newParser(scanResult *scanning.Outcome) *lligneParser {
 	return &lligneParser{
-		sourceCode: sourceCode,
-		tokens:     tokens,
+		sourceCode: scanResult.SourceCode,
+		tokens:     scanResult.Tokens,
 	}
 }
 
@@ -381,8 +395,12 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 		}
 
 	case scanning.TokenTypeFloatingPointLiteral:
+		sourcePosition := NewSourcePos(token)
+		valueStr := sourcePosition.GetText(p.sourceCode)
+		value, _ := strconv.ParseFloat(valueStr, 64)
 		return &FloatingPointLiteralExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: sourcePosition,
+			Value:          value,
 		}
 
 	case scanning.TokenTypeIdentifier:
@@ -391,8 +409,12 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 		}
 
 	case scanning.TokenTypeIntegerLiteral:
+		sourcePosition := NewSourcePos(token)
+		valueStr := sourcePosition.GetText(p.sourceCode)
+		value, _ := strconv.ParseInt(valueStr, 10, 64)
 		return &IntegerLiteralExpr{
 			SourcePosition: NewSourcePos(token),
+			Value:          value,
 		}
 
 	case scanning.TokenTypeLeadingDocumentation:

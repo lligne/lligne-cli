@@ -5,7 +5,7 @@
 // Apache 2.0 License
 //
 
-package bytecode
+package pools
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,7 @@ import (
 func TestStringPool(t *testing.T) {
 
 	t.Run("pooled strings", func(t *testing.T) {
-		pool := NewStringConstantPool()
+		pool := NewStringPool()
 
 		i0 := pool.Put("Zero")
 		i1 := pool.Put("One")
