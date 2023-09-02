@@ -10,6 +10,7 @@ package codegeneration
 import (
 	"github.com/stretchr/testify/assert"
 	"lligne-cli/internal/lligne/code/analysis/pooling"
+	"lligne-cli/internal/lligne/code/analysis/structuring"
 	"lligne-cli/internal/lligne/code/analysis/typechecking"
 	"lligne-cli/internal/lligne/code/parsing"
 	"lligne-cli/internal/lligne/code/scanning"
@@ -26,7 +27,8 @@ func runInterpreter(sourceCode string) (*bytecode.Machine, *pools.StringPool) {
 	scanOutcome = tokenfilters.RemoveDocumentation(scanOutcome)
 	parseOutcome := parsing.ParseExpression(scanOutcome)
 	poolOutcome := pooling.PoolConstants(parseOutcome)
-	typeCheckOutcome := typechecking.CheckTypes(poolOutcome)
+	structureOutcome := structuring.StructureRecords(poolOutcome)
+	typeCheckOutcome := typechecking.CheckTypes(structureOutcome)
 	codeGenOutcome := GenerateByteCode(typeCheckOutcome)
 
 	//print(codeBlock.Disassemble())

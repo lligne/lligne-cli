@@ -8,6 +8,7 @@ package parsing
 import (
 	"fmt"
 	"lligne-cli/internal/lligne/code/scanning"
+	"lligne-cli/internal/lligne/code/util"
 	"strconv"
 )
 
@@ -134,11 +135,11 @@ func (p *lligneParser) parseFunctionArgumentsExpression(
 	if p.tokens[p.index].TokenType != scanning.TokenTypeRightParenthesis {
 		panic("Expected " + scanning.TokenTypeRightParenthesis.String())
 	}
-	endSourcePos := NewSourcePos(p.tokens[p.index])
+	endSourcePos := util.NewSourcePos(p.tokens[p.index])
 	p.index += 1
 
 	return &FunctionArgumentsExpr{
-		SourcePosition: NewSourcePos(token).Thru(endSourcePos),
+		SourcePosition: util.NewSourcePos(token).Thru(endSourcePos),
 		Items:          items,
 	}
 
@@ -370,13 +371,13 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 
 	case scanning.TokenTypeBackTickedString:
 		return &StringLiteralExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: util.NewSourcePos(token),
 			Delimiters:     StringDelimitersBackTicksMultiline,
 		}
 
 	case scanning.TokenTypeBuiltInType:
 		return &BuiltInTypeExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: util.NewSourcePos(token),
 		}
 
 	case scanning.TokenTypeDash:
@@ -384,42 +385,42 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 
 	case scanning.TokenTypeDoubleQuotedString:
 		return &StringLiteralExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: util.NewSourcePos(token),
 			Delimiters:     StringDelimitersDoubleQuotes,
 		}
 
 	case scanning.TokenTypeFalse:
 		return &BooleanLiteralExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: util.NewSourcePos(token),
 			Value:          false,
 		}
 
 	case scanning.TokenTypeFloatingPointLiteral:
-		sourcePosition := NewSourcePos(token)
+		sourcePosition := util.NewSourcePos(token)
 		valueStr := sourcePosition.GetText(p.sourceCode)
 		value, _ := strconv.ParseFloat(valueStr, 64)
-		return &FloatingPointLiteralExpr{
+		return &Float64LiteralExpr{
 			SourcePosition: sourcePosition,
 			Value:          value,
 		}
 
 	case scanning.TokenTypeIdentifier:
 		return &IdentifierExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: util.NewSourcePos(token),
 		}
 
 	case scanning.TokenTypeIntegerLiteral:
-		sourcePosition := NewSourcePos(token)
+		sourcePosition := util.NewSourcePos(token)
 		valueStr := sourcePosition.GetText(p.sourceCode)
 		value, _ := strconv.ParseInt(valueStr, 10, 64)
-		return &IntegerLiteralExpr{
-			SourcePosition: NewSourcePos(token),
+		return &Int64LiteralExpr{
+			SourcePosition: util.NewSourcePos(token),
 			Value:          value,
 		}
 
 	case scanning.TokenTypeLeadingDocumentation:
 		return &LeadingDocumentationExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: util.NewSourcePos(token),
 		}
 
 	case scanning.TokenTypeLeftBrace:
@@ -436,18 +437,18 @@ func (p *lligneParser) parseLeftHandSide() IExpression {
 
 	case scanning.TokenTypeSingleQuotedString:
 		return &StringLiteralExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: util.NewSourcePos(token),
 			Delimiters:     StringDelimitersSingleQuotes,
 		}
 
 	case scanning.TokenTypeTrailingDocumentation:
 		return &TrailingDocumentationExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: util.NewSourcePos(token),
 		}
 
 	case scanning.TokenTypeTrue:
 		return &BooleanLiteralExpr{
-			SourcePosition: NewSourcePos(token),
+			SourcePosition: util.NewSourcePos(token),
 			Value:          true,
 		}
 
@@ -474,7 +475,7 @@ func (p *lligneParser) parseLogicalNotOperationExpression(
 	rightBindingPower := prefixBindingPowers[token.TokenType].Power
 	rhs := p.parseExprBindingPower(rightBindingPower)
 	return &LogicalNotOperationExpr{
-		SourcePosition: NewSourcePos(token),
+		SourcePosition: util.NewSourcePos(token),
 		Operand:        rhs,
 	}
 }
@@ -487,7 +488,7 @@ func (p *lligneParser) parseNegationOperationExpression(
 	rightBindingPower := prefixBindingPowers[token.TokenType].Power
 	rhs := p.parseExprBindingPower(rightBindingPower)
 	return &NegationOperationExpr{
-		SourcePosition: NewSourcePos(token).Thru(rhs.GetSourcePosition()),
+		SourcePosition: util.NewSourcePos(token).Thru(rhs.GetSourcePosition()),
 		Operand:        rhs,
 	}
 }
@@ -500,11 +501,11 @@ func (p *lligneParser) parseParenthesizedExpression(
 
 	// Handle empty parentheses specially.
 	if p.tokens[p.index].TokenType == scanning.TokenTypeRightParenthesis {
-		endSourcePos := NewSourcePos(p.tokens[p.index])
+		endSourcePos := util.NewSourcePos(p.tokens[p.index])
 		p.index += 1
 
 		return &UnitExpr{
-			SourcePosition: NewSourcePos(token).Thru(endSourcePos),
+			SourcePosition: util.NewSourcePos(token).Thru(endSourcePos),
 		}
 	}
 
@@ -532,11 +533,11 @@ func (p *lligneParser) parseParenthesizedExpression(
 		if p.tokens[p.index].TokenType != scanning.TokenTypeRightParenthesis {
 			panic("Expected " + scanning.TokenTypeRightParenthesis.String())
 		}
-		endSourcePos := NewSourcePos(p.tokens[p.index])
+		endSourcePos := util.NewSourcePos(p.tokens[p.index])
 		p.index += 1
 
 		return &FunctionArgumentsExpr{
-			SourcePosition: NewSourcePos(token).Thru(endSourcePos),
+			SourcePosition: util.NewSourcePos(token).Thru(endSourcePos),
 			Items:          items,
 		}
 
@@ -546,11 +547,11 @@ func (p *lligneParser) parseParenthesizedExpression(
 		panic("Expected " + scanning.TokenTypeRightParenthesis.String())
 	}
 
-	endSourcePos := NewSourcePos(p.tokens[p.index])
+	endSourcePos := util.NewSourcePos(p.tokens[p.index])
 	p.index += 1
 
 	return &ParenthesizedExpr{
-		SourcePosition: NewSourcePos(token).Thru(endSourcePos),
+		SourcePosition: util.NewSourcePos(token).Thru(endSourcePos),
 		InnerExpr:      inner,
 	}
 
@@ -603,11 +604,11 @@ func (p *lligneParser) parseRecordExpression(
 	if p.tokens[p.index].TokenType != scanning.TokenTypeRightBrace {
 		panic("Expected " + scanning.TokenTypeRightBrace.String())
 	}
-	endSourcePos := NewSourcePos(p.tokens[p.index])
+	endSourcePos := util.NewSourcePos(p.tokens[p.index])
 	p.index += 1
 
 	return &RecordExpr{
-		SourcePosition: NewSourcePos(token).Thru(endSourcePos),
+		SourcePosition: util.NewSourcePos(token).Thru(endSourcePos),
 		Items:          items,
 	}
 
@@ -617,11 +618,11 @@ func (p *lligneParser) parseRecordExpression(
 
 func (p *lligneParser) parseSequenceLiteral(token scanning.Token) IExpression {
 
-	startSourcePos := NewSourcePos(token)
+	startSourcePos := util.NewSourcePos(token)
 	var items []IExpression
 
 	if p.tokens[p.index].TokenType == scanning.TokenTypeRightBracket {
-		endSourcePos := NewSourcePos(p.tokens[p.index])
+		endSourcePos := util.NewSourcePos(p.tokens[p.index])
 		p.index += 1
 		return &ArrayLiteralExpr{
 			SourcePosition: startSourcePos.Thru(endSourcePos),
@@ -642,7 +643,7 @@ func (p *lligneParser) parseSequenceLiteral(token scanning.Token) IExpression {
 	if p.tokens[p.index].TokenType != scanning.TokenTypeRightBracket {
 		panic("Expected " + scanning.TokenTypeRightBracket.String())
 	}
-	endSourcePos := NewSourcePos(p.tokens[p.index])
+	endSourcePos := util.NewSourcePos(p.tokens[p.index])
 	p.index += 1
 
 	return &ArrayLiteralExpr{

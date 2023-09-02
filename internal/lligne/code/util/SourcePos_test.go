@@ -5,7 +5,7 @@
 // Apache 2.0 License
 //
 
-package parsing
+package util
 
 import (
 	"github.com/stretchr/testify/assert"

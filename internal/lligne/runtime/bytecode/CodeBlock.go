@@ -19,7 +19,6 @@ import (
 // CodeBlock consists of a sequence of op codes plus a string constant pool.
 type CodeBlock struct {
 	OpCodes []uint16
-	Types   []types.IType // TODO: Move out to typechecking.Result
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -28,15 +27,7 @@ type CodeBlock struct {
 func NewCodeBlock() *CodeBlock {
 	result := &CodeBlock{
 		OpCodes: nil,
-		Types:   nil,
 	}
-
-	// Note: These mus be in the same order as BuiltInType constants
-	result.Types = append(result.Types, types.TypeTypeInstance)
-	result.Types = append(result.Types, types.BoolTypeInstance)
-	result.Types = append(result.Types, types.Float64TypeInstance)
-	result.Types = append(result.Types, types.Int64TypeInstance)
-	result.Types = append(result.Types, types.StringTypeInstance)
 
 	return result
 }
@@ -305,9 +296,9 @@ func (cb *CodeBlock) TypeEquals() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (cb *CodeBlock) TypeLoad(value types.BuiltInType) {
+func (cb *CodeBlock) TypeLoad(valueIndex uint64) {
 	cb.OpCodes = append(cb.OpCodes, OpCodeTypeLoad)
-	cb.OpCodes = append(cb.OpCodes, uint16(value))
+	cb.append64BitOperand(valueIndex)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -328,7 +319,7 @@ func (cb *CodeBlock) append64BitOperand(bits uint64) {
 //=====================================================================================================================
 
 // Disassemble dumps out the code block op codes.
-func (cb *CodeBlock) Disassemble(stringPool *pools.StringPool) string {
+func (cb *CodeBlock) Disassemble(stringPool *pools.StringPool, typePool *types.TypeConstantPool) string {
 
 	output := &strings.Builder{}
 
@@ -435,8 +426,8 @@ func (cb *CodeBlock) Disassemble(stringPool *pools.StringPool) string {
 		case OpCodeTypeEquals:
 			write(output, ip, "TYPE_EQUALS")
 		case OpCodeTypeLoad:
-			writeType(output, ip, "TYPE_LOAD", cb.Types[cb.OpCodes[ip]])
-			ip += 1
+			writeType(output, ip, "TYPE_LOAD", typePool.Get(uint64(cb.OpCodes[ip])))
+			ip += 4
 		case OpCodeTypeNotEquals:
 			write(output, ip, "TYPE_NOT_EQUALS")
 		}

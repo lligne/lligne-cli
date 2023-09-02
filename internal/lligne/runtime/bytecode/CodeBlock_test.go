@@ -19,6 +19,8 @@ import (
 func TestCodeBlockDisassembly(t *testing.T) {
 
 	t.Run("simple output", func(t *testing.T) {
+		typePool := types.NewTypePool().Freeze()
+
 		codeBlock := NewCodeBlock()
 
 		codeBlock.BoolAnd()
@@ -60,10 +62,10 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.StringLoad(0)
 		codeBlock.StringLoad(1)
 
-		codeBlock.TypeLoad(types.BuiltInTypeBool)
-		codeBlock.TypeLoad(types.BuiltInTypeFloat64)
-		codeBlock.TypeLoad(types.BuiltInTypeInt64)
-		codeBlock.TypeLoad(types.BuiltInTypeString)
+		codeBlock.TypeLoad(1)
+		codeBlock.TypeLoad(2)
+		codeBlock.TypeLoad(3)
+		codeBlock.TypeLoad(4)
 		codeBlock.TypeEquals()
 		codeBlock.TypeNotEquals()
 
@@ -74,7 +76,7 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		stringPool.Put("String0")
 		stringPool.Put("String1")
 
-		actual := codeBlock.Disassemble(stringPool)
+		actual := codeBlock.Disassemble(stringPool, typePool)
 
 		expected :=
 			`
@@ -114,13 +116,13 @@ func TestCodeBlockDisassembly(t *testing.T) {
   42  STRING_LOAD          'String0'
   47  STRING_LOAD          'String1'
   52  TYPE_LOAD            Bool
-  54  TYPE_LOAD            Float64
-  56  TYPE_LOAD            Int64
-  58  TYPE_LOAD            String
-  60  TYPE_EQUALS
-  61  TYPE_NOT_EQUALS
-  62  RETURN
-  63  STOP
+  57  TYPE_LOAD            Float64
+  62  TYPE_LOAD            Int64
+  67  TYPE_LOAD            String
+  72  TYPE_EQUALS
+  73  TYPE_NOT_EQUALS
+  74  RETURN
+  75  STOP
 `
 
 		assert.Equal(t, expected, actual)

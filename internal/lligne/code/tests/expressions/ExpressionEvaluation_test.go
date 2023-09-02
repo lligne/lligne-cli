@@ -11,6 +11,7 @@ import (
 	_ "embed"
 	"github.com/stretchr/testify/assert"
 	"lligne-cli/internal/lligne/code/analysis/pooling"
+	"lligne-cli/internal/lligne/code/analysis/structuring"
 	"lligne-cli/internal/lligne/code/analysis/typechecking"
 	"lligne-cli/internal/lligne/code/codegeneration"
 	"lligne-cli/internal/lligne/code/formatting"
@@ -34,7 +35,8 @@ func TestExpressionEvaluation(t *testing.T) {
 		assert.Equal(t, sourceCode, formatting.FormatCode(parseOutcome))
 
 		poolOutcome := pooling.PoolConstants(parseOutcome)
-		typeCheckOutcome := typechecking.CheckTypes(poolOutcome)
+		structureOutcome := structuring.StructureRecords(poolOutcome)
+		typeCheckOutcome := typechecking.CheckTypes(structureOutcome)
 		codeGenOutcome := codegeneration.GenerateByteCode(typeCheckOutcome)
 
 		//print(codeBlock.Disassemble())

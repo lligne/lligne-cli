@@ -39,7 +39,7 @@ func formatCode(origSourceCode string, expression parsing.IExpression) string {
 		return formatEqualsExpr(origSourceCode, expr)
 	case *parsing.FieldReferenceExpr:
 		return formatFieldReferenceExpr(origSourceCode, expr)
-	case *parsing.FloatingPointLiteralExpr:
+	case *parsing.Float64LiteralExpr:
 		return formatFloatingPointLiteralExpr(origSourceCode, expr)
 	case *parsing.FunctionArgumentsExpr:
 		return formatFunctionArgumentsExpr(origSourceCode, expr)
@@ -57,7 +57,7 @@ func formatCode(origSourceCode string, expression parsing.IExpression) string {
 		return formatInExpr(origSourceCode, expr)
 	case *parsing.IsExpr:
 		return formatIsExpr(origSourceCode, expr)
-	case *parsing.IntegerLiteralExpr:
+	case *parsing.Int64LiteralExpr:
 		return formatIntegerLiteralExpr(origSourceCode, expr)
 	case *parsing.IntersectAssignValueExpr:
 		return formatIntersectAssignValueExpr(origSourceCode, expr)
@@ -166,7 +166,7 @@ func formatFieldReferenceExpr(sourceCode string, expr *parsing.FieldReferenceExp
 
 //=====================================================================================================================
 
-func formatFloatingPointLiteralExpr(sourceCode string, expr *parsing.FloatingPointLiteralExpr) string {
+func formatFloatingPointLiteralExpr(sourceCode string, expr *parsing.Float64LiteralExpr) string {
 	return expr.SourcePosition.GetText(sourceCode)
 }
 
@@ -251,7 +251,7 @@ func formatIsExpr(sourceCode string, expr *parsing.IsExpr) string {
 
 //=====================================================================================================================
 
-func formatIntegerLiteralExpr(sourceCode string, expr *parsing.IntegerLiteralExpr) string {
+func formatIntegerLiteralExpr(sourceCode string, expr *parsing.Int64LiteralExpr) string {
 	return expr.SourcePosition.GetText(sourceCode)
 }
 

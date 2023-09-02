@@ -3,7 +3,7 @@
 // Apache 2.0 License
 //
 
-package parsing
+package util
 
 import "lligne-cli/internal/lligne/code/scanning"
 
