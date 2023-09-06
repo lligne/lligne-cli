@@ -47,7 +47,7 @@ var Int64TypeInstance = &Int64Type{}
 
 type RecordType struct {
 	FieldNameIndexes []uint64
-	FieldTypes       []IType
+	FieldTypeIndexes []uint64
 }
 
 func (t *RecordType) isType()      {}

@@ -252,19 +252,6 @@ func (e *LogicalOrExpr) isPooledExpression()               {}
 
 //=====================================================================================================================
 
-// MultilineStringLiteralExpr represents a multiline (back-ticked) string literal.
-type MultilineStringLiteralExpr struct {
-	SourcePosition util.SourcePos
-	Text           string
-}
-
-func (e *MultilineStringLiteralExpr) GetSourcePosition() util.SourcePos {
-	return e.SourcePosition
-}
-func (e *MultilineStringLiteralExpr) isPooledExpression() {}
-
-//=====================================================================================================================
-
 // MultiplicationExpr represents a multiplication operation.
 type MultiplicationExpr struct {
 	SourcePosition util.SourcePos

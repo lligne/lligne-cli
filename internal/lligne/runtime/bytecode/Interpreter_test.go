@@ -10,6 +10,7 @@ package bytecode
 import (
 	"github.com/stretchr/testify/assert"
 	"lligne-cli/internal/lligne/runtime/pools"
+	"lligne-cli/internal/lligne/runtime/types"
 	"testing"
 )
 
@@ -20,7 +21,7 @@ func TestInterpreter(t *testing.T) {
 	t.Run("simple exercise", func(t *testing.T) {
 		codeBlock := NewCodeBlock()
 		machine := NewMachine()
-		interpreter := NewInterpreter(codeBlock, pools.NewStringPool())
+		interpreter := NewInterpreter(codeBlock, pools.NewStringPool(), types.NewTypePool())
 
 		codeBlock.Int64Load(2)
 		codeBlock.Int64Load(3)

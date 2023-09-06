@@ -24,7 +24,7 @@ func NewTypePool() *TypePool {
 		indexesByName: make(map[string]uint64),
 	}
 
-	// NOTE: Keep these in sync with TypeConstantPool.GetIndexBool/Float64/etc.
+	// NOTE: Keep these in sync with BuiltInTypeIndex just below
 	result.Put(TypeTypeInstance)
 	result.Put(BoolTypeInstance)
 	result.Put(Float64TypeInstance)
@@ -33,6 +33,18 @@ func NewTypePool() *TypePool {
 
 	return result
 }
+
+//---------------------------------------------------------------------------------------------------------------------
+
+// BuiltInTypeIndex is an enumeration of known pool indexes for built-in types.
+const (
+	BuiltInTypeIndexType uint64 = iota
+
+	BuiltInTypeIndexBool
+	BuiltInTypeIndexFloat64
+	BuiltInTypeIndexInt64
+	BuiltInTypeIndexString
+)
 
 //---------------------------------------------------------------------------------------------------------------------
 
@@ -104,34 +116,6 @@ func (p *TypeConstantPool) Clone() *TypePool {
 // Get returns the type at the given index.
 func (p *TypeConstantPool) Get(index uint64) IType {
 	return p.ITypes[index]
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-// GetIndexBool returns the known index of type Bool.
-func (p *TypeConstantPool) GetIndexBool() uint64 {
-	return 1
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-// GetIndexFloat64 returns the known index of type Float64.
-func (p *TypeConstantPool) GetIndexFloat64() uint64 {
-	return 2
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-// GetIndexInt64 returns the known index of type Int64.
-func (p *TypeConstantPool) GetIndexInt64() uint64 {
-	return 3
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-// GetIndexString returns the known index of type String.
-func (p *TypeConstantPool) GetIndexString() uint64 {
-	return 4
 }
 
 //=====================================================================================================================

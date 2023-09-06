@@ -115,13 +115,13 @@ func buildAdditionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.AdditionE
 	} else {
 		buildCodeBlock(codeBlock, expr.Lhs, typePool)
 		buildCodeBlock(codeBlock, expr.Rhs, typePool)
-		switch expr.TypeInfo.(type) {
-		case *types.Float64Type:
+		switch expr.TypeIndex {
+		case types.BuiltInTypeIndexFloat64:
 			codeBlock.Float64Add()
-		case *types.Int64Type:
+		case types.BuiltInTypeIndexInt64:
 			codeBlock.Int64Add()
 		default:
-			panic(fmt.Sprintf("Missing case in buildAdditionCodeBlock: %T\n", expr.TypeInfo))
+			panic(fmt.Sprintf("Missing case in buildAdditionCodeBlock: %d\n", expr.TypeIndex))
 		}
 	}
 }
@@ -147,10 +147,10 @@ func buildBuiltInTypeCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.BuiltI
 func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.DivisionExpr, typePool *types.TypeConstantPool) {
 	buildCodeBlock(codeBlock, expr.Lhs, typePool)
 	buildCodeBlock(codeBlock, expr.Rhs, typePool)
-	switch expr.TypeInfo.(type) {
-	case *types.Float64Type:
+	switch expr.TypeIndex {
+	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64Divide()
-	case *types.Int64Type:
+	case types.BuiltInTypeIndexInt64:
 		codeBlock.Int64Divide()
 	default:
 		panic("Undefined division type")
@@ -162,14 +162,14 @@ func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.DivisionE
 func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.EqualsExpr, typePool *types.TypeConstantPool) {
 	buildCodeBlock(codeBlock, expr.Lhs, typePool)
 	buildCodeBlock(codeBlock, expr.Rhs, typePool)
-	switch expr.Lhs.GetTypeInfo().(type) {
-	case *types.Float64Type:
+	switch expr.Lhs.GetTypeIndex() {
+	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64Equals()
-	case *types.Int64Type:
+	case types.BuiltInTypeIndexInt64:
 		codeBlock.Int64Equals()
-	case *types.StringType:
+	case types.BuiltInTypeIndexString:
 		codeBlock.StringEquals()
-	case *types.TypeType:
+	case types.BuiltInTypeIndexType:
 		codeBlock.TypeEquals()
 	default:
 		panic("Undefined equality type")
@@ -194,10 +194,10 @@ func buildFloat64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Flo
 func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.GreaterThanExpr, typePool *types.TypeConstantPool) {
 	buildCodeBlock(codeBlock, expr.Lhs, typePool)
 	buildCodeBlock(codeBlock, expr.Rhs, typePool)
-	switch expr.Lhs.GetTypeInfo().(type) {
-	case *types.Float64Type:
+	switch expr.Lhs.GetTypeIndex() {
+	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64GreaterThan()
-	case *types.Int64Type:
+	case types.BuiltInTypeIndexInt64:
 		codeBlock.Int64GreaterThan()
 	default:
 		panic("Undefined greater than type")
@@ -209,10 +209,10 @@ func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Greate
 func buildGreaterThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.GreaterThanOrEqualsExpr, typePool *types.TypeConstantPool) {
 	buildCodeBlock(codeBlock, expr.Lhs, typePool)
 	buildCodeBlock(codeBlock, expr.Rhs, typePool)
-	switch expr.Lhs.GetTypeInfo().(type) {
-	case *types.Float64Type:
+	switch expr.Lhs.GetTypeIndex() {
+	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64GreaterThanOrEquals()
-	case *types.Int64Type:
+	case types.BuiltInTypeIndexInt64:
 		codeBlock.Int64GreaterThanOrEquals()
 	default:
 		panic("Undefined greater than or equals type")
@@ -238,11 +238,11 @@ func buildInt64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Int64
 func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IsExpr, typePool *types.TypeConstantPool) {
 	buildCodeBlock(codeBlock, expr.Lhs, typePool)
 	buildCodeBlock(codeBlock, expr.Rhs, typePool)
-	switch expr.Lhs.GetTypeInfo().(type) {
-	case *types.BoolType:
+	switch expr.Lhs.GetTypeIndex() {
+	case types.BuiltInTypeIndexBool:
 		switch rhs := expr.Rhs.(type) {
 		case *prior.BuiltInTypeExpr:
-			if rhs.ValueIndex == typePool.GetIndexBool() {
+			if rhs.ValueIndex == types.BuiltInTypeIndexBool {
 				codeBlock.BoolLoadTrue()
 			} else {
 				codeBlock.BoolLoadFalse()
@@ -250,10 +250,10 @@ func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IsExpr, typePoo
 		default:
 			panic(fmt.Sprintf("Missing case in buildIsCodeBlock for BoolType: %T\n", expr.Rhs))
 		}
-	case *types.Float64Type:
+	case types.BuiltInTypeIndexFloat64:
 		switch rhs := expr.Rhs.(type) {
 		case *prior.BuiltInTypeExpr:
-			if rhs.ValueIndex == typePool.GetIndexFloat64() {
+			if rhs.ValueIndex == types.BuiltInTypeIndexFloat64 {
 				codeBlock.BoolLoadTrue()
 			} else {
 				codeBlock.BoolLoadFalse()
@@ -261,10 +261,10 @@ func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IsExpr, typePoo
 		default:
 			panic(fmt.Sprintf("Missing case in buildIsCodeBlock for Float64Type: %T\n", expr.Rhs))
 		}
-	case *types.Int64Type:
+	case types.BuiltInTypeIndexInt64:
 		switch rhs := expr.Rhs.(type) {
 		case *prior.BuiltInTypeExpr:
-			if rhs.ValueIndex == typePool.GetIndexInt64() {
+			if rhs.ValueIndex == types.BuiltInTypeIndexInt64 {
 				codeBlock.BoolLoadTrue()
 			} else {
 				codeBlock.BoolLoadFalse()
@@ -272,10 +272,10 @@ func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IsExpr, typePoo
 		default:
 			panic(fmt.Sprintf("Missing case in buildIsCodeBlock for Int64Type: %T\n", expr.Rhs))
 		}
-	case *types.StringType:
+	case types.BuiltInTypeIndexString:
 		switch rhs := expr.Rhs.(type) {
 		case *prior.BuiltInTypeExpr:
-			if rhs.ValueIndex == typePool.GetIndexString() {
+			if rhs.ValueIndex == types.BuiltInTypeIndexString {
 				codeBlock.BoolLoadTrue()
 			} else {
 				codeBlock.BoolLoadFalse()
@@ -284,7 +284,7 @@ func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IsExpr, typePoo
 			panic(fmt.Sprintf("Missing case in buildIsCodeBlock for StringType: %T\n", expr.Rhs))
 		}
 	default:
-		panic(fmt.Sprintf("Missing case in buildIsCodeBlock: %T\n", expr.Lhs.GetTypeInfo()))
+		panic(fmt.Sprintf("Missing case in buildIsCodeBlock: %d\n", expr.Lhs.GetTypeIndex()))
 	}
 }
 
@@ -293,10 +293,10 @@ func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IsExpr, typePoo
 func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LessThanExpr, typePool *types.TypeConstantPool) {
 	buildCodeBlock(codeBlock, expr.Lhs, typePool)
 	buildCodeBlock(codeBlock, expr.Rhs, typePool)
-	switch expr.Lhs.GetTypeInfo().(type) {
-	case *types.Float64Type:
+	switch expr.Lhs.GetTypeIndex() {
+	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64LessThan()
-	case *types.Int64Type:
+	case types.BuiltInTypeIndexInt64:
 		codeBlock.Int64LessThan()
 	default:
 		panic("Undefined less than type")
@@ -308,13 +308,13 @@ func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LessThanE
 func buildLessThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LessThanOrEqualsExpr, typePool *types.TypeConstantPool) {
 	buildCodeBlock(codeBlock, expr.Lhs, typePool)
 	buildCodeBlock(codeBlock, expr.Rhs, typePool)
-	switch expr.Lhs.GetTypeInfo().(type) {
-	case *types.Float64Type:
+	switch expr.Lhs.GetTypeIndex() {
+	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64LessThanOrEquals()
-	case *types.Int64Type:
+	case types.BuiltInTypeIndexInt64:
 		codeBlock.Int64LessThanOrEquals()
 	default:
-		panic(fmt.Sprintf("Missing case in buildLessThanOrEqualsCodeBlock: %T\n", expr.Lhs.GetTypeInfo()))
+		panic(fmt.Sprintf("Missing case in buildLessThanOrEqualsCodeBlock: %d\n", expr.Lhs.GetTypeIndex()))
 	}
 }
 
@@ -346,13 +346,13 @@ func buildLogicalOrCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LogicalO
 func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.MultiplicationExpr, typePool *types.TypeConstantPool) {
 	buildCodeBlock(codeBlock, expr.Lhs, typePool)
 	buildCodeBlock(codeBlock, expr.Rhs, typePool)
-	switch expr.TypeInfo.(type) {
-	case *types.Float64Type:
+	switch expr.TypeIndex {
+	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64Multiply()
-	case *types.Int64Type:
+	case types.BuiltInTypeIndexInt64:
 		codeBlock.Int64Multiply()
 	default:
-		panic(fmt.Sprintf("Missing case in buildMultiplicationCodeBlock: %T\n", expr.TypeInfo))
+		panic(fmt.Sprintf("Missing case in buildMultiplicationCodeBlock: %d\n", expr.TypeIndex))
 	}
 }
 
@@ -360,13 +360,13 @@ func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Mul
 
 func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NegationOperationExpr, typePool *types.TypeConstantPool) {
 	buildCodeBlock(codeBlock, expr.Operand, typePool)
-	switch expr.TypeInfo.(type) {
-	case *types.Float64Type:
+	switch expr.TypeIndex {
+	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64Negate()
-	case *types.Int64Type:
+	case types.BuiltInTypeIndexInt64:
 		codeBlock.Int64Negate()
 	default:
-		panic(fmt.Sprintf("Missing case in buildNegationCodeBlock: %T\n", expr.TypeInfo))
+		panic(fmt.Sprintf("Missing case in buildNegationCodeBlock: %d\n", expr.TypeIndex))
 	}
 }
 
@@ -375,14 +375,14 @@ func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NegationO
 func buildNotEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NotEqualsExpr, typePool *types.TypeConstantPool) {
 	buildCodeBlock(codeBlock, expr.Lhs, typePool)
 	buildCodeBlock(codeBlock, expr.Rhs, typePool)
-	switch expr.Lhs.GetTypeInfo().(type) {
-	case *types.Float64Type:
+	switch expr.Lhs.GetTypeIndex() {
+	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64NotEquals()
-	case *types.Int64Type:
+	case types.BuiltInTypeIndexInt64:
 		codeBlock.Int64NotEquals()
-	case *types.StringType:
+	case types.BuiltInTypeIndexString:
 		codeBlock.StringNotEquals()
-	case *types.TypeType:
+	case types.BuiltInTypeIndexType:
 		codeBlock.TypeNotEquals()
 	default:
 		panic("Undefined inequality type")
@@ -418,13 +418,13 @@ func buildSubtractionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Subtra
 		codeBlock.Int64Decrement()
 	} else {
 		buildCodeBlock(codeBlock, expr.Rhs, typePool)
-		switch expr.TypeInfo.(type) {
-		case *types.Float64Type:
+		switch expr.TypeIndex {
+		case types.BuiltInTypeIndexFloat64:
 			codeBlock.Float64Subtract()
-		case *types.Int64Type:
+		case types.BuiltInTypeIndexInt64:
 			codeBlock.Int64Subtract()
 		default:
-			panic(fmt.Sprintf("Missing case in buildSubtractionCodeBlock: %T\n", expr.TypeInfo))
+			panic(fmt.Sprintf("Missing case in buildSubtractionCodeBlock: %d\n", expr.TypeIndex))
 		}
 	}
 }

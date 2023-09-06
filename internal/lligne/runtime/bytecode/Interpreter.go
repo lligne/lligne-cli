@@ -8,6 +8,7 @@ package bytecode
 import (
 	"fmt"
 	"lligne-cli/internal/lligne/runtime/pools"
+	"lligne-cli/internal/lligne/runtime/types"
 	"math"
 	"unsafe"
 )
@@ -17,14 +18,16 @@ import (
 type Interpreter struct {
 	codeBlock  *CodeBlock
 	stringPool *pools.StringPool
+	typePool   *types.TypePool
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func NewInterpreter(codeBlock *CodeBlock, stringPool *pools.StringPool) *Interpreter {
+func NewInterpreter(codeBlock *CodeBlock, stringPool *pools.StringPool, typePool *types.TypePool) *Interpreter {
 	return &Interpreter{
 		codeBlock:  codeBlock,
 		stringPool: stringPool,
+		typePool:   typePool,
 	}
 }
 

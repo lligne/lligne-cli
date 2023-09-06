@@ -104,16 +104,16 @@ func checkTypes(sourceCode string, expression prior.IExpression, typePool *types
 func typeCheckAdditionExpr(sourceCode string, expr *prior.AdditionExpr, typePool *types.TypePool) IExpression {
 	lhs := checkTypes(sourceCode, expr.Lhs, typePool)
 	rhs := checkTypes(sourceCode, expr.Rhs, typePool)
-	switch lhs.GetTypeInfo().(type) {
-	case *types.Float64Type, *types.Int64Type:
+	switch lhs.GetTypeIndex() {
+	case types.BuiltInTypeIndexFloat64, types.BuiltInTypeIndexInt64:
 		// TODO: ensure they're the same
 		return &AdditionExpr{
 			SourcePosition: expr.SourcePosition,
 			Lhs:            lhs,
 			Rhs:            rhs,
-			TypeInfo:       lhs.GetTypeInfo(),
+			TypeIndex:      lhs.GetTypeIndex(),
 		}
-	case *types.StringType:
+	case types.BuiltInTypeIndexString:
 		// TODO: ensure both strings
 		return &StringConcatenationExpr{
 			SourcePosition: expr.SourcePosition,
@@ -121,7 +121,7 @@ func typeCheckAdditionExpr(sourceCode string, expr *prior.AdditionExpr, typePool
 			Rhs:            rhs,
 		}
 	default:
-		panic(fmt.Sprintf("Missing case in typeCheckAdditionExpr: %T\n", lhs.GetTypeInfo()))
+		panic(fmt.Sprintf("Missing case in typeCheckAdditionExpr: %d\n", lhs.GetTypeIndex()))
 	}
 }
 
@@ -154,7 +154,7 @@ func typeCheckDivisionExpr(sourceCode string, expr *prior.DivisionExpr, typePool
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhs.GetTypeInfo(),
+		TypeIndex:      lhs.GetTypeIndex(),
 	}
 }
 
@@ -303,7 +303,7 @@ func typeCheckMultiplicationExpr(sourceCode string, expr *prior.MultiplicationEx
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhs.GetTypeInfo(),
+		TypeIndex:      lhs.GetTypeIndex(),
 	}
 }
 
@@ -315,7 +315,7 @@ func typeCheckNegationOperationExpr(sourceCode string, expr *prior.NegationOpera
 	return &NegationOperationExpr{
 		SourcePosition: expr.SourcePosition,
 		Operand:        operand,
-		TypeInfo:       operand.GetTypeInfo(),
+		TypeIndex:      operand.GetTypeIndex(),
 	}
 }
 
@@ -341,7 +341,7 @@ func typeCheckParenthesizedExpr(sourceCode string, expr *prior.ParenthesizedExpr
 	return &ParenthesizedExpr{
 		SourcePosition: expr.SourcePosition,
 		InnerExpr:      inner,
-		TypeInfo:       inner.GetTypeInfo(),
+		TypeIndex:      inner.GetTypeIndex(),
 	}
 
 }
@@ -355,9 +355,24 @@ func typeCheckRecordExpr(sourceCode string, expr *prior.RecordExpr, typePool *ty
 		items = append(items, typeCheckRecordFieldExpr(sourceCode, item, typePool))
 	}
 
+	fieldNameIndexes := make([]uint64, 0)
+	fieldTypeIndexes := make([]uint64, 0)
+
+	for _, item := range items {
+		fieldNameIndexes = append(fieldNameIndexes, item.FieldNameIndex)
+		fieldTypeIndexes = append(fieldTypeIndexes, item.FieldValue.GetTypeIndex())
+	}
+
+	recordType := &types.RecordType{
+		FieldNameIndexes: fieldNameIndexes,
+		FieldTypeIndexes: fieldTypeIndexes,
+	}
+
+	typeIndex := typePool.Put(recordType)
+
 	return &RecordExpr{
 		SourcePosition: expr.SourcePosition,
-		TypeInfo:       types.Int64TypeInstance, // TODO (obviously)
+		TypeIndex:      typeIndex,
 	}
 
 }
@@ -391,7 +406,7 @@ func typeCheckSubtractionExpr(sourceCode string, expr *prior.SubtractionExpr, ty
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-		TypeInfo:       lhs.GetTypeInfo(),
+		TypeIndex:      lhs.GetTypeIndex(),
 	}
 }
 

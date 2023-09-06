@@ -42,8 +42,9 @@ func TestExpressionEvaluation(t *testing.T) {
 		//print(codeBlock.Disassemble())
 
 		stringPool := codeGenOutcome.StringConstants.Clone()
+		typePool := codeGenOutcome.TypeConstants.Clone()
 
-		interpreter := bytecode.NewInterpreter(codeGenOutcome.CodeBlock, stringPool)
+		interpreter := bytecode.NewInterpreter(codeGenOutcome.CodeBlock, stringPool, typePool)
 		machine := bytecode.NewMachine()
 
 		interpreter.Execute(machine)
