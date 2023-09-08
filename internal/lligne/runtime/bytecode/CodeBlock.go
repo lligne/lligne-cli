@@ -253,6 +253,19 @@ func (cb *CodeBlock) NoOp() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) RecordEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeRecordEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) RecordStore(fieldCount int) {
+	cb.OpCodes = append(cb.OpCodes, OpCodeRecordStore)
+	cb.append64BitOperand(uint64(fieldCount))
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) Return() {
 	cb.OpCodes = append(cb.OpCodes, OpCodeReturn)
 }
@@ -408,8 +421,15 @@ func (cb *CodeBlock) Disassemble(stringPool *pools.StringPool, typePool *types.T
 		case OpCodeNoOp:
 			write(output, ip, "NO_OP")
 
+		case OpCodeRecordEquals:
+			write(output, ip, "RECORD_EQUALS")
+		case OpCodeRecordStore:
+			writeUInt64(output, ip, "RECORD_STORE", uint64(cb.OpCodes[ip]))
+			ip += 4
+
 		case OpCodeReturn:
 			write(output, ip, "RETURN")
+
 		case OpCodeStop:
 			write(output, ip, "STOP")
 			return output.String() + "\n"
@@ -430,6 +450,7 @@ func (cb *CodeBlock) Disassemble(stringPool *pools.StringPool, typePool *types.T
 			ip += 4
 		case OpCodeTypeNotEquals:
 			write(output, ip, "TYPE_NOT_EQUALS")
+
 		}
 
 	}
@@ -469,6 +490,13 @@ func writeString(output *strings.Builder, line int, opCode string, operand strin
 func writeType(output *strings.Builder, line int, opCode string, operand types.IType) {
 	output.WriteString("\n")
 	output.WriteString(fmt.Sprintf("%4d  %-20s %s", line, opCode, operand.Name()))
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func writeUInt64(output *strings.Builder, line int, opCode string, operand uint64) {
+	output.WriteString("\n")
+	output.WriteString(fmt.Sprintf("%4d  %-20s %6d", line, opCode, operand))
 }
 
 //=====================================================================================================================

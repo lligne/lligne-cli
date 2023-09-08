@@ -64,6 +64,10 @@ const (
 	OpCodeTypeLoad
 	OpCodeTypeNotEquals
 
+	// Records
+	OpCodeRecordEquals
+	OpCodeRecordStore
+
 	OpCode_Count
 )
 

@@ -300,7 +300,7 @@ func (e *ParenthesizedExpr) isStructuredExpression()           {}
 // RecordExpr represents a record.
 type RecordExpr struct {
 	SourcePosition util.SourcePos
-	Items          []*RecordFieldExpr
+	Fields         []*RecordFieldExpr
 }
 
 func (e *RecordExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }

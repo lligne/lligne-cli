@@ -25,11 +25,12 @@ func NewTypePool() *TypePool {
 	}
 
 	// NOTE: Keep these in sync with BuiltInTypeIndex just below
-	result.Put(TypeTypeInstance)
+	result.Put(UnitTypeInstance)
 	result.Put(BoolTypeInstance)
 	result.Put(Float64TypeInstance)
 	result.Put(Int64TypeInstance)
 	result.Put(StringTypeInstance)
+	result.Put(TypeTypeInstance)
 
 	return result
 }
@@ -38,12 +39,13 @@ func NewTypePool() *TypePool {
 
 // BuiltInTypeIndex is an enumeration of known pool indexes for built-in types.
 const (
-	BuiltInTypeIndexType uint64 = iota
-
+	// NOTE: Keep these in sync with type pool initialization just above
+	BuiltInTypeIndexUnit uint64 = iota
 	BuiltInTypeIndexBool
 	BuiltInTypeIndexFloat64
 	BuiltInTypeIndexInt64
 	BuiltInTypeIndexString
+	BuiltInTypeIndexType
 )
 
 //---------------------------------------------------------------------------------------------------------------------

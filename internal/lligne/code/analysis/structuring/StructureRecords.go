@@ -417,7 +417,7 @@ func structureRecordExpr(
 
 	return &RecordExpr{
 		SourcePosition: expr.SourcePosition,
-		Items:          items,
+		Fields:         items,
 	}
 }
 

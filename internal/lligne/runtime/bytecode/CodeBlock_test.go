@@ -69,6 +69,9 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.TypeEquals()
 		codeBlock.TypeNotEquals()
 
+		codeBlock.RecordStore(5)
+		codeBlock.RecordEquals()
+
 		codeBlock.Return()
 		codeBlock.Stop()
 
@@ -121,8 +124,10 @@ func TestCodeBlockDisassembly(t *testing.T) {
   67  TYPE_LOAD            String
   72  TYPE_EQUALS
   73  TYPE_NOT_EQUALS
-  74  RETURN
-  75  STOP
+  74  RECORD_STORE              5
+  79  RECORD_EQUALS
+  80  RETURN
+  81  STOP
 `
 
 		assert.Equal(t, expected, actual)

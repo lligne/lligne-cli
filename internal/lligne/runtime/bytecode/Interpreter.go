@@ -8,6 +8,7 @@ package bytecode
 import (
 	"fmt"
 	"lligne-cli/internal/lligne/runtime/pools"
+	"lligne-cli/internal/lligne/runtime/records"
 	"lligne-cli/internal/lligne/runtime/types"
 	"math"
 	"unsafe"
@@ -17,6 +18,7 @@ import (
 
 type Interpreter struct {
 	codeBlock  *CodeBlock
+	recordPool *records.RecordPool
 	stringPool *pools.StringPool
 	typePool   *types.TypePool
 }
@@ -26,6 +28,7 @@ type Interpreter struct {
 func NewInterpreter(codeBlock *CodeBlock, stringPool *pools.StringPool, typePool *types.TypePool) *Interpreter {
 	return &Interpreter{
 		codeBlock:  codeBlock,
+		recordPool: records.NewRecordPool(),
 		stringPool: stringPool,
 		typePool:   typePool,
 	}
@@ -342,6 +345,39 @@ func init() {
 
 	dispatch[OpCodeNoOp] = func(n *Interpreter, m *Machine) {
 		// do nothing
+	}
+
+	dispatch[OpCodeRecordEquals] = func(n *Interpreter, m *Machine) {
+		recordIndexRhs := m.Stack[m.Top]
+		m.Top -= 1
+		recordIndexLhs := m.Stack[m.Top]
+
+		recordLhs := n.recordPool.Get(recordIndexLhs)
+		recordRhs := n.recordPool.Get(recordIndexRhs)
+
+		if recordLhs.Equal(recordRhs) {
+			m.Stack[m.Top] = true64
+		} else {
+			m.Stack[m.Top] = 0
+		}
+	}
+
+	dispatch[OpCodeRecordStore] = func(n *Interpreter, m *Machine) {
+		fieldCount := *(*int)(unsafe.Pointer(&n.codeBlock.OpCodes[m.IP]))
+		m.IP += 4
+
+		fieldValues := make([]uint64, fieldCount)
+		copy(m.Stack[m.Top-fieldCount:m.Top+1], fieldValues)
+
+		record := records.Record{
+			TypeIndex:   m.Stack[m.Top-fieldCount],
+			FieldValues: fieldValues,
+		}
+
+		recordIndex := n.recordPool.Put(record)
+
+		m.Top -= fieldCount
+		m.Stack[m.Top] = recordIndex
 	}
 
 	dispatch[OpCodeReturn] = func(n *Interpreter, m *Machine) {

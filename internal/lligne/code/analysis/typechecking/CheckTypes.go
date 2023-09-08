@@ -43,7 +43,11 @@ func CheckTypes(priorOutcome *prior.Outcome) *Outcome {
 
 //=====================================================================================================================
 
-func checkTypes(sourceCode string, expression prior.IExpression, typePool *types.TypePool) IExpression {
+func checkTypes(
+	sourceCode string,
+	expression prior.IExpression,
+	typePool *types.TypePool,
+) IExpression {
 
 	switch expr := expression.(type) {
 
@@ -350,28 +354,31 @@ func typeCheckParenthesizedExpr(sourceCode string, expr *prior.ParenthesizedExpr
 
 func typeCheckRecordExpr(sourceCode string, expr *prior.RecordExpr, typePool *types.TypePool) IExpression {
 
-	items := make([]*RecordFieldExpr, 0)
-	for _, item := range expr.Items {
-		items = append(items, typeCheckRecordFieldExpr(sourceCode, item, typePool))
+	fields := make([]*RecordFieldExpr, 0)
+	for _, field := range expr.Fields {
+		fields = append(fields, typeCheckRecordFieldExpr(sourceCode, field, typePool))
 	}
+
+	// TODO: make sure fields are in the same order as the record type
 
 	fieldNameIndexes := make([]uint64, 0)
 	fieldTypeIndexes := make([]uint64, 0)
 
-	for _, item := range items {
-		fieldNameIndexes = append(fieldNameIndexes, item.FieldNameIndex)
-		fieldTypeIndexes = append(fieldTypeIndexes, item.FieldValue.GetTypeIndex())
+	for _, field := range fields {
+		fieldTypeIndex := field.FieldValue.GetTypeIndex()
+		fieldNameIndexes = append(fieldNameIndexes, field.FieldNameIndex)
+		fieldTypeIndexes = append(fieldTypeIndexes, fieldTypeIndex)
 	}
 
 	recordType := &types.RecordType{
 		FieldNameIndexes: fieldNameIndexes,
 		FieldTypeIndexes: fieldTypeIndexes,
 	}
-
 	typeIndex := typePool.Put(recordType)
 
 	return &RecordExpr{
 		SourcePosition: expr.SourcePosition,
+		Fields:         fields,
 		TypeIndex:      typeIndex,
 	}
 

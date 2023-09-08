@@ -74,3 +74,13 @@ func (t *TypeType) Name() string { return "Type" }
 var TypeTypeInstance = &TypeType{}
 
 //=====================================================================================================================
+
+type UnitType struct {
+}
+
+func (t *UnitType) isType()      {}
+func (t *UnitType) Name() string { return "Unit" }
+
+var UnitTypeInstance = &UnitType{}
+
+//=====================================================================================================================

@@ -30,7 +30,7 @@ type Outcome struct {
 func GenerateByteCode(priorOutcome *prior.Outcome) *Outcome {
 	codeBlock := bytecode.NewCodeBlock()
 
-	buildCodeBlock(codeBlock, priorOutcome.Model, priorOutcome.TypeConstants)
+	buildCodeBlock(codeBlock, priorOutcome.Model)
 
 	codeBlock.Stop()
 
@@ -47,54 +47,56 @@ func GenerateByteCode(priorOutcome *prior.Outcome) *Outcome {
 
 //=====================================================================================================================
 
-func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression prior.IExpression, typePool *types.TypeConstantPool) {
+func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression prior.IExpression) {
 
 	switch expr := expression.(type) {
 
 	case *prior.AdditionExpr:
-		buildAdditionCodeBlock(codeBlock, expr, typePool)
+		buildAdditionCodeBlock(codeBlock, expr)
 	case *prior.BooleanLiteralExpr:
 		buildBooleanLiteralCodeBlock(codeBlock, expr)
 	case *prior.BuiltInTypeExpr:
 		buildBuiltInTypeCodeBlock(codeBlock, expr)
 	case *prior.DivisionExpr:
-		buildDivisionCodeBlock(codeBlock, expr, typePool)
+		buildDivisionCodeBlock(codeBlock, expr)
 	case *prior.EqualsExpr:
-		buildEqualsCodeBlock(codeBlock, expr, typePool)
+		buildEqualsCodeBlock(codeBlock, expr)
 	case *prior.Float64LiteralExpr:
 		buildFloat64LiteralCodeBlock(codeBlock, expr)
 	case *prior.GreaterThanExpr:
-		buildGreaterThanCodeBlock(codeBlock, expr, typePool)
+		buildGreaterThanCodeBlock(codeBlock, expr)
 	case *prior.GreaterThanOrEqualsExpr:
-		buildGreaterThanOrEqualsCodeBlock(codeBlock, expr, typePool)
+		buildGreaterThanOrEqualsCodeBlock(codeBlock, expr)
 	case *prior.Int64LiteralExpr:
 		buildInt64LiteralCodeBlock(codeBlock, expr)
 	case *prior.IsExpr:
-		buildIsCodeBlock(codeBlock, expr, typePool)
+		buildIsCodeBlock(codeBlock, expr)
 	case *prior.LessThanExpr:
-		buildLessThanCodeBlock(codeBlock, expr, typePool)
+		buildLessThanCodeBlock(codeBlock, expr)
 	case *prior.LessThanOrEqualsExpr:
-		buildLessThanOrEqualsCodeBlock(codeBlock, expr, typePool)
+		buildLessThanOrEqualsCodeBlock(codeBlock, expr)
 	case *prior.LogicalAndExpr:
-		buildLogicalAndCodeBlock(codeBlock, expr, typePool)
+		buildLogicalAndCodeBlock(codeBlock, expr)
 	case *prior.LogicalNotOperationExpr:
-		buildLogicalNotCodeBlock(codeBlock, expr, typePool)
+		buildLogicalNotCodeBlock(codeBlock, expr)
 	case *prior.LogicalOrExpr:
-		buildLogicalOrCodeBlock(codeBlock, expr, typePool)
+		buildLogicalOrCodeBlock(codeBlock, expr)
 	case *prior.MultiplicationExpr:
-		buildMultiplicationCodeBlock(codeBlock, expr, typePool)
+		buildMultiplicationCodeBlock(codeBlock, expr)
 	case *prior.NegationOperationExpr:
-		buildNegationCodeBlock(codeBlock, expr, typePool)
+		buildNegationCodeBlock(codeBlock, expr)
 	case *prior.NotEqualsExpr:
-		buildNotEqualsCodeBlock(codeBlock, expr, typePool)
+		buildNotEqualsCodeBlock(codeBlock, expr)
 	case *prior.ParenthesizedExpr:
-		buildParenthesizedCodeBlock(codeBlock, expr, typePool)
+		buildParenthesizedCodeBlock(codeBlock, expr)
+	case *prior.RecordExpr:
+		buildRecordCodeBlock(codeBlock, expr)
 	case *prior.StringConcatenationExpr:
-		buildStringConcatenationCodeBlock(codeBlock, expr, typePool)
+		buildStringConcatenationCodeBlock(codeBlock, expr)
 	case *prior.StringLiteralExpr:
 		buildStringLiteralCodeBlock(codeBlock, expr)
 	case *prior.SubtractionExpr:
-		buildSubtractionCodeBlock(codeBlock, expr, typePool)
+		buildSubtractionCodeBlock(codeBlock, expr)
 	default:
 		panic(fmt.Sprintf("Missing case in buildCodeBlock: %T\n", expression))
 
@@ -104,17 +106,17 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression prior.IExpression,
 
 //=====================================================================================================================
 
-func buildAdditionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.AdditionExpr, typePool *types.TypeConstantPool) {
+func buildAdditionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.AdditionExpr) {
 
 	if e, ok := expr.Lhs.(*prior.Int64LiteralExpr); ok && e.Value == 1 {
-		buildCodeBlock(codeBlock, expr.Rhs, typePool)
+		buildCodeBlock(codeBlock, expr.Rhs)
 		codeBlock.Int64Increment()
 	} else if e, ok := expr.Rhs.(*prior.Int64LiteralExpr); ok && e.Value == 1 {
-		buildCodeBlock(codeBlock, expr.Lhs, typePool)
+		buildCodeBlock(codeBlock, expr.Lhs)
 		codeBlock.Int64Increment()
 	} else {
-		buildCodeBlock(codeBlock, expr.Lhs, typePool)
-		buildCodeBlock(codeBlock, expr.Rhs, typePool)
+		buildCodeBlock(codeBlock, expr.Lhs)
+		buildCodeBlock(codeBlock, expr.Rhs)
 		switch expr.TypeIndex {
 		case types.BuiltInTypeIndexFloat64:
 			codeBlock.Float64Add()
@@ -144,9 +146,9 @@ func buildBuiltInTypeCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.BuiltI
 
 //=====================================================================================================================
 
-func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.DivisionExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.DivisionExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.TypeIndex {
 	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64Divide()
@@ -159,9 +161,9 @@ func buildDivisionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.DivisionE
 
 //=====================================================================================================================
 
-func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.EqualsExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.EqualsExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeIndex() {
 	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64Equals()
@@ -172,7 +174,12 @@ func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.EqualsExpr,
 	case types.BuiltInTypeIndexType:
 		codeBlock.TypeEquals()
 	default:
-		panic("Undefined equality type")
+		switch expr.Lhs.GetTypeCategory() {
+		case prior.TypeCategoryRecord:
+			codeBlock.RecordEquals()
+		default:
+			panic("Undefined equality type")
+		}
 	}
 }
 
@@ -191,9 +198,9 @@ func buildFloat64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Flo
 
 //=====================================================================================================================
 
-func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.GreaterThanExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.GreaterThanExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeIndex() {
 	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64GreaterThan()
@@ -206,9 +213,9 @@ func buildGreaterThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Greate
 
 //=====================================================================================================================
 
-func buildGreaterThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.GreaterThanOrEqualsExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildGreaterThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.GreaterThanOrEqualsExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeIndex() {
 	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64GreaterThanOrEquals()
@@ -235,9 +242,9 @@ func buildInt64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Int64
 //=====================================================================================================================
 
 // TODO: This will evolve into a module unto itself
-func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IsExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IsExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeIndex() {
 	case types.BuiltInTypeIndexBool:
 		switch rhs := expr.Rhs.(type) {
@@ -290,9 +297,9 @@ func buildIsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IsExpr, typePoo
 
 //=====================================================================================================================
 
-func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LessThanExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LessThanExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeIndex() {
 	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64LessThan()
@@ -305,9 +312,9 @@ func buildLessThanCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LessThanE
 
 //=====================================================================================================================
 
-func buildLessThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LessThanOrEqualsExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildLessThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LessThanOrEqualsExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeIndex() {
 	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64LessThanOrEquals()
@@ -320,32 +327,32 @@ func buildLessThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.L
 
 //=====================================================================================================================
 
-func buildLogicalAndCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LogicalAndExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildLogicalAndCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LogicalAndExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	codeBlock.BoolAnd()
 }
 
 //=====================================================================================================================
 
-func buildLogicalNotCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LogicalNotOperationExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Operand, typePool)
+func buildLogicalNotCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LogicalNotOperationExpr) {
+	buildCodeBlock(codeBlock, expr.Operand)
 	codeBlock.BoolNot()
 }
 
 //=====================================================================================================================
 
-func buildLogicalOrCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LogicalOrExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildLogicalOrCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.LogicalOrExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	codeBlock.BoolOr()
 }
 
 //=====================================================================================================================
 
-func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.MultiplicationExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.MultiplicationExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.TypeIndex {
 	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64Multiply()
@@ -358,8 +365,8 @@ func buildMultiplicationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Mul
 
 //=====================================================================================================================
 
-func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NegationOperationExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Operand, typePool)
+func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NegationOperationExpr) {
+	buildCodeBlock(codeBlock, expr.Operand)
 	switch expr.TypeIndex {
 	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64Negate()
@@ -372,9 +379,9 @@ func buildNegationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NegationO
 
 //=====================================================================================================================
 
-func buildNotEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NotEqualsExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildNotEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NotEqualsExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	switch expr.Lhs.GetTypeIndex() {
 	case types.BuiltInTypeIndexFloat64:
 		codeBlock.Float64NotEquals()
@@ -391,15 +398,30 @@ func buildNotEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NotEqual
 
 //=====================================================================================================================
 
-func buildParenthesizedCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.ParenthesizedExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.InnerExpr, typePool)
+func buildParenthesizedCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.ParenthesizedExpr) {
+	buildCodeBlock(codeBlock, expr.InnerExpr)
 }
 
 //=====================================================================================================================
 
-func buildStringConcatenationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.StringConcatenationExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
-	buildCodeBlock(codeBlock, expr.Rhs, typePool)
+func buildRecordCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.RecordExpr) {
+	// Load the type index on the stack
+	codeBlock.TypeLoad(expr.TypeIndex)
+
+	// Evaluate each field until fields are in order on the stack
+	for _, field := range expr.Fields {
+		buildCodeBlock(codeBlock, field.FieldValue)
+	}
+
+	// Copy from the stack into the record pool together with record type index (leave the record pool index on the stack).
+	codeBlock.RecordStore(len(expr.Fields))
+}
+
+//=====================================================================================================================
+
+func buildStringConcatenationCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.StringConcatenationExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
+	buildCodeBlock(codeBlock, expr.Rhs)
 	codeBlock.StringConcatenate()
 }
 
@@ -411,13 +433,13 @@ func buildStringLiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Stri
 
 //=====================================================================================================================
 
-func buildSubtractionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.SubtractionExpr, typePool *types.TypeConstantPool) {
-	buildCodeBlock(codeBlock, expr.Lhs, typePool)
+func buildSubtractionCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.SubtractionExpr) {
+	buildCodeBlock(codeBlock, expr.Lhs)
 
 	if e, ok := expr.Rhs.(*prior.Int64LiteralExpr); ok && e.Value == 1 {
 		codeBlock.Int64Decrement()
 	} else {
-		buildCodeBlock(codeBlock, expr.Rhs, typePool)
+		buildCodeBlock(codeBlock, expr.Rhs)
 		switch expr.TypeIndex {
 		case types.BuiltInTypeIndexFloat64:
 			codeBlock.Float64Subtract()
