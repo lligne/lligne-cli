@@ -12,26 +12,9 @@ import (
 
 //=====================================================================================================================
 
-type TypeCategory uint16
-
-const (
-	TypeCategoryUnit TypeCategory = iota
-	TypeCategoryBool
-	TypeCategoryFloat64
-	TypeCategoryInt64
-	TypeCategoryString
-	TypeCategoryType
-
-	TypeCategoryOptional
-	TypeCategoryRecord
-)
-
-//=====================================================================================================================
-
 // IExpression is the interface to an expression AST node with types added.
 type IExpression interface {
 	GetSourcePosition() util.SourcePos
-	GetTypeCategory() TypeCategory
 	GetTypeIndex() uint64
 	isTypeExpression()
 }
@@ -47,7 +30,6 @@ type AdditionExpr struct {
 }
 
 func (e *AdditionExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *AdditionExpr) GetTypeCategory() TypeCategory     { return TypeCategory(e.TypeIndex) }
 func (e *AdditionExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *AdditionExpr) isTypeExpression()                 {}
 
@@ -61,7 +43,6 @@ type ArrayLiteralExpr struct {
 }
 
 func (e *ArrayLiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *ArrayLiteralExpr) GetTypeCategory() TypeCategory     { return TypeCategory(e.TypeIndex) }
 func (e *ArrayLiteralExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *ArrayLiteralExpr) isTypeExpression()                 {}
 
@@ -74,7 +55,6 @@ type BooleanLiteralExpr struct {
 }
 
 func (e *BooleanLiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *BooleanLiteralExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *BooleanLiteralExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *BooleanLiteralExpr) isTypeExpression()                 {}
 
@@ -87,7 +67,6 @@ type BuiltInTypeExpr struct {
 }
 
 func (e *BuiltInTypeExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *BuiltInTypeExpr) GetTypeCategory() TypeCategory     { return TypeCategoryType }
 func (e *BuiltInTypeExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexType }
 func (e *BuiltInTypeExpr) isTypeExpression()                 {}
 
@@ -102,7 +81,6 @@ type DivisionExpr struct {
 }
 
 func (e *DivisionExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *DivisionExpr) GetTypeCategory() TypeCategory     { return TypeCategory(e.TypeIndex) }
 func (e *DivisionExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *DivisionExpr) isTypeExpression()                 {}
 
@@ -116,7 +94,6 @@ type EqualsExpr struct {
 }
 
 func (e *EqualsExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *EqualsExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *EqualsExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *EqualsExpr) isTypeExpression()                 {}
 
@@ -129,7 +106,6 @@ type Float64LiteralExpr struct {
 }
 
 func (e *Float64LiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *Float64LiteralExpr) GetTypeCategory() TypeCategory     { return TypeCategoryFloat64 }
 func (e *Float64LiteralExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexFloat64 }
 func (e *Float64LiteralExpr) isTypeExpression()                 {}
 
@@ -140,12 +116,10 @@ type FunctionCallExpr struct {
 	SourcePosition    util.SourcePos
 	FunctionReference IExpression
 	Argument          IExpression
-	TypeCategory      TypeCategory
 	TypeIndex         uint64
 }
 
 func (e *FunctionCallExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *FunctionCallExpr) GetTypeCategory() TypeCategory     { return e.TypeCategory }
 func (e *FunctionCallExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *FunctionCallExpr) isTypeExpression()                 {}
 
@@ -159,7 +133,6 @@ type GreaterThanExpr struct {
 }
 
 func (e *GreaterThanExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *GreaterThanExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *GreaterThanExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *GreaterThanExpr) isTypeExpression()                 {}
 
@@ -173,7 +146,6 @@ type GreaterThanOrEqualsExpr struct {
 }
 
 func (e *GreaterThanOrEqualsExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *GreaterThanOrEqualsExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *GreaterThanOrEqualsExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *GreaterThanOrEqualsExpr) isTypeExpression()                 {}
 
@@ -183,12 +155,10 @@ func (e *GreaterThanOrEqualsExpr) isTypeExpression()                 {}
 type IdentifierExpr struct {
 	SourcePosition util.SourcePos
 	Name           string
-	TypeCategory   TypeCategory
 	TypeIndex      uint64
 }
 
 func (e *IdentifierExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *IdentifierExpr) GetTypeCategory() TypeCategory     { return e.TypeCategory }
 func (e *IdentifierExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *IdentifierExpr) isTypeExpression()                 {}
 
@@ -201,7 +171,6 @@ type Int64LiteralExpr struct {
 }
 
 func (e *Int64LiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *Int64LiteralExpr) GetTypeCategory() TypeCategory     { return TypeCategoryInt64 }
 func (e *Int64LiteralExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexInt64 }
 func (e *Int64LiteralExpr) isTypeExpression()                 {}
 
@@ -215,7 +184,6 @@ type IsExpr struct {
 }
 
 func (e *IsExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *IsExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *IsExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *IsExpr) isTypeExpression()                 {}
 
@@ -228,7 +196,6 @@ type LeadingDocumentationExpr struct {
 }
 
 func (e *LeadingDocumentationExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LeadingDocumentationExpr) GetTypeCategory() TypeCategory     { return TypeCategoryUnit }
 func (e *LeadingDocumentationExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexUnit }
 func (e *LeadingDocumentationExpr) isTypeExpression()                 {}
 
@@ -242,7 +209,6 @@ type LessThanExpr struct {
 }
 
 func (e *LessThanExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LessThanExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *LessThanExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *LessThanExpr) isTypeExpression()                 {}
 
@@ -256,7 +222,6 @@ type LessThanOrEqualsExpr struct {
 }
 
 func (e *LessThanOrEqualsExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LessThanOrEqualsExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *LessThanOrEqualsExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *LessThanOrEqualsExpr) isTypeExpression()                 {}
 
@@ -270,7 +235,6 @@ type LogicalAndExpr struct {
 }
 
 func (e *LogicalAndExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LogicalAndExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *LogicalAndExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *LogicalAndExpr) isTypeExpression()                 {}
 
@@ -283,7 +247,6 @@ type LogicalNotOperationExpr struct {
 }
 
 func (e *LogicalNotOperationExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LogicalNotOperationExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *LogicalNotOperationExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *LogicalNotOperationExpr) isTypeExpression()                 {}
 
@@ -297,7 +260,6 @@ type LogicalOrExpr struct {
 }
 
 func (e *LogicalOrExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LogicalOrExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *LogicalOrExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *LogicalOrExpr) isTypeExpression()                 {}
 
@@ -312,7 +274,6 @@ type MultiplicationExpr struct {
 }
 
 func (e *MultiplicationExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *MultiplicationExpr) GetTypeCategory() TypeCategory     { return TypeCategory(e.TypeIndex) }
 func (e *MultiplicationExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *MultiplicationExpr) isTypeExpression()                 {}
 
@@ -326,7 +287,6 @@ type NegationOperationExpr struct {
 }
 
 func (e *NegationOperationExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *NegationOperationExpr) GetTypeCategory() TypeCategory     { return TypeCategory(e.TypeIndex) }
 func (e *NegationOperationExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *NegationOperationExpr) isTypeExpression()                 {}
 
@@ -340,7 +300,6 @@ type NotEqualsExpr struct {
 }
 
 func (e *NotEqualsExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *NotEqualsExpr) GetTypeCategory() TypeCategory     { return TypeCategoryBool }
 func (e *NotEqualsExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexBool }
 func (e *NotEqualsExpr) isTypeExpression()                 {}
 
@@ -354,7 +313,6 @@ type OptionalExpr struct {
 }
 
 func (e *OptionalExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *OptionalExpr) GetTypeCategory() TypeCategory     { return TypeCategoryOptional }
 func (e *OptionalExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *OptionalExpr) isTypeExpression()                 {}
 
@@ -364,12 +322,10 @@ func (e *OptionalExpr) isTypeExpression()                 {}
 type ParenthesizedExpr struct {
 	SourcePosition util.SourcePos
 	InnerExpr      IExpression
-	TypeCategory   TypeCategory
 	TypeIndex      uint64
 }
 
 func (e *ParenthesizedExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *ParenthesizedExpr) GetTypeCategory() TypeCategory     { return e.TypeCategory }
 func (e *ParenthesizedExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *ParenthesizedExpr) isTypeExpression()                 {}
 
@@ -383,7 +339,6 @@ type RecordExpr struct {
 }
 
 func (e *RecordExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *RecordExpr) GetTypeCategory() TypeCategory     { return TypeCategoryRecord }
 func (e *RecordExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *RecordExpr) isTypeExpression()                 {}
 
@@ -397,7 +352,6 @@ type RecordFieldExpr struct {
 }
 
 func (e *RecordFieldExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *RecordFieldExpr) GetTypeCategory() TypeCategory     { return e.FieldValue.GetTypeCategory() }
 func (e *RecordFieldExpr) GetTypeIndex() uint64              { return e.FieldValue.GetTypeIndex() }
 func (e *RecordFieldExpr) isTypeExpression()                 {}
 
@@ -411,7 +365,6 @@ type StringConcatenationExpr struct {
 }
 
 func (e *StringConcatenationExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *StringConcatenationExpr) GetTypeCategory() TypeCategory     { return TypeCategoryString }
 func (e *StringConcatenationExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexString }
 func (e *StringConcatenationExpr) isTypeExpression()                 {}
 
@@ -424,7 +377,6 @@ type StringLiteralExpr struct {
 }
 
 func (e *StringLiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *StringLiteralExpr) GetTypeCategory() TypeCategory     { return TypeCategoryString }
 func (e *StringLiteralExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexString }
 func (e *StringLiteralExpr) isTypeExpression()                 {}
 
@@ -439,7 +391,6 @@ type SubtractionExpr struct {
 }
 
 func (e *SubtractionExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *SubtractionExpr) GetTypeCategory() TypeCategory     { return TypeCategory(e.TypeIndex) }
 func (e *SubtractionExpr) GetTypeIndex() uint64              { return e.TypeIndex }
 func (e *SubtractionExpr) isTypeExpression()                 {}
 
@@ -452,7 +403,6 @@ type TrailingDocumentationExpr struct {
 }
 
 func (e *TrailingDocumentationExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *TrailingDocumentationExpr) GetTypeCategory() TypeCategory     { return TypeCategoryUnit }
 func (e *TrailingDocumentationExpr) GetTypeIndex() uint64              { return types.BuiltInTypeIndexUnit }
 func (e *TrailingDocumentationExpr) isTypeExpression()                 {}
 

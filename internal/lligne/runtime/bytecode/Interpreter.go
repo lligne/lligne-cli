@@ -48,6 +48,9 @@ func (n *Interpreter) Execute(machine *Machine) {
 
 		dispatch[opCode](n, machine)
 
+		// for debugging
+		machine.Stack[machine.Top+1] = 9999999999
+
 	}
 
 }
@@ -355,7 +358,7 @@ func init() {
 		recordLhs := n.recordPool.Get(recordIndexLhs)
 		recordRhs := n.recordPool.Get(recordIndexRhs)
 
-		if recordLhs.Equal(recordRhs) {
+		if records.AreRecordsEqual(n.typePool, &recordLhs, &recordRhs) {
 			m.Stack[m.Top] = true64
 		} else {
 			m.Stack[m.Top] = 0
@@ -366,11 +369,13 @@ func init() {
 		fieldCount := *(*int)(unsafe.Pointer(&n.codeBlock.OpCodes[m.IP]))
 		m.IP += 4
 
+		typeIndex := m.Stack[m.Top-fieldCount]
+
 		fieldValues := make([]uint64, fieldCount)
-		copy(m.Stack[m.Top-fieldCount:m.Top+1], fieldValues)
+		copy(fieldValues, m.Stack[m.Top-fieldCount+1:m.Top+1])
 
 		record := records.Record{
-			TypeIndex:   m.Stack[m.Top-fieldCount],
+			TypeIndex:   typeIndex,
 			FieldValues: fieldValues,
 		}
 

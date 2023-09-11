@@ -69,13 +69,13 @@ func TestExpressionEvaluation(t *testing.T) {
 
 	t.Run("Boolean expression evaluations", func(t *testing.T) {
 
-		//checkSampleFile(t, sample1)
-		//checkSampleFile(t, sample2)
-		//checkSampleFile(t, sample3)
+		checkSampleFile(t, sample1)
+		checkSampleFile(t, sample2)
+		checkSampleFile(t, sample3)
 		checkSampleFile(t, sample4)
-		//checkSampleFile(t, sample5)
-		//checkSampleFile(t, sample6)
-		//checkSampleFile(t, sample7)
+		checkSampleFile(t, sample5)
+		checkSampleFile(t, sample6)
+		checkSampleFile(t, sample7)
 
 	})
 
