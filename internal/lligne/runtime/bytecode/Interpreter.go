@@ -362,6 +362,18 @@ func init() {
 		}
 	}
 
+	dispatch[OpCodeRecordNotEquals] = func(n *Interpreter, m *Machine) {
+		recordIndexRhs := m.Stack[m.Top]
+		m.Top -= 1
+		recordIndexLhs := m.Stack[m.Top]
+
+		if records.AreRecordsEqual(n.typePool, n.recordPool, recordIndexLhs, recordIndexRhs) {
+			m.Stack[m.Top] = 0
+		} else {
+			m.Stack[m.Top] = true64
+		}
+	}
+
 	dispatch[OpCodeRecordStore] = func(n *Interpreter, m *Machine) {
 		fieldCount := *(*int)(unsafe.Pointer(&n.codeBlock.OpCodes[m.IP]))
 		m.IP += 4

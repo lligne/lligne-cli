@@ -259,6 +259,12 @@ func (cb *CodeBlock) RecordEquals() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) RecordNotEquals() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeRecordNotEquals)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) RecordStore(fieldCount int) {
 	cb.OpCodes = append(cb.OpCodes, OpCodeRecordStore)
 	cb.append64BitOperand(uint64(fieldCount))
@@ -423,6 +429,8 @@ func (cb *CodeBlock) Disassemble(stringPool *pools.StringPool, typePool *types.T
 
 		case OpCodeRecordEquals:
 			write(output, ip, "RECORD_EQUALS")
+		case OpCodeRecordNotEquals:
+			write(output, ip, "RECORD_NOT_EQUALS")
 		case OpCodeRecordStore:
 			writeUInt64(output, ip, "RECORD_STORE", uint64(cb.OpCodes[ip]))
 			ip += 4

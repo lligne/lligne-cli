@@ -394,7 +394,14 @@ func buildNotEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.NotEqual
 	case types.BuiltInTypeIndexType:
 		codeBlock.TypeNotEquals()
 	default:
-		panic("Undefined inequality type")
+		typ := typeConstants.Get(expr.Lhs.GetTypeIndex())
+
+		switch typ.Category() {
+		case types.TypeCategoryRecord:
+			codeBlock.RecordNotEquals()
+		default:
+			panic("Undefined equality type")
+		}
 	}
 }
 

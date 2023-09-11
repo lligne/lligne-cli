@@ -66,6 +66,7 @@ const (
 
 	// Records
 	OpCodeRecordEquals
+	OpCodeRecordNotEquals
 	OpCodeRecordStore
 
 	OpCode_Count

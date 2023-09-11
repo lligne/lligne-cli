@@ -5,3 +5,9 @@
 • {first = "one", second = "two"} == {first = "one", second = "two"}
 • {first = 1, second = "two"} == {first = 3 - 2, second = "t" + "wo"}
 • {nested = {x = 3, y = 4}, non-nested = "top"} == {nested = {x = 3, y = 4}, non-nested = "top"}
+
+• {x = 3, y = 4} != {x = 3, y = 5}
+• {x = 1, y = 2} != {x = 1, y = 2, z = 3}
+• {x = 1, y = 2, z = 3} != {x = 1, y = 2}
+• {nested = {x = 3, y = 5}, non-nested = "top"} != {nested = {x = 3, y = 4}, non-nested = "top"}
+• {nested = {x = 3, y = 4}, non-nested = "top"} != {nested = {x = 3, y = 4}, non-nested = "stop"}
