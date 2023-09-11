@@ -3,3 +3,5 @@
 • {x = 2 + 1, y = 2 + 2} == {x = 12 / 4, y = 16 / 4}
 • {x = 7} == {x = 7}
 • {first = "one", second = "two"} == {first = "one", second = "two"}
+• {first = 1, second = "two"} == {first = 3 - 2, second = "t" + "wo"}
+• {nested = {x = 3, y = 4}, non-nested = "top"} == {nested = {x = 3, y = 4}, non-nested = "top"}

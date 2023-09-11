@@ -355,10 +355,7 @@ func init() {
 		m.Top -= 1
 		recordIndexLhs := m.Stack[m.Top]
 
-		recordLhs := n.recordPool.Get(recordIndexLhs)
-		recordRhs := n.recordPool.Get(recordIndexRhs)
-
-		if records.AreRecordsEqual(n.typePool, &recordLhs, &recordRhs) {
+		if records.AreRecordsEqual(n.typePool, n.recordPool, recordIndexLhs, recordIndexRhs) {
 			m.Stack[m.Top] = true64
 		} else {
 			m.Stack[m.Top] = 0
