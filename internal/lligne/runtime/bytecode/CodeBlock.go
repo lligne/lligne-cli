@@ -259,6 +259,19 @@ func (cb *CodeBlock) RecordEquals() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) RecordFieldIndexLoad(fieldIndex uint64) {
+	cb.OpCodes = append(cb.OpCodes, OpCodeRecordFieldIndexLoad)
+	cb.append64BitOperand(fieldIndex)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) RecordFieldReference() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeRecordFieldReference)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) RecordNotEquals() {
 	cb.OpCodes = append(cb.OpCodes, OpCodeRecordNotEquals)
 }
@@ -429,6 +442,10 @@ func (cb *CodeBlock) Disassemble(stringPool *pools.StringPool, typePool *types.T
 
 		case OpCodeRecordEquals:
 			write(output, ip, "RECORD_EQUALS")
+		case OpCodeRecordFieldIndexLoad:
+			fieldIndex := *(*uint64)(unsafe.Pointer(&cb.OpCodes[ip]))
+			writeUInt64(output, ip, "RECORD_FLD_IDX_LOAD", fieldIndex)
+			ip += 4
 		case OpCodeRecordNotEquals:
 			write(output, ip, "RECORD_NOT_EQUALS")
 		case OpCodeRecordStore:

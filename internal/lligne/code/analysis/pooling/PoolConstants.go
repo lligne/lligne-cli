@@ -62,6 +62,8 @@ func poolConstants(
 		return poolDivisionExpr(sourceCode, expr, stringConstants, identifierNames)
 	case *prior.EqualsExpr:
 		return poolEqualsExpr(sourceCode, expr, stringConstants, identifierNames)
+	case *prior.FieldReferenceExpr:
+		return poolFieldReferenceExpr(sourceCode, expr, stringConstants, identifierNames)
 	case *prior.Float64LiteralExpr:
 		return poolFloatingPointLiteralExpr(expr)
 	case *prior.GreaterThanExpr:
@@ -173,6 +175,23 @@ func poolEqualsExpr(
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
+	}
+}
+
+//=====================================================================================================================
+
+func poolFieldReferenceExpr(
+	sourceCode string,
+	expr *prior.FieldReferenceExpr,
+	stringConstants *pools.StringPool,
+	identifierNames *pools.StringPool,
+) IExpression {
+	parent := poolConstants(sourceCode, expr.Parent, stringConstants, identifierNames)
+	child := poolConstants(sourceCode, expr.Child, stringConstants, identifierNames)
+	return &FieldReferenceExpr{
+		SourcePosition: expr.SourcePosition,
+		Parent:         parent,
+		Child:          child,
 	}
 }
 

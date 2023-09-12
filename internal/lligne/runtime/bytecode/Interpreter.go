@@ -362,6 +362,20 @@ func init() {
 		}
 	}
 
+	dispatch[OpCodeRecordFieldIndexLoad] = func(n *Interpreter, m *Machine) {
+		m.Top += 1
+		m.Stack[m.Top] = *(*uint64)(unsafe.Pointer(&n.codeBlock.OpCodes[m.IP]))
+		m.IP += 4
+	}
+
+	dispatch[OpCodeRecordFieldReference] = func(n *Interpreter, m *Machine) {
+		fieldIndex := m.Stack[m.Top]
+		m.Top -= 1
+		recordIndex := m.Stack[m.Top]
+
+		m.Stack[m.Top] = n.recordPool.Get(recordIndex).FieldValues[fieldIndex]
+	}
+
 	dispatch[OpCodeRecordNotEquals] = func(n *Interpreter, m *Machine) {
 		recordIndexRhs := m.Stack[m.Top]
 		m.Top -= 1

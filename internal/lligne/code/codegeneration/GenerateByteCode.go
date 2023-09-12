@@ -61,12 +61,16 @@ func buildCodeBlock(codeBlock *bytecode.CodeBlock, expression prior.IExpression,
 		buildDivisionCodeBlock(codeBlock, expr, typeConstants)
 	case *prior.EqualsExpr:
 		buildEqualsCodeBlock(codeBlock, expr, typeConstants)
+	case *prior.FieldReferenceExpr:
+		buildFieldReferenceCodeBlock(codeBlock, expr, typeConstants)
 	case *prior.Float64LiteralExpr:
 		buildFloat64LiteralCodeBlock(codeBlock, expr)
 	case *prior.GreaterThanExpr:
 		buildGreaterThanCodeBlock(codeBlock, expr, typeConstants)
 	case *prior.GreaterThanOrEqualsExpr:
 		buildGreaterThanOrEqualsCodeBlock(codeBlock, expr, typeConstants)
+	case *prior.IdentifierExpr:
+		buildIdentifierCodeBlock(codeBlock, expr)
 	case *prior.Int64LiteralExpr:
 		buildInt64LiteralCodeBlock(codeBlock, expr)
 	case *prior.IsExpr:
@@ -187,6 +191,14 @@ func buildEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.EqualsExpr,
 
 //=====================================================================================================================
 
+func buildFieldReferenceCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.FieldReferenceExpr, typeConstants *types.TypeConstantPool) {
+	buildCodeBlock(codeBlock, expr.Parent, typeConstants)
+	buildCodeBlock(codeBlock, expr.Child, typeConstants)
+	codeBlock.RecordFieldReference()
+}
+
+//=====================================================================================================================
+
 func buildFloat64LiteralCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.Float64LiteralExpr) {
 	switch expr.Value {
 	case 0:
@@ -226,6 +238,12 @@ func buildGreaterThanOrEqualsCodeBlock(codeBlock *bytecode.CodeBlock, expr *prio
 	default:
 		panic("Undefined greater than or equals type")
 	}
+}
+
+//=====================================================================================================================
+
+func buildIdentifierCodeBlock(codeBlock *bytecode.CodeBlock, expr *prior.IdentifierExpr) {
+	codeBlock.RecordFieldIndexLoad(expr.FieldIndex)
 }
 
 //=====================================================================================================================

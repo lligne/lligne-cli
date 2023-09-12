@@ -71,6 +71,7 @@ func TestCodeBlockDisassembly(t *testing.T) {
 
 		codeBlock.RecordStore(5)
 		codeBlock.RecordEquals()
+		codeBlock.RecordFieldIndexLoad(17)
 		codeBlock.RecordNotEquals()
 
 		codeBlock.Return()
@@ -127,9 +128,10 @@ func TestCodeBlockDisassembly(t *testing.T) {
   73  TYPE_NOT_EQUALS
   74  RECORD_STORE              5
   79  RECORD_EQUALS
-  80  RECORD_NOT_EQUALS
-  81  RETURN
-  82  STOP
+  80  RECORD_FLD_IDX_LOAD      17
+  85  RECORD_NOT_EQUALS
+  86  RETURN
+  87  STOP
 `
 
 		assert.Equal(t, expected, actual)

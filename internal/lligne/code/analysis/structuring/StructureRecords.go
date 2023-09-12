@@ -62,6 +62,8 @@ func structureRecords(
 		return structureDivisionExpr(sourceCode, expr, stringConstants, identifierNames)
 	case *prior.EqualsExpr:
 		return structureEqualsExpr(sourceCode, expr, stringConstants, identifierNames)
+	case *prior.FieldReferenceExpr:
+		return structureFieldReferenceExpr(sourceCode, expr, stringConstants, identifierNames)
 	case *prior.Float64LiteralExpr:
 		return structureFloatingPointLiteralExpr(expr)
 	case *prior.GreaterThanExpr:
@@ -171,6 +173,23 @@ func structureEqualsExpr(
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
+	}
+}
+
+//=====================================================================================================================
+
+func structureFieldReferenceExpr(
+	sourceCode string,
+	expr *prior.FieldReferenceExpr,
+	stringConstants *pools.StringPool,
+	identifierNames *pools.StringPool,
+) IExpression {
+	parent := structureRecords(sourceCode, expr.Parent, stringConstants, identifierNames)
+	child := structureRecords(sourceCode, expr.Child, stringConstants, identifierNames)
+	return &FieldReferenceExpr{
+		SourcePosition: expr.SourcePosition,
+		Parent:         parent,
+		Child:          child,
 	}
 }
 

@@ -66,6 +66,8 @@ const (
 
 	// Records
 	OpCodeRecordEquals
+	OpCodeRecordFieldIndexLoad
+	OpCodeRecordFieldReference
 	OpCodeRecordNotEquals
 	OpCodeRecordStore
 

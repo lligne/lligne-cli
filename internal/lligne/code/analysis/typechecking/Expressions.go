@@ -99,6 +99,19 @@ func (e *EqualsExpr) isTypeExpression()                 {}
 
 //=====================================================================================================================
 
+// FieldReferenceExpr represents a field reference (".") operation.
+type FieldReferenceExpr struct {
+	SourcePosition util.SourcePos
+	Parent         IExpression
+	Child          IExpression
+}
+
+func (e *FieldReferenceExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
+func (e *FieldReferenceExpr) GetTypeIndex() uint64              { return e.Child.GetTypeIndex() }
+func (e *FieldReferenceExpr) isTypeExpression()                 {}
+
+//=====================================================================================================================
+
 // Float64LiteralExpr represents a single 64-bit floating point literal.
 type Float64LiteralExpr struct {
 	SourcePosition util.SourcePos
@@ -154,7 +167,8 @@ func (e *GreaterThanOrEqualsExpr) isTypeExpression()                 {}
 // IdentifierExpr represents a single identifier.
 type IdentifierExpr struct {
 	SourcePosition util.SourcePos
-	Name           string
+	NameIndex      uint64
+	FieldIndex     uint64
 	TypeIndex      uint64
 }
 

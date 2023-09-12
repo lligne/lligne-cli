@@ -76,6 +76,7 @@ func TestExpressionEvaluation(t *testing.T) {
 		checkSampleFile(t, sample5)
 		checkSampleFile(t, sample6)
 		checkSampleFile(t, sample7)
+		checkSampleFile(t, sample8)
 
 	})
 
@@ -95,13 +96,16 @@ var sample3 string
 //go:embed record/record-comparisons.lligne-tests
 var sample4 string
 
-//go:embed string/string-comparisons.lligne-tests
+//go:embed record/record-fields.lligne-tests
 var sample5 string
 
-//go:embed string/string-concatenation.lligne-tests
+//go:embed string/string-comparisons.lligne-tests
 var sample6 string
 
-//go:embed types/built-in-types.lligne-tests
+//go:embed string/string-concatenation.lligne-tests
 var sample7 string
+
+//go:embed types/built-in-types.lligne-tests
+var sample8 string
 
 //---------------------------------------------------------------------------------------------------------------------
