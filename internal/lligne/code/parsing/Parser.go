@@ -47,19 +47,19 @@ func ParseExpression(scanResult *scanning.Outcome) *Outcome {
 
 //=====================================================================================================================
 
+type lligneParser struct {
+	tokens     []scanning.Token
+	index      int
+	sourceCode string
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func newParser(scanResult *scanning.Outcome) *lligneParser {
 	return &lligneParser{
 		sourceCode: scanResult.SourceCode,
 		tokens:     scanResult.Tokens,
 	}
-}
-
-//=====================================================================================================================
-
-type lligneParser struct {
-	tokens     []scanning.Token
-	index      int
-	sourceCode string
 }
 
 //---------------------------------------------------------------------------------------------------------------------

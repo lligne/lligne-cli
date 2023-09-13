@@ -27,81 +27,94 @@ type Outcome struct {
 
 func PoolConstants(priorOutcome *prior.Outcome) *Outcome {
 
-	stringConstants := pools.NewStringPool()
-	identifierNames := pools.NewStringPool()
-
-	model := poolConstants(priorOutcome.SourceCode, priorOutcome.Model, stringConstants, identifierNames)
+	pooler := newPooler(priorOutcome)
+	model := pooler.poolConstants(priorOutcome.Model)
 
 	return &Outcome{
 		SourceCode:      priorOutcome.SourceCode,
 		NewLineOffsets:  priorOutcome.NewLineOffsets,
 		Model:           model,
-		StringConstants: stringConstants.Freeze(),
-		IdentifierNames: identifierNames.Freeze(),
+		StringConstants: pooler.StringConstants.Freeze(),
+		IdentifierNames: pooler.IdentifierNames.Freeze(),
 	}
 }
 
 //=====================================================================================================================
 
-func poolConstants(
-	sourceCode string,
-	expression prior.IExpression,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
+type pooler struct {
+	SourceCode      string
+	NewLineOffsets  []uint32
+	StringConstants *pools.StringPool
+	IdentifierNames *pools.StringPool
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func newPooler(priorOutcome *prior.Outcome) *pooler {
+	return &pooler{
+		SourceCode:      priorOutcome.SourceCode,
+		NewLineOffsets:  priorOutcome.NewLineOffsets,
+		StringConstants: pools.NewStringPool(),
+		IdentifierNames: pools.NewStringPool(),
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (p *pooler) poolConstants(expression prior.IExpression) IExpression {
 
 	switch expr := expression.(type) {
 
 	case *prior.AdditionExpr:
-		return poolAdditionExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolAdditionExpr(expr)
 	case *prior.BooleanLiteralExpr:
-		return poolBooleanLiteralExpr(expr)
+		return p.poolBooleanLiteralExpr(expr)
 	case *prior.BuiltInTypeExpr:
-		return poolBuiltInTypeExpr(expr)
+		return p.poolBuiltInTypeExpr(expr)
 	case *prior.DivisionExpr:
-		return poolDivisionExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolDivisionExpr(expr)
 	case *prior.EqualsExpr:
-		return poolEqualsExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolEqualsExpr(expr)
 	case *prior.FieldReferenceExpr:
-		return poolFieldReferenceExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolFieldReferenceExpr(expr)
 	case *prior.Float64LiteralExpr:
-		return poolFloatingPointLiteralExpr(expr)
+		return p.poolFloatingPointLiteralExpr(expr)
 	case *prior.GreaterThanExpr:
-		return poolGreaterThanExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolGreaterThanExpr(expr)
 	case *prior.GreaterThanOrEqualsExpr:
-		return poolGreaterThanOrEqualsExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolGreaterThanOrEqualsExpr(expr)
 	case *prior.IdentifierExpr:
-		return poolIdentifierExpr(sourceCode, expr, identifierNames)
+		return p.poolIdentifierExpr(expr)
 	case *prior.Int64LiteralExpr:
-		return poolIntegerLiteralExpr(expr)
+		return p.poolIntegerLiteralExpr(expr)
 	case *prior.IntersectAssignValueExpr:
-		return poolIntersectAssignValueExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolIntersectAssignValueExpr(expr)
 	case *prior.IsExpr:
-		return poolIsExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolIsExpr(expr)
 	case *prior.LessThanExpr:
-		return poolLessThanExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolLessThanExpr(expr)
 	case *prior.LessThanOrEqualsExpr:
-		return poolLessThanOrEqualsExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolLessThanOrEqualsExpr(expr)
 	case *prior.LogicalAndExpr:
-		return poolLogicalAndExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolLogicalAndExpr(expr)
 	case *prior.LogicalNotOperationExpr:
-		return poolLogicalNotOperationExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolLogicalNotOperationExpr(expr)
 	case *prior.LogicalOrExpr:
-		return poolLogicalOrExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolLogicalOrExpr(expr)
 	case *prior.MultiplicationExpr:
-		return poolMultiplicationExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolMultiplicationExpr(expr)
 	case *prior.NegationOperationExpr:
-		return poolNegationOperationExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolNegationOperationExpr(expr)
 	case *prior.NotEqualsExpr:
-		return poolNotEqualsExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolNotEqualsExpr(expr)
 	case *prior.ParenthesizedExpr:
-		return poolParenthesizedExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolParenthesizedExpr(expr)
 	case *prior.RecordExpr:
-		return poolRecordExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolRecordExpr(expr)
 	case *prior.StringLiteralExpr:
-		return poolStringLiteralExpr(sourceCode, expr, stringConstants)
+		return p.poolStringLiteralExpr(expr)
 	case *prior.SubtractionExpr:
-		return poolSubtractionExpr(sourceCode, expr, stringConstants, identifierNames)
+		return p.poolSubtractionExpr(expr)
 
 	default:
 		panic(fmt.Sprintf("Missing case in poolConstants: %T\n", expression))
@@ -110,16 +123,11 @@ func poolConstants(
 
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolAdditionExpr(
-	sourceCode string,
-	expr *prior.AdditionExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolAdditionExpr(expr *prior.AdditionExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &AdditionExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -127,33 +135,28 @@ func poolAdditionExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolBooleanLiteralExpr(expr *prior.BooleanLiteralExpr) IExpression {
+func (p *pooler) poolBooleanLiteralExpr(expr *prior.BooleanLiteralExpr) IExpression {
 	return &BooleanLiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          expr.Value,
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolBuiltInTypeExpr(expr *prior.BuiltInTypeExpr) IExpression {
+func (p *pooler) poolBuiltInTypeExpr(expr *prior.BuiltInTypeExpr) IExpression {
 	return &BuiltInTypeExpr{
 		SourcePosition: expr.SourcePosition,
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolDivisionExpr(
-	sourceCode string,
-	expr *prior.DivisionExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolDivisionExpr(expr *prior.DivisionExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &DivisionExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -161,16 +164,11 @@ func poolDivisionExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolEqualsExpr(
-	sourceCode string,
-	expr *prior.EqualsExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolEqualsExpr(expr *prior.EqualsExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &EqualsExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -178,16 +176,11 @@ func poolEqualsExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolFieldReferenceExpr(
-	sourceCode string,
-	expr *prior.FieldReferenceExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	parent := poolConstants(sourceCode, expr.Parent, stringConstants, identifierNames)
-	child := poolConstants(sourceCode, expr.Child, stringConstants, identifierNames)
+func (p *pooler) poolFieldReferenceExpr(expr *prior.FieldReferenceExpr) IExpression {
+	parent := p.poolConstants(expr.Parent)
+	child := p.poolConstants(expr.Child)
 	return &FieldReferenceExpr{
 		SourcePosition: expr.SourcePosition,
 		Parent:         parent,
@@ -195,25 +188,20 @@ func poolFieldReferenceExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolFloatingPointLiteralExpr(expr *prior.Float64LiteralExpr) IExpression {
+func (p *pooler) poolFloatingPointLiteralExpr(expr *prior.Float64LiteralExpr) IExpression {
 	return &Float64LiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          expr.Value,
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolGreaterThanExpr(
-	sourceCode string,
-	expr *prior.GreaterThanExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolGreaterThanExpr(expr *prior.GreaterThanExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &GreaterThanExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -221,16 +209,11 @@ func poolGreaterThanExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolGreaterThanOrEqualsExpr(
-	sourceCode string,
-	expr *prior.GreaterThanOrEqualsExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolGreaterThanOrEqualsExpr(expr *prior.GreaterThanOrEqualsExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &GreaterThanOrEqualsExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -238,15 +221,11 @@ func poolGreaterThanOrEqualsExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolIdentifierExpr(
-	sourceCode string,
-	expr *prior.IdentifierExpr,
-	identifierNames *pools.StringPool,
-) IExpression {
-	name := expr.SourcePosition.GetText(sourceCode)
-	nameIndex := identifierNames.Put(name)
+func (p *pooler) poolIdentifierExpr(expr *prior.IdentifierExpr) IExpression {
+	name := expr.SourcePosition.GetText(p.SourceCode)
+	nameIndex := p.IdentifierNames.Put(name)
 
 	return &IdentifierExpr{
 		SourcePosition: expr.SourcePosition,
@@ -254,25 +233,20 @@ func poolIdentifierExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolIntegerLiteralExpr(expr *prior.Int64LiteralExpr) IExpression {
+func (p *pooler) poolIntegerLiteralExpr(expr *prior.Int64LiteralExpr) IExpression {
 	return &Int64LiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          expr.Value,
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolIntersectAssignValueExpr(
-	sourceCode string,
-	expr *prior.IntersectAssignValueExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolIntersectAssignValueExpr(expr *prior.IntersectAssignValueExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &IntersectAssignValueExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -280,16 +254,11 @@ func poolIntersectAssignValueExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolIsExpr(
-	sourceCode string,
-	expr *prior.IsExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolIsExpr(expr *prior.IsExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &IsExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -297,16 +266,11 @@ func poolIsExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolLessThanExpr(
-	sourceCode string,
-	expr *prior.LessThanExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolLessThanExpr(expr *prior.LessThanExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &LessThanExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -314,16 +278,11 @@ func poolLessThanExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolLessThanOrEqualsExpr(
-	sourceCode string,
-	expr *prior.LessThanOrEqualsExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolLessThanOrEqualsExpr(expr *prior.LessThanOrEqualsExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &LessThanOrEqualsExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -331,16 +290,11 @@ func poolLessThanOrEqualsExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolLogicalAndExpr(
-	sourceCode string,
-	expr *prior.LogicalAndExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolLogicalAndExpr(expr *prior.LogicalAndExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &LogicalAndExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -348,31 +302,21 @@ func poolLogicalAndExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolLogicalNotOperationExpr(
-	sourceCode string,
-	expr *prior.LogicalNotOperationExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	operand := poolConstants(sourceCode, expr.Operand, stringConstants, identifierNames)
+func (p *pooler) poolLogicalNotOperationExpr(expr *prior.LogicalNotOperationExpr) IExpression {
+	operand := p.poolConstants(expr.Operand)
 	return &LogicalNotOperationExpr{
 		SourcePosition: expr.SourcePosition,
 		Operand:        operand,
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolLogicalOrExpr(
-	sourceCode string,
-	expr *prior.LogicalOrExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolLogicalOrExpr(expr *prior.LogicalOrExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &LogicalOrExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -380,16 +324,11 @@ func poolLogicalOrExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolMultiplicationExpr(
-	sourceCode string,
-	expr *prior.MultiplicationExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolMultiplicationExpr(expr *prior.MultiplicationExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &MultiplicationExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -397,31 +336,21 @@ func poolMultiplicationExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolNegationOperationExpr(
-	sourceCode string,
-	expr *prior.NegationOperationExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	operand := poolConstants(sourceCode, expr.Operand, stringConstants, identifierNames)
+func (p *pooler) poolNegationOperationExpr(expr *prior.NegationOperationExpr) IExpression {
+	operand := p.poolConstants(expr.Operand)
 	return &NegationOperationExpr{
 		SourcePosition: expr.SourcePosition,
 		Operand:        operand,
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolNotEqualsExpr(
-	sourceCode string,
-	expr *prior.NotEqualsExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolNotEqualsExpr(expr *prior.NotEqualsExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &NotEqualsExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -429,32 +358,22 @@ func poolNotEqualsExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolParenthesizedExpr(
-	sourceCode string,
-	expr *prior.ParenthesizedExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	inner := poolConstants(sourceCode, expr.InnerExpr, stringConstants, identifierNames)
+func (p *pooler) poolParenthesizedExpr(expr *prior.ParenthesizedExpr) IExpression {
+	inner := p.poolConstants(expr.InnerExpr)
 	return &ParenthesizedExpr{
 		SourcePosition: expr.SourcePosition,
 		InnerExpr:      inner,
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolRecordExpr(
-	sourceCode string,
-	expr *prior.RecordExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
+func (p *pooler) poolRecordExpr(expr *prior.RecordExpr) IExpression {
 	items := make([]IExpression, 0)
 	for _, item := range expr.Items {
-		items = append(items, poolConstants(sourceCode, item, stringConstants, identifierNames))
+		items = append(items, p.poolConstants(item))
 	}
 
 	return &RecordExpr{
@@ -463,14 +382,10 @@ func poolRecordExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolStringLiteralExpr(
-	sourceCode string,
-	expr *prior.StringLiteralExpr,
-	stringConstants *pools.StringPool,
-) IExpression {
-	text := expr.SourcePosition.GetText(sourceCode)
+func (p *pooler) poolStringLiteralExpr(expr *prior.StringLiteralExpr) IExpression {
+	text := expr.SourcePosition.GetText(p.SourceCode)
 	var value string
 
 	switch expr.Delimiters {
@@ -482,7 +397,7 @@ func poolStringLiteralExpr(
 		panic("TODO: Unhandled string delimiters")
 	}
 
-	valueIndex := stringConstants.Put(value)
+	valueIndex := p.StringConstants.Put(value)
 
 	// TODO: escape chars
 	return &StringLiteralExpr{
@@ -491,16 +406,11 @@ func poolStringLiteralExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func poolSubtractionExpr(
-	sourceCode string,
-	expr *prior.SubtractionExpr,
-	stringConstants *pools.StringPool,
-	identifierNames *pools.StringPool,
-) IExpression {
-	lhs := poolConstants(sourceCode, expr.Lhs, stringConstants, identifierNames)
-	rhs := poolConstants(sourceCode, expr.Rhs, stringConstants, identifierNames)
+func (p *pooler) poolSubtractionExpr(expr *prior.SubtractionExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
 	return &SubtractionExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -508,4 +418,4 @@ func poolSubtractionExpr(
 	}
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------

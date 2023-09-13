@@ -9,106 +9,128 @@ package formatting
 
 import (
 	"fmt"
-	"lligne-cli/internal/lligne/code/parsing"
+	prior "lligne-cli/internal/lligne/code/parsing"
+	"lligne-cli/internal/lligne/runtime/pools"
 	"strings"
 )
 
 //=====================================================================================================================
 
-func FormatCode(parseOutcome *parsing.Outcome) string {
-	return formatCode(parseOutcome.SourceCode, parseOutcome.Model)
+func FormatCode(parseOutcome *prior.Outcome) string {
+	formatter := newFormatter(parseOutcome)
+	return formatter.formatCode(parseOutcome.Model)
 }
 
 //=====================================================================================================================
 
-func formatCode(origSourceCode string, expression parsing.IExpression) string {
+type formatter struct {
+	SourceCode      string
+	NewLineOffsets  []uint32
+	StringConstants *pools.StringPool
+	IdentifierNames *pools.StringPool
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func newFormatter(priorOutcome *prior.Outcome) *formatter {
+	return &formatter{
+		SourceCode:      priorOutcome.SourceCode,
+		NewLineOffsets:  priorOutcome.NewLineOffsets,
+		StringConstants: pools.NewStringPool(),
+		IdentifierNames: pools.NewStringPool(),
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (f *formatter) formatCode(expression prior.IExpression) string {
 
 	switch expr := expression.(type) {
 
-	case *parsing.AdditionExpr:
-		return formatAdditionExpr(origSourceCode, expr)
-	case *parsing.ArrayLiteralExpr:
-		return formatSequenceLiteralExpr(origSourceCode, expr)
-	case *parsing.BooleanLiteralExpr:
-		return formatBooleanLiteralExpr(expr)
-	case *parsing.BuiltInTypeExpr:
-		return formatBuiltInTypeExpr(origSourceCode, expr)
-	case *parsing.DivisionExpr:
-		return formatDivisionExpr(origSourceCode, expr)
-	case *parsing.EqualsExpr:
-		return formatEqualsExpr(origSourceCode, expr)
-	case *parsing.FieldReferenceExpr:
-		return formatFieldReferenceExpr(origSourceCode, expr)
-	case *parsing.Float64LiteralExpr:
-		return formatFloatingPointLiteralExpr(origSourceCode, expr)
-	case *parsing.FunctionArgumentsExpr:
-		return formatFunctionArgumentsExpr(origSourceCode, expr)
-	case *parsing.FunctionArrowExpr:
-		return formatFunctionArrowExpr(origSourceCode, expr)
-	case *parsing.FunctionCallExpr:
-		return formatFunctionCallExpr(origSourceCode, expr)
-	case *parsing.GreaterThanExpr:
-		return formatGreaterThanExpr(origSourceCode, expr)
-	case *parsing.GreaterThanOrEqualsExpr:
-		return formatGreaterThanOrEqualsExpr(origSourceCode, expr)
-	case *parsing.IdentifierExpr:
-		return formatIdentifierExpr(origSourceCode, expr)
-	case *parsing.InExpr:
-		return formatInExpr(origSourceCode, expr)
-	case *parsing.IsExpr:
-		return formatIsExpr(origSourceCode, expr)
-	case *parsing.Int64LiteralExpr:
-		return formatIntegerLiteralExpr(origSourceCode, expr)
-	case *parsing.IntersectAssignValueExpr:
-		return formatIntersectAssignValueExpr(origSourceCode, expr)
-	case *parsing.IntersectExpr:
-		return formatIntersectExpr(origSourceCode, expr)
-	case *parsing.IntersectDefaultValueExpr:
-		return formatIntersectDefaultValueExpr(origSourceCode, expr)
-	case *parsing.IntersectLowPrecedenceExpr:
-		return formatIntersectLowPrecedenceExpr(origSourceCode, expr)
-	case *parsing.LessThanExpr:
-		return formatLessThanExpr(origSourceCode, expr)
-	case *parsing.LessThanOrEqualsExpr:
-		return formatLessThanOrEqualsExpr(origSourceCode, expr)
-	case *parsing.LogicalAndExpr:
-		return formatLogicalAndExpr(origSourceCode, expr)
-	case *parsing.LogicalNotOperationExpr:
-		return formatLogicalNotOperationExpr(origSourceCode, expr)
-	case *parsing.LogicalOrExpr:
-		return formatLogicalOrExpr(origSourceCode, expr)
-	case *parsing.MatchExpr:
-		return formatMatchExpr(origSourceCode, expr)
-	case *parsing.MultiplicationExpr:
-		return formatMultiplicationExpr(origSourceCode, expr)
-	case *parsing.NegationOperationExpr:
-		return formatNegationOperationExpr(origSourceCode, expr)
-	case *parsing.NotEqualsExpr:
-		return formatNotEqualsExpr(origSourceCode, expr)
-	case *parsing.NotMatchExpr:
-		return formatNotMatchExpr(origSourceCode, expr)
-	case *parsing.OptionalExpr:
-		return formatOptionalExpr(origSourceCode, expr)
-	case *parsing.ParenthesizedExpr:
-		return formatParenthesizedExpr(origSourceCode, expr)
-	case *parsing.QualifyExpr:
-		return formatQualifyExpr(origSourceCode, expr)
-	case *parsing.RangeExpr:
-		return formatRangeExpr(origSourceCode, expr)
-	case *parsing.RecordExpr:
-		return formatRecordExpr(origSourceCode, expr)
-	case *parsing.StringLiteralExpr:
-		return formatStringLiteralExpr(origSourceCode, expr)
-	case *parsing.SubtractionExpr:
-		return formatSubtractionExpr(origSourceCode, expr)
-	case *parsing.UnionExpr:
-		return formatUnionExpr(origSourceCode, expr)
-	case *parsing.UnitExpr:
-		return formatUnitExpr(origSourceCode, expr)
-	case *parsing.WhenExpr:
-		return formatWhenExpr(origSourceCode, expr)
-	case *parsing.WhereExpr:
-		return formatWhereExpr(origSourceCode, expr)
+	case *prior.AdditionExpr:
+		return f.formatAdditionExpr(expr)
+	case *prior.ArrayLiteralExpr:
+		return f.formatSequenceLiteralExpr(expr)
+	case *prior.BooleanLiteralExpr:
+		return f.formatBooleanLiteralExpr(expr)
+	case *prior.BuiltInTypeExpr:
+		return f.formatBuiltInTypeExpr(expr)
+	case *prior.DivisionExpr:
+		return f.formatDivisionExpr(expr)
+	case *prior.EqualsExpr:
+		return f.formatEqualsExpr(expr)
+	case *prior.FieldReferenceExpr:
+		return f.formatFieldReferenceExpr(expr)
+	case *prior.Float64LiteralExpr:
+		return f.formatFloatingPointLiteralExpr(expr)
+	case *prior.FunctionArgumentsExpr:
+		return f.formatFunctionArgumentsExpr(expr)
+	case *prior.FunctionArrowExpr:
+		return f.formatFunctionArrowExpr(expr)
+	case *prior.FunctionCallExpr:
+		return f.formatFunctionCallExpr(expr)
+	case *prior.GreaterThanExpr:
+		return f.formatGreaterThanExpr(expr)
+	case *prior.GreaterThanOrEqualsExpr:
+		return f.formatGreaterThanOrEqualsExpr(expr)
+	case *prior.IdentifierExpr:
+		return f.formatIdentifierExpr(expr)
+	case *prior.InExpr:
+		return f.formatInExpr(expr)
+	case *prior.IsExpr:
+		return f.formatIsExpr(expr)
+	case *prior.Int64LiteralExpr:
+		return f.formatIntegerLiteralExpr(expr)
+	case *prior.IntersectAssignValueExpr:
+		return f.formatIntersectAssignValueExpr(expr)
+	case *prior.IntersectExpr:
+		return f.formatIntersectExpr(expr)
+	case *prior.IntersectDefaultValueExpr:
+		return f.formatIntersectDefaultValueExpr(expr)
+	case *prior.IntersectLowPrecedenceExpr:
+		return f.formatIntersectLowPrecedenceExpr(expr)
+	case *prior.LessThanExpr:
+		return f.formatLessThanExpr(expr)
+	case *prior.LessThanOrEqualsExpr:
+		return f.formatLessThanOrEqualsExpr(expr)
+	case *prior.LogicalAndExpr:
+		return f.formatLogicalAndExpr(expr)
+	case *prior.LogicalNotOperationExpr:
+		return f.formatLogicalNotOperationExpr(expr)
+	case *prior.LogicalOrExpr:
+		return f.formatLogicalOrExpr(expr)
+	case *prior.MatchExpr:
+		return f.formatMatchExpr(expr)
+	case *prior.MultiplicationExpr:
+		return f.formatMultiplicationExpr(expr)
+	case *prior.NegationOperationExpr:
+		return f.formatNegationOperationExpr(expr)
+	case *prior.NotEqualsExpr:
+		return f.formatNotEqualsExpr(expr)
+	case *prior.NotMatchExpr:
+		return f.formatNotMatchExpr(expr)
+	case *prior.OptionalExpr:
+		return f.formatOptionalExpr(expr)
+	case *prior.ParenthesizedExpr:
+		return f.formatParenthesizedExpr(expr)
+	case *prior.QualifyExpr:
+		return f.formatQualifyExpr(expr)
+	case *prior.RangeExpr:
+		return f.formatRangeExpr(expr)
+	case *prior.RecordExpr:
+		return f.formatRecordExpr(expr)
+	case *prior.StringLiteralExpr:
+		return f.formatStringLiteralExpr(expr)
+	case *prior.SubtractionExpr:
+		return f.formatSubtractionExpr(expr)
+	case *prior.UnionExpr:
+		return f.formatUnionExpr(expr)
+	case *prior.UnitExpr:
+		return f.formatUnitExpr()
+	case *prior.WhenExpr:
+		return f.formatWhenExpr(expr)
+	case *prior.WhereExpr:
+		return f.formatWhereExpr(expr)
 
 	default:
 		panic(fmt.Sprintf("Missing case in formatCode: %T\n", expression))
@@ -117,62 +139,62 @@ func formatCode(origSourceCode string, expression parsing.IExpression) string {
 
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatAdditionExpr(sourceCode string, expr *parsing.AdditionExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatAdditionExpr(expr *prior.AdditionExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " + " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatBooleanLiteralExpr(expr *parsing.BooleanLiteralExpr) string {
+func (f *formatter) formatBooleanLiteralExpr(expr *prior.BooleanLiteralExpr) string {
 	if expr.Value {
 		return "true"
 	}
 	return "false"
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatBuiltInTypeExpr(sourceCode string, expr *parsing.BuiltInTypeExpr) string {
-	return expr.SourcePosition.GetText(sourceCode)
+func (f *formatter) formatBuiltInTypeExpr(expr *prior.BuiltInTypeExpr) string {
+	return expr.SourcePosition.GetText(f.SourceCode)
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatDivisionExpr(sourceCode string, expr *parsing.DivisionExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatDivisionExpr(expr *prior.DivisionExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " / " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatEqualsExpr(sourceCode string, expr *parsing.EqualsExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatEqualsExpr(expr *prior.EqualsExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " == " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatFieldReferenceExpr(sourceCode string, expr *parsing.FieldReferenceExpr) string {
-	lhs := formatCode(sourceCode, expr.Parent)
-	rhs := formatCode(sourceCode, expr.Child)
+func (f *formatter) formatFieldReferenceExpr(expr *prior.FieldReferenceExpr) string {
+	lhs := f.formatCode(expr.Parent)
+	rhs := f.formatCode(expr.Child)
 	return lhs + "." + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatFloatingPointLiteralExpr(sourceCode string, expr *parsing.Float64LiteralExpr) string {
-	return expr.SourcePosition.GetText(sourceCode)
+func (f *formatter) formatFloatingPointLiteralExpr(expr *prior.Float64LiteralExpr) string {
+	return expr.SourcePosition.GetText(f.SourceCode)
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatFunctionArgumentsExpr(sourceCode string, expr *parsing.FunctionArgumentsExpr) string {
+func (f *formatter) formatFunctionArgumentsExpr(expr *prior.FunctionArgumentsExpr) string {
 
 	sb := strings.Builder{}
 
@@ -180,11 +202,11 @@ func formatFunctionArgumentsExpr(sourceCode string, expr *parsing.FunctionArgume
 
 	if len(expr.Items) > 0 {
 
-		sb.WriteString(formatCode(sourceCode, expr.Items[0]))
+		sb.WriteString(f.formatCode(expr.Items[0]))
 
 		for _, item := range expr.Items[1:] {
 			sb.WriteString(", ")
-			sb.WriteString(formatCode(sourceCode, item))
+			sb.WriteString(f.formatCode(item))
 		}
 
 	}
@@ -195,189 +217,189 @@ func formatFunctionArgumentsExpr(sourceCode string, expr *parsing.FunctionArgume
 
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatFunctionArrowExpr(sourceCode string, expr *parsing.FunctionArrowExpr) string {
-	arg := formatCode(sourceCode, expr.Argument)
-	result := formatCode(sourceCode, expr.Result)
+func (f *formatter) formatFunctionArrowExpr(expr *prior.FunctionArrowExpr) string {
+	arg := f.formatCode(expr.Argument)
+	result := f.formatCode(expr.Result)
 	return arg + " -> " + result
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatFunctionCallExpr(sourceCode string, expr *parsing.FunctionCallExpr) string {
-	fun := formatCode(sourceCode, expr.FunctionReference)
-	arg := formatCode(sourceCode, expr.Argument)
+func (f *formatter) formatFunctionCallExpr(expr *prior.FunctionCallExpr) string {
+	fun := f.formatCode(expr.FunctionReference)
+	arg := f.formatCode(expr.Argument)
 	return fun + arg
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatGreaterThanExpr(sourceCode string, expr *parsing.GreaterThanExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatGreaterThanExpr(expr *prior.GreaterThanExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " > " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatGreaterThanOrEqualsExpr(sourceCode string, expr *parsing.GreaterThanOrEqualsExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatGreaterThanOrEqualsExpr(expr *prior.GreaterThanOrEqualsExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " >= " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatIdentifierExpr(sourceCode string, expr *parsing.IdentifierExpr) string {
-	return expr.SourcePosition.GetText(sourceCode)
+func (f *formatter) formatIdentifierExpr(expr *prior.IdentifierExpr) string {
+	return expr.SourcePosition.GetText(f.SourceCode)
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatInExpr(sourceCode string, expr *parsing.InExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatInExpr(expr *prior.InExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " in " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatIsExpr(sourceCode string, expr *parsing.IsExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatIsExpr(expr *prior.IsExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " is " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatIntegerLiteralExpr(sourceCode string, expr *parsing.Int64LiteralExpr) string {
-	return expr.SourcePosition.GetText(sourceCode)
+func (f *formatter) formatIntegerLiteralExpr(expr *prior.Int64LiteralExpr) string {
+	return expr.SourcePosition.GetText(f.SourceCode)
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatIntersectAssignValueExpr(sourceCode string, expr *parsing.IntersectAssignValueExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatIntersectAssignValueExpr(expr *prior.IntersectAssignValueExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " = " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatIntersectExpr(sourceCode string, expr *parsing.IntersectExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatIntersectExpr(expr *prior.IntersectExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " & " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatIntersectDefaultValueExpr(sourceCode string, expr *parsing.IntersectDefaultValueExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatIntersectDefaultValueExpr(expr *prior.IntersectDefaultValueExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " ?: " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatIntersectLowPrecedenceExpr(sourceCode string, expr *parsing.IntersectLowPrecedenceExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatIntersectLowPrecedenceExpr(expr *prior.IntersectLowPrecedenceExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " && " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatLessThanExpr(sourceCode string, expr *parsing.LessThanExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatLessThanExpr(expr *prior.LessThanExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " < " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatLessThanOrEqualsExpr(sourceCode string, expr *parsing.LessThanOrEqualsExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatLessThanOrEqualsExpr(expr *prior.LessThanOrEqualsExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " <= " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatLogicalAndExpr(sourceCode string, expr *parsing.LogicalAndExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatLogicalAndExpr(expr *prior.LogicalAndExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " and " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatLogicalNotOperationExpr(sourceCode string, expr *parsing.LogicalNotOperationExpr) string {
-	return "not " + formatCode(sourceCode, expr.Operand)
+func (f *formatter) formatLogicalNotOperationExpr(expr *prior.LogicalNotOperationExpr) string {
+	return "not " + f.formatCode(expr.Operand)
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatLogicalOrExpr(sourceCode string, expr *parsing.LogicalOrExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatLogicalOrExpr(expr *prior.LogicalOrExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " or " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatMatchExpr(sourceCode string, expr *parsing.MatchExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatMatchExpr(expr *prior.MatchExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " =~ " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatMultiplicationExpr(sourceCode string, expr *parsing.MultiplicationExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatMultiplicationExpr(expr *prior.MultiplicationExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " * " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatNegationOperationExpr(sourceCode string, expr *parsing.NegationOperationExpr) string {
-	return "-" + formatCode(sourceCode, expr.Operand)
+func (f *formatter) formatNegationOperationExpr(expr *prior.NegationOperationExpr) string {
+	return "-" + f.formatCode(expr.Operand)
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatNotEqualsExpr(sourceCode string, expr *parsing.NotEqualsExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatNotEqualsExpr(expr *prior.NotEqualsExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " != " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatNotMatchExpr(sourceCode string, expr *parsing.NotMatchExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatNotMatchExpr(expr *prior.NotMatchExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " !~ " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatOptionalExpr(sourceCode string, expr *parsing.OptionalExpr) string {
-	return formatCode(sourceCode, expr.Operand) + "?"
+func (f *formatter) formatOptionalExpr(expr *prior.OptionalExpr) string {
+	return f.formatCode(expr.Operand) + "?"
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatParenthesizedExpr(sourceCode string, expr *parsing.ParenthesizedExpr) string {
+func (f *formatter) formatParenthesizedExpr(expr *prior.ParenthesizedExpr) string {
 
 	sb := strings.Builder{}
 
 	sb.WriteString("(")
 
-	sb.WriteString(formatCode(sourceCode, expr.InnerExpr))
+	sb.WriteString(f.formatCode(expr.InnerExpr))
 
 	sb.WriteString(")")
 
@@ -385,25 +407,25 @@ func formatParenthesizedExpr(sourceCode string, expr *parsing.ParenthesizedExpr)
 
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatQualifyExpr(sourceCode string, expr *parsing.QualifyExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatQualifyExpr(expr *prior.QualifyExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + ": " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatRangeExpr(sourceCode string, expr *parsing.RangeExpr) string {
-	first := formatCode(sourceCode, expr.First)
-	last := formatCode(sourceCode, expr.Last)
+func (f *formatter) formatRangeExpr(expr *prior.RangeExpr) string {
+	first := f.formatCode(expr.First)
+	last := f.formatCode(expr.Last)
 	return first + ".." + last
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatRecordExpr(sourceCode string, expr *parsing.RecordExpr) string {
+func (f *formatter) formatRecordExpr(expr *prior.RecordExpr) string {
 
 	sb := strings.Builder{}
 
@@ -411,11 +433,11 @@ func formatRecordExpr(sourceCode string, expr *parsing.RecordExpr) string {
 
 	if len(expr.Items) > 0 {
 
-		sb.WriteString(formatCode(sourceCode, expr.Items[0]))
+		sb.WriteString(f.formatCode(expr.Items[0]))
 
 		for _, item := range expr.Items[1:] {
 			sb.WriteString(", ")
-			sb.WriteString(formatCode(sourceCode, item))
+			sb.WriteString(f.formatCode(item))
 		}
 
 	}
@@ -426,9 +448,9 @@ func formatRecordExpr(sourceCode string, expr *parsing.RecordExpr) string {
 
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatSequenceLiteralExpr(sourceCode string, expr *parsing.ArrayLiteralExpr) string {
+func (f *formatter) formatSequenceLiteralExpr(expr *prior.ArrayLiteralExpr) string {
 
 	sb := strings.Builder{}
 
@@ -436,11 +458,11 @@ func formatSequenceLiteralExpr(sourceCode string, expr *parsing.ArrayLiteralExpr
 
 	if len(expr.Elements) > 0 {
 
-		sb.WriteString(formatCode(sourceCode, expr.Elements[0]))
+		sb.WriteString(f.formatCode(expr.Elements[0]))
 
 		for _, item := range expr.Elements[1:] {
 			sb.WriteString(", ")
-			sb.WriteString(formatCode(sourceCode, item))
+			sb.WriteString(f.formatCode(item))
 		}
 
 	}
@@ -451,48 +473,48 @@ func formatSequenceLiteralExpr(sourceCode string, expr *parsing.ArrayLiteralExpr
 
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatStringLiteralExpr(sourceCode string, expr *parsing.StringLiteralExpr) string {
-	return expr.SourcePosition.GetText(sourceCode)
+func (f *formatter) formatStringLiteralExpr(expr *prior.StringLiteralExpr) string {
+	return expr.SourcePosition.GetText(f.SourceCode)
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatSubtractionExpr(sourceCode string, expr *parsing.SubtractionExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatSubtractionExpr(expr *prior.SubtractionExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " - " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatUnionExpr(sourceCode string, expr *parsing.UnionExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatUnionExpr(expr *prior.UnionExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " | " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatUnitExpr(sourceCode string, expr *parsing.UnitExpr) string {
+func (f *formatter) formatUnitExpr() string {
 	return "()"
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatWhenExpr(sourceCode string, expr *parsing.WhenExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatWhenExpr(expr *prior.WhenExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " when " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
-func formatWhereExpr(sourceCode string, expr *parsing.WhereExpr) string {
-	lhs := formatCode(sourceCode, expr.Lhs)
-	rhs := formatCode(sourceCode, expr.Rhs)
+func (f *formatter) formatWhereExpr(expr *prior.WhereExpr) string {
+	lhs := f.formatCode(expr.Lhs)
+	rhs := f.formatCode(expr.Rhs)
 	return lhs + " where " + rhs
 }
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
