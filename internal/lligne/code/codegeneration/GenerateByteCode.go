@@ -124,6 +124,8 @@ func (g *generator) buildCodeBlock(expression prior.IExpression) {
 		g.buildStringLiteralCodeBlock(expr)
 	case *prior.SubtractionExpr:
 		g.buildSubtractionCodeBlock(expr)
+	case *prior.WhereExpr:
+		g.buildWhereCodeBlock(expr)
 	default:
 		panic(fmt.Sprintf("Missing case in buildCodeBlock: %T\n", expression))
 
@@ -499,6 +501,14 @@ func (g *generator) buildSubtractionCodeBlock(expr *prior.SubtractionExpr) {
 			panic(fmt.Sprintf("Missing case in buildSubtractionCodeBlock: %d\n", expr.TypeIndex))
 		}
 	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (g *generator) buildWhereCodeBlock(expr *prior.WhereExpr) {
+	g.buildCodeBlock(expr.Rhs)
+	g.buildCodeBlock(expr.Lhs)
+	g.CodeBlock.StackPopSecond()
 }
 
 //---------------------------------------------------------------------------------------------------------------------

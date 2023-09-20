@@ -412,6 +412,21 @@ func init() {
 		// TO DO
 	}
 
+	dispatch[OpCodeStackPop] = func(n *Interpreter, m *Machine) {
+		m.Top -= 1
+	}
+
+	dispatch[OpCodeStackPopSecond] = func(n *Interpreter, m *Machine) {
+		m.Stack[m.Top-1] = m.Stack[m.Top]
+		m.Top -= 1
+	}
+
+	dispatch[OpCodeStackSwapTopTwo] = func(n *Interpreter, m *Machine) {
+		tmp := m.Stack[m.Top]
+		m.Stack[m.Top] = m.Stack[m.Top-1]
+		m.Stack[m.Top-1] = tmp
+	}
+
 	dispatch[OpCodeStop] = func(n *Interpreter, m *Machine) {
 		m.IsRunning = false
 	}

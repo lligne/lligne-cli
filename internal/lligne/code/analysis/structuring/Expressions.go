@@ -379,3 +379,15 @@ func (e *TrailingDocumentationExpr) GetSourcePosition() util.SourcePos {
 func (e *TrailingDocumentationExpr) isStructuredExpression() {}
 
 //=====================================================================================================================
+
+// WhereExpr represents a where ("where") operation.
+type WhereExpr struct {
+	SourcePosition util.SourcePos
+	Lhs            IExpression
+	Rhs            IExpression
+}
+
+func (e *WhereExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
+func (e *WhereExpr) isStructuredExpression()           {}
+
+//=====================================================================================================================

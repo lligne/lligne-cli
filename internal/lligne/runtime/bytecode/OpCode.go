@@ -71,6 +71,11 @@ const (
 	OpCodeRecordNotEquals
 	OpCodeRecordStore
 
+	// Stack Operations
+	OpCodeStackPop
+	OpCodeStackPopSecond
+	OpCodeStackSwapTopTwo
+
 	OpCode_Count
 )
 

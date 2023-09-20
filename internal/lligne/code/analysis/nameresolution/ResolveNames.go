@@ -5,11 +5,11 @@
 // Apache 2.0 License
 //
 
-package structuring
+package nameresolution
 
 import (
 	"fmt"
-	prior "lligne-cli/internal/lligne/code/analysis/pooling"
+	prior "lligne-cli/internal/lligne/code/analysis/structuring"
 	"lligne-cli/internal/lligne/runtime/pools"
 )
 
@@ -25,11 +25,12 @@ type Outcome struct {
 
 //=====================================================================================================================
 
-func StructureRecords(priorOutcome *prior.Outcome) *Outcome {
+func ResolveNames(priorOutcome *prior.Outcome) *Outcome {
 
-	s := newStructurer(priorOutcome)
+	s := newNameResolver(priorOutcome)
+	context := newNameResolutionContext()
 
-	model := s.structureRecords(priorOutcome.Model)
+	model := s.resolveNames(priorOutcome.Model, context)
 
 	return &Outcome{
 		SourceCode:      priorOutcome.SourceCode,
@@ -42,7 +43,7 @@ func StructureRecords(priorOutcome *prior.Outcome) *Outcome {
 
 //=====================================================================================================================
 
-type structurer struct {
+type nameResolver struct {
 	SourceCode      string
 	NewLineOffsets  []uint32
 	StringConstants *pools.StringConstantPool
@@ -51,8 +52,8 @@ type structurer struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func newStructurer(priorOutcome *prior.Outcome) *structurer {
-	return &structurer{
+func newNameResolver(priorOutcome *prior.Outcome) *nameResolver {
+	return &nameResolver{
 		SourceCode:      priorOutcome.SourceCode,
 		NewLineOffsets:  priorOutcome.NewLineOffsets,
 		StringConstants: priorOutcome.StringConstants,
@@ -62,65 +63,66 @@ func newStructurer(priorOutcome *prior.Outcome) *structurer {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureRecords(
+func (s *nameResolver) resolveNames(
 	expression prior.IExpression,
+	context *nameResolutionContext,
 ) IExpression {
 
 	switch expr := expression.(type) {
 
 	case *prior.AdditionExpr:
-		return s.structureAdditionExpr(expr)
+		return s.resolveAdditionExpr(expr, context)
 	case *prior.BooleanLiteralExpr:
-		return s.structureBooleanLiteralExpr(expr)
+		return s.resolveBooleanLiteralExpr(expr)
 	case *prior.BuiltInTypeExpr:
-		return s.structureBuiltInTypeExpr(expr)
+		return s.resolveBuiltInTypeExpr(expr)
 	case *prior.DivisionExpr:
-		return s.structureDivisionExpr(expr)
+		return s.resolveDivisionExpr(expr, context)
 	case *prior.EqualsExpr:
-		return s.structureEqualsExpr(expr)
+		return s.resolveEqualsExpr(expr, context)
 	case *prior.FieldReferenceExpr:
-		return s.structureFieldReferenceExpr(expr)
+		return s.resolveFieldReferenceExpr(expr, context)
 	case *prior.Float64LiteralExpr:
-		return s.structureFloatingPointLiteralExpr(expr)
+		return s.resolveFloatingPointLiteralExpr(expr)
 	case *prior.GreaterThanExpr:
-		return s.structureGreaterThanExpr(expr)
+		return s.resolveGreaterThanExpr(expr, context)
 	case *prior.GreaterThanOrEqualsExpr:
-		return s.structureGreaterThanOrEqualsExpr(expr)
+		return s.resolveGreaterThanOrEqualsExpr(expr, context)
 	case *prior.IdentifierExpr:
-		return s.structureIdentifierExpr(expr)
+		return s.resolveIdentifierExpr(expr, context)
 	case *prior.Int64LiteralExpr:
-		return s.structureIntegerLiteralExpr(expr)
+		return s.resolveIntegerLiteralExpr(expr)
 	case *prior.IsExpr:
-		return s.structureIsExpr(expr)
+		return s.resolveIsExpr(expr, context)
 	case *prior.LessThanExpr:
-		return s.structureLessThanExpr(expr)
+		return s.resolveLessThanExpr(expr, context)
 	case *prior.LessThanOrEqualsExpr:
-		return s.structureLessThanOrEqualsExpr(expr)
+		return s.resolveLessThanOrEqualsExpr(expr, context)
 	case *prior.LogicalAndExpr:
-		return s.structureLogicalAndExpr(expr)
+		return s.resolveLogicalAndExpr(expr, context)
 	case *prior.LogicalNotOperationExpr:
-		return s.structureLogicalNotOperationExpr(expr)
+		return s.resolveLogicalNotOperationExpr(expr, context)
 	case *prior.LogicalOrExpr:
-		return s.structureLogicalOrExpr(expr)
+		return s.resolveLogicalOrExpr(expr, context)
 	case *prior.MultiplicationExpr:
-		return s.structureMultiplicationExpr(expr)
+		return s.resolveMultiplicationExpr(expr, context)
 	case *prior.NegationOperationExpr:
-		return s.structureNegationOperationExpr(expr)
+		return s.resolveNegationOperationExpr(expr, context)
 	case *prior.NotEqualsExpr:
-		return s.structureNotEqualsExpr(expr)
+		return s.resolveNotEqualsExpr(expr, context)
 	case *prior.ParenthesizedExpr:
-		return s.structureParenthesizedExpr(expr)
+		return s.resolveParenthesizedExpr(expr, context)
 	case *prior.RecordExpr:
-		return s.structureRecordExpr(expr)
+		return s.resolveRecordExpr(expr, context)
 	case *prior.StringLiteralExpr:
-		return s.structureStringLiteralExpr(expr)
+		return s.resolveStringLiteralExpr(expr)
 	case *prior.SubtractionExpr:
-		return s.structureSubtractionExpr(expr)
+		return s.resolveSubtractionExpr(expr, context)
 	case *prior.WhereExpr:
-		return s.structureWhereExpr(expr)
+		return s.resolveWhereExpr(expr, context)
 
 	default:
-		panic(fmt.Sprintf("Missing case in structureRecords: %T\n", expression))
+		panic(fmt.Sprintf("Missing case in resolveNames: %T\n", expression))
 
 	}
 
@@ -128,11 +130,12 @@ func (s *structurer) structureRecords(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureAdditionExpr(
+func (s *nameResolver) resolveAdditionExpr(
 	expr *prior.AdditionExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &AdditionExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -142,7 +145,7 @@ func (s *structurer) structureAdditionExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureBooleanLiteralExpr(expr *prior.BooleanLiteralExpr) IExpression {
+func (s *nameResolver) resolveBooleanLiteralExpr(expr *prior.BooleanLiteralExpr) IExpression {
 	return &BooleanLiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          expr.Value,
@@ -151,7 +154,7 @@ func (s *structurer) structureBooleanLiteralExpr(expr *prior.BooleanLiteralExpr)
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureBuiltInTypeExpr(expr *prior.BuiltInTypeExpr) IExpression {
+func (s *nameResolver) resolveBuiltInTypeExpr(expr *prior.BuiltInTypeExpr) IExpression {
 	return &BuiltInTypeExpr{
 		SourcePosition: expr.SourcePosition,
 	}
@@ -159,11 +162,12 @@ func (s *structurer) structureBuiltInTypeExpr(expr *prior.BuiltInTypeExpr) IExpr
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureDivisionExpr(
+func (s *nameResolver) resolveDivisionExpr(
 	expr *prior.DivisionExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &DivisionExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -173,11 +177,12 @@ func (s *structurer) structureDivisionExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureEqualsExpr(
+func (s *nameResolver) resolveEqualsExpr(
 	expr *prior.EqualsExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &EqualsExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -187,11 +192,12 @@ func (s *structurer) structureEqualsExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureFieldReferenceExpr(
+func (s *nameResolver) resolveFieldReferenceExpr(
 	expr *prior.FieldReferenceExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	parent := s.structureRecords(expr.Parent)
-	child := s.structureRecords(expr.Child)
+	parent := s.resolveNames(expr.Parent, context)
+	child := s.resolveNames(expr.Child, context.withFieldReferenceLhs(parent))
 	return &FieldReferenceExpr{
 		SourcePosition: expr.SourcePosition,
 		Parent:         parent,
@@ -201,7 +207,7 @@ func (s *structurer) structureFieldReferenceExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureFloatingPointLiteralExpr(expr *prior.Float64LiteralExpr) IExpression {
+func (s *nameResolver) resolveFloatingPointLiteralExpr(expr *prior.Float64LiteralExpr) IExpression {
 	return &Float64LiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          expr.Value,
@@ -210,11 +216,12 @@ func (s *structurer) structureFloatingPointLiteralExpr(expr *prior.Float64Litera
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureGreaterThanExpr(
+func (s *nameResolver) resolveGreaterThanExpr(
 	expr *prior.GreaterThanExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &GreaterThanExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -224,11 +231,12 @@ func (s *structurer) structureGreaterThanExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureGreaterThanOrEqualsExpr(
+func (s *nameResolver) resolveGreaterThanOrEqualsExpr(
 	expr *prior.GreaterThanOrEqualsExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &GreaterThanOrEqualsExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -238,18 +246,20 @@ func (s *structurer) structureGreaterThanOrEqualsExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureIdentifierExpr(
+func (s *nameResolver) resolveIdentifierExpr(
 	expr *prior.IdentifierExpr,
+	context *nameResolutionContext,
 ) IExpression {
 	return &IdentifierExpr{
 		SourcePosition: expr.SourcePosition,
 		NameIndex:      expr.NameIndex,
+		// TODO: fields from resolving the name
 	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureIntegerLiteralExpr(expr *prior.Int64LiteralExpr) IExpression {
+func (s *nameResolver) resolveIntegerLiteralExpr(expr *prior.Int64LiteralExpr) IExpression {
 	return &Int64LiteralExpr{
 		SourcePosition: expr.SourcePosition,
 		Value:          expr.Value,
@@ -258,11 +268,12 @@ func (s *structurer) structureIntegerLiteralExpr(expr *prior.Int64LiteralExpr) I
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureIsExpr(
+func (s *nameResolver) resolveIsExpr(
 	expr *prior.IsExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &IsExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -272,11 +283,12 @@ func (s *structurer) structureIsExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureLessThanExpr(
+func (s *nameResolver) resolveLessThanExpr(
 	expr *prior.LessThanExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &LessThanExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -286,11 +298,12 @@ func (s *structurer) structureLessThanExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureLessThanOrEqualsExpr(
+func (s *nameResolver) resolveLessThanOrEqualsExpr(
 	expr *prior.LessThanOrEqualsExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &LessThanOrEqualsExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -300,11 +313,12 @@ func (s *structurer) structureLessThanOrEqualsExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureLogicalAndExpr(
+func (s *nameResolver) resolveLogicalAndExpr(
 	expr *prior.LogicalAndExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &LogicalAndExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -314,10 +328,11 @@ func (s *structurer) structureLogicalAndExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureLogicalNotOperationExpr(
+func (s *nameResolver) resolveLogicalNotOperationExpr(
 	expr *prior.LogicalNotOperationExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	operand := s.structureRecords(expr.Operand)
+	operand := s.resolveNames(expr.Operand, context)
 	return &LogicalNotOperationExpr{
 		SourcePosition: expr.SourcePosition,
 		Operand:        operand,
@@ -326,11 +341,12 @@ func (s *structurer) structureLogicalNotOperationExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureLogicalOrExpr(
+func (s *nameResolver) resolveLogicalOrExpr(
 	expr *prior.LogicalOrExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &LogicalOrExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -340,11 +356,12 @@ func (s *structurer) structureLogicalOrExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureMultiplicationExpr(
+func (s *nameResolver) resolveMultiplicationExpr(
 	expr *prior.MultiplicationExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &MultiplicationExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -354,10 +371,11 @@ func (s *structurer) structureMultiplicationExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureNegationOperationExpr(
+func (s *nameResolver) resolveNegationOperationExpr(
 	expr *prior.NegationOperationExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	operand := s.structureRecords(expr.Operand)
+	operand := s.resolveNames(expr.Operand, context)
 	return &NegationOperationExpr{
 		SourcePosition: expr.SourcePosition,
 		Operand:        operand,
@@ -366,11 +384,12 @@ func (s *structurer) structureNegationOperationExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureNotEqualsExpr(
+func (s *nameResolver) resolveNotEqualsExpr(
 	expr *prior.NotEqualsExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &NotEqualsExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -380,10 +399,11 @@ func (s *structurer) structureNotEqualsExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureParenthesizedExpr(
+func (s *nameResolver) resolveParenthesizedExpr(
 	expr *prior.ParenthesizedExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	inner := s.structureRecords(expr.InnerExpr)
+	inner := s.resolveNames(expr.InnerExpr, context)
 	return &ParenthesizedExpr{
 		SourcePosition: expr.SourcePosition,
 		InnerExpr:      inner,
@@ -392,47 +412,42 @@ func (s *structurer) structureParenthesizedExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureRecordExpr(
+func (s *nameResolver) resolveRecordExpr(
 	expr *prior.RecordExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	items := make([]*RecordFieldExpr, 0)
-	for _, item := range expr.Items {
-		fieldExpr := s.structureRecordFieldExpr(item)
-		items = append(items, fieldExpr)
+	fields := make([]*RecordFieldExpr, 0)
+	fieldNameIndexes := make([]uint64, 0)
+
+	for _, field := range expr.Fields {
+		fieldNameIndexes = append(fieldNameIndexes, field.FieldNameIndex)
+		fieldExpr := s.resolveRecordFieldExpr(field, context)
+		fields = append(fields, fieldExpr)
 	}
 
 	return &RecordExpr{
-		SourcePosition: expr.SourcePosition,
-		Fields:         items,
+		SourcePosition:   expr.SourcePosition,
+		FieldNameIndexes: fieldNameIndexes,
+		Fields:           fields,
 	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureRecordFieldExpr(
-	expr prior.IExpression,
+func (s *nameResolver) resolveRecordFieldExpr(
+	expr *prior.RecordFieldExpr,
+	context *nameResolutionContext,
 ) *RecordFieldExpr {
-
-	// TODO: Qualify and other intersection expressions
-
-	switch fieldExpr := expr.(type) {
-	case *prior.IntersectAssignValueExpr:
-		fieldNameIndex := fieldExpr.Lhs.(*prior.IdentifierExpr).NameIndex
-		value := s.structureRecords(fieldExpr.Rhs)
-		return &RecordFieldExpr{
-			SourcePosition: expr.GetSourcePosition(),
-			FieldNameIndex: fieldNameIndex,
-			FieldValue:     value,
-		}
-	default:
-		panic(fmt.Sprintf("Missing case in structureRecordFieldExpr: %T\n", expr))
+	return &RecordFieldExpr{
+		SourcePosition: expr.GetSourcePosition(),
+		FieldNameIndex: expr.FieldNameIndex,
+		FieldValue:     s.resolveNames(expr.FieldValue, context),
 	}
-
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureStringLiteralExpr(
+func (s *nameResolver) resolveStringLiteralExpr(
 	expr *prior.StringLiteralExpr,
 ) IExpression {
 	return &StringLiteralExpr{
@@ -443,11 +458,12 @@ func (s *structurer) structureStringLiteralExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureSubtractionExpr(
+func (s *nameResolver) resolveSubtractionExpr(
 	expr *prior.SubtractionExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	lhs := s.resolveNames(expr.Lhs, context)
+	rhs := s.resolveNames(expr.Rhs, context)
 	return &SubtractionExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -457,11 +473,12 @@ func (s *structurer) structureSubtractionExpr(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (s *structurer) structureWhereExpr(
+func (s *nameResolver) resolveWhereExpr(
 	expr *prior.WhereExpr,
+	context *nameResolutionContext,
 ) IExpression {
-	lhs := s.structureRecords(expr.Lhs)
-	rhs := s.structureRecords(expr.Rhs)
+	rhs := s.resolveNames(expr.Rhs, context)
+	lhs := s.resolveNames(expr.Lhs, context.withWhereRhs(rhs))
 	return &WhereExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
@@ -469,4 +486,48 @@ func (s *structurer) structureWhereExpr(
 	}
 }
 
+//=====================================================================================================================
+
+// TODO: make these maps instead of arrays
+
+type nameResolutionContext struct {
+	fieldReferenceNameIndexes           []uint64
+	whereNameIndexes                    []uint64
+	recordsUnderConstructionNameIndexes [][]uint64
+	topLevelNameIndexes                 []uint64
+}
+
 //---------------------------------------------------------------------------------------------------------------------
+
+func newNameResolutionContext() *nameResolutionContext {
+	return &nameResolutionContext{
+		fieldReferenceNameIndexes:           make([]uint64, 0),
+		whereNameIndexes:                    make([]uint64, 0),
+		recordsUnderConstructionNameIndexes: make([][]uint64, 0),
+		topLevelNameIndexes:                 make([]uint64, 0),
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (c *nameResolutionContext) withFieldReferenceLhs(fieldReferenceLhs IExpression) *nameResolutionContext {
+	return &nameResolutionContext{
+		fieldReferenceNameIndexes:           fieldReferenceLhs.GetFieldNameIndexes(),
+		whereNameIndexes:                    c.whereNameIndexes,
+		recordsUnderConstructionNameIndexes: c.recordsUnderConstructionNameIndexes,
+		topLevelNameIndexes:                 c.topLevelNameIndexes,
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (c *nameResolutionContext) withWhereRhs(whereRhs IExpression) *nameResolutionContext {
+	return &nameResolutionContext{
+		fieldReferenceNameIndexes:           c.fieldReferenceNameIndexes,
+		whereNameIndexes:                    whereRhs.GetFieldNameIndexes(),
+		recordsUnderConstructionNameIndexes: c.recordsUnderConstructionNameIndexes,
+		topLevelNameIndexes:                 c.topLevelNameIndexes,
+	}
+}
+
+//=====================================================================================================================

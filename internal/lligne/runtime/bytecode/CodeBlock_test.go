@@ -74,6 +74,10 @@ func TestCodeBlockDisassembly(t *testing.T) {
 		codeBlock.RecordFieldIndexLoad(17)
 		codeBlock.RecordNotEquals()
 
+		codeBlock.StackPop()
+		codeBlock.StackPopSecond()
+		codeBlock.StackSwapTopTwo()
+
 		codeBlock.Return()
 		codeBlock.Stop()
 
@@ -130,8 +134,11 @@ func TestCodeBlockDisassembly(t *testing.T) {
   79  RECORD_EQUALS
   80  RECORD_FLD_IDX_LOAD      17
   85  RECORD_NOT_EQUALS
-  86  RETURN
-  87  STOP
+  86  STACK_POP
+  87  STACK_POP_SECOND
+  88  STACK_SWAP_TOP_TWO
+  89  RETURN
+  90  STOP
 `
 
 		assert.Equal(t, expected, actual)

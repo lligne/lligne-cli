@@ -421,3 +421,17 @@ func (e *TrailingDocumentationExpr) GetTypeIndex() uint64              { return 
 func (e *TrailingDocumentationExpr) isTypeExpression()                 {}
 
 //=====================================================================================================================
+
+// WhereExpr represents a subtraction operation.
+type WhereExpr struct {
+	SourcePosition util.SourcePos
+	Lhs            IExpression
+	Rhs            IExpression
+	TypeIndex      uint64
+}
+
+func (e *WhereExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
+func (e *WhereExpr) GetTypeIndex() uint64              { return e.TypeIndex }
+func (e *WhereExpr) isTypeExpression()                 {}
+
+//=====================================================================================================================

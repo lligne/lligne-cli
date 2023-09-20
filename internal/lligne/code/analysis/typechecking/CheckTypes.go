@@ -9,7 +9,7 @@ package typechecking
 
 import (
 	"fmt"
-	prior "lligne-cli/internal/lligne/code/analysis/structuring"
+	prior "lligne-cli/internal/lligne/code/analysis/nameresolution"
 	"lligne-cli/internal/lligne/runtime/pools"
 	"lligne-cli/internal/lligne/runtime/types"
 )
@@ -120,6 +120,8 @@ func (t *typeChecker) checkTypes(
 		return t.typeCheckStringLiteralExpr(expr)
 	case *prior.SubtractionExpr:
 		return t.typeCheckSubtractionExpr(expr, idContexts)
+	case *prior.WhereExpr:
+		return t.typeCheckWhereExpr(expr, idContexts)
 
 	default:
 		panic(fmt.Sprintf("Missing case in checkTypes: %T\n", expression))
@@ -255,6 +257,7 @@ func (t *typeChecker) typeCheckIdentifierExpr(expr *prior.IdentifierExpr, idCont
 
 	fieldIndex := uint64(0xFFFFFFFF)
 	typeIndex := uint64(0xFFFFFFFF)
+
 outer:
 	for i := len(idContexts) - 1; i >= 0; i-- {
 		recordType := t.TypePool.Get(idContexts[i]).(*types.RecordType)
@@ -424,22 +427,24 @@ func (t *typeChecker) typeCheckParenthesizedExpr(expr *prior.ParenthesizedExpr, 
 
 func (t *typeChecker) typeCheckRecordExpr(expr *prior.RecordExpr, idContexts []uint64) IExpression {
 
-	fields := make([]*RecordFieldExpr, 0)
-	for _, field := range expr.Fields {
-		fields = append(fields, t.typeCheckRecordFieldExpr(field, idContexts))
-	}
-
 	// TODO: make sure fields are in the same order as the record type
 
+	fields := make([]*RecordFieldExpr, 0)
 	fieldNameIndexes := make([]uint64, 0)
 	fieldTypeIndexes := make([]uint64, 0)
 
-	for _, field := range fields {
+	for _, priorField := range expr.Fields {
+		// Type check each field
+		field := t.typeCheckRecordFieldExpr(priorField, idContexts)
+		fields = append(fields, field)
+
+		// Accumulate the field names and types
 		fieldTypeIndex := field.FieldValue.GetTypeIndex()
 		fieldNameIndexes = append(fieldNameIndexes, field.FieldNameIndex)
 		fieldTypeIndexes = append(fieldTypeIndexes, fieldTypeIndex)
 	}
 
+	// Build the record type from its field names and types
 	recordType := &types.RecordType{
 		FieldNameIndexes: fieldNameIndexes,
 		FieldTypeIndexes: fieldTypeIndexes,
@@ -480,6 +485,21 @@ func (t *typeChecker) typeCheckSubtractionExpr(expr *prior.SubtractionExpr, idCo
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're the same
 	return &SubtractionExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+		TypeIndex:      lhs.GetTypeIndex(),
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (t *typeChecker) typeCheckWhereExpr(expr *prior.WhereExpr, idContexts []uint64) IExpression {
+	rhs := t.checkTypes(expr.Rhs, idContexts)
+	rhsTypeIndex := rhs.GetTypeIndex()
+	lhs := t.checkTypes(expr.Lhs, append(idContexts, rhsTypeIndex))
+
+	return &WhereExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,

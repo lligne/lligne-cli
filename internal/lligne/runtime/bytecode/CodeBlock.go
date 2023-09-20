@@ -291,6 +291,24 @@ func (cb *CodeBlock) Return() {
 
 //---------------------------------------------------------------------------------------------------------------------
 
+func (cb *CodeBlock) StackPop() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeStackPop)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) StackPopSecond() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeStackPopSecond)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (cb *CodeBlock) StackSwapTopTwo() {
+	cb.OpCodes = append(cb.OpCodes, OpCodeStackSwapTopTwo)
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 func (cb *CodeBlock) Stop() {
 	cb.OpCodes = append(cb.OpCodes, OpCodeStop)
 }
@@ -454,6 +472,13 @@ func (cb *CodeBlock) Disassemble(stringPool *pools.StringPool, typePool *types.T
 
 		case OpCodeReturn:
 			write(output, ip, "RETURN")
+
+		case OpCodeStackPop:
+			write(output, ip, "STACK_POP")
+		case OpCodeStackPopSecond:
+			write(output, ip, "STACK_POP_SECOND")
+		case OpCodeStackSwapTopTwo:
+			write(output, ip, "STACK_SWAP_TOP_TWO")
 
 		case OpCodeStop:
 			write(output, ip, "STOP")

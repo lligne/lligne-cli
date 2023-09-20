@@ -10,6 +10,7 @@ package tests
 import (
 	_ "embed"
 	"github.com/stretchr/testify/assert"
+	"lligne-cli/internal/lligne/code/analysis/nameresolution"
 	"lligne-cli/internal/lligne/code/analysis/pooling"
 	"lligne-cli/internal/lligne/code/analysis/structuring"
 	"lligne-cli/internal/lligne/code/analysis/typechecking"
@@ -36,7 +37,8 @@ func TestExpressionEvaluation(t *testing.T) {
 
 		poolOutcome := pooling.PoolConstants(parseOutcome)
 		structureOutcome := structuring.StructureRecords(poolOutcome)
-		typeCheckOutcome := typechecking.CheckTypes(structureOutcome)
+		resolutionOutcome := nameresolution.ResolveNames(structureOutcome)
+		typeCheckOutcome := typechecking.CheckTypes(resolutionOutcome)
 		codeGenOutcome := codegeneration.GenerateByteCode(typeCheckOutcome)
 
 		//print(codeBlock.Disassemble())
@@ -74,11 +76,16 @@ func TestExpressionEvaluation(t *testing.T) {
 		checkSampleFile(t, sample3)
 		checkSampleFile(t, sample4)
 		checkSampleFile(t, sample5)
-		checkSampleFile(t, sample6)
+		//checkSampleFile(t, sample6)
 		checkSampleFile(t, sample7)
 		checkSampleFile(t, sample8)
+		checkSampleFile(t, sample9)
 
 	})
+
+	//t.Run("Isolated expression evaluation", func(t *testing.T) {
+	//	checkSampleFile(t, "({x = a, y = a + 1} where {a = 2}) == {x = 3, y = 4}")
+	//})
 
 }
 
@@ -99,13 +106,16 @@ var sample4 string
 //go:embed record/record-fields.lligne-tests
 var sample5 string
 
-//go:embed string/string-comparisons.lligne-tests
+//go:embed record/record-where.lligne-tests
 var sample6 string
 
-//go:embed string/string-concatenation.lligne-tests
+//go:embed string/string-comparisons.lligne-tests
 var sample7 string
 
-//go:embed types/built-in-types.lligne-tests
+//go:embed string/string-concatenation.lligne-tests
 var sample8 string
+
+//go:embed types/built-in-types.lligne-tests
+var sample9 string
 
 //---------------------------------------------------------------------------------------------------------------------

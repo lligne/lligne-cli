@@ -115,6 +115,8 @@ func (p *pooler) poolConstants(expression prior.IExpression) IExpression {
 		return p.poolStringLiteralExpr(expr)
 	case *prior.SubtractionExpr:
 		return p.poolSubtractionExpr(expr)
+	case *prior.WhereExpr:
+		return p.poolWhereExpr(expr)
 
 	default:
 		panic(fmt.Sprintf("Missing case in poolConstants: %T\n", expression))
@@ -412,6 +414,18 @@ func (p *pooler) poolSubtractionExpr(expr *prior.SubtractionExpr) IExpression {
 	lhs := p.poolConstants(expr.Lhs)
 	rhs := p.poolConstants(expr.Rhs)
 	return &SubtractionExpr{
+		SourcePosition: expr.SourcePosition,
+		Lhs:            lhs,
+		Rhs:            rhs,
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+func (p *pooler) poolWhereExpr(expr *prior.WhereExpr) IExpression {
+	lhs := p.poolConstants(expr.Lhs)
+	rhs := p.poolConstants(expr.Rhs)
+	return &WhereExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
