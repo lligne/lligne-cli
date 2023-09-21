@@ -11,27 +11,6 @@ import (
 
 //=====================================================================================================================
 
-// ResolutionMechanism is an enumeration of how identifiers link to their origin.
-//
-// Name resolution rules:
-// 1. When inside the right hand side of a field reference expression, find the name inside the left hand side of the expression or fail.
-//
-// 2. When inside the left hand side of a where expression, find the name inside the right hand side of the expression or continue.
-// 3. When inside a record, find the name as a sibling field in the record or continue.
-// 4. When inside a nested record, recursively find the name as a field of the parent record or continue.
-// 5. Find the name inside the top level.
-type ResolutionMechanism uint16
-
-const (
-	ResolutionMechanismUndefined ResolutionMechanism = iota
-	ResolutionMechanismFieldReference
-	ResolutionMechanismWhereField
-	ResolutionMechanismRecordField
-	ResolutionMechanismTopLevel
-)
-
-//=====================================================================================================================
-
 // IExpression is the interface to an expression AST node with identifier names linked to their source.
 type IExpression interface {
 	GetFieldNameIndexes() []uint64
@@ -183,8 +162,7 @@ func (e *GreaterThanOrEqualsExpr) isStructuredExpression()           {}
 type IdentifierExpr struct {
 	SourcePosition util.SourcePos
 	NameIndex      uint64
-	RefMechanism   ResolutionMechanism
-	FieldIndex     uint64
+	NameUsage      NameUsage
 }
 
 func (e *IdentifierExpr) GetFieldNameIndexes() []uint64     { return nil }

@@ -28,7 +28,7 @@ type Outcome struct {
 func ResolveNames(priorOutcome *prior.Outcome) *Outcome {
 
 	s := newNameResolver(priorOutcome)
-	context := newNameResolutionContext()
+	context := NewNameResolutionContext()
 
 	model := s.resolveNames(priorOutcome.Model, context)
 
@@ -65,7 +65,7 @@ func newNameResolver(priorOutcome *prior.Outcome) *nameResolver {
 
 func (s *nameResolver) resolveNames(
 	expression prior.IExpression,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 
 	switch expr := expression.(type) {
@@ -132,7 +132,7 @@ func (s *nameResolver) resolveNames(
 
 func (s *nameResolver) resolveAdditionExpr(
 	expr *prior.AdditionExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -164,7 +164,7 @@ func (s *nameResolver) resolveBuiltInTypeExpr(expr *prior.BuiltInTypeExpr) IExpr
 
 func (s *nameResolver) resolveDivisionExpr(
 	expr *prior.DivisionExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -179,7 +179,7 @@ func (s *nameResolver) resolveDivisionExpr(
 
 func (s *nameResolver) resolveEqualsExpr(
 	expr *prior.EqualsExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -194,10 +194,10 @@ func (s *nameResolver) resolveEqualsExpr(
 
 func (s *nameResolver) resolveFieldReferenceExpr(
 	expr *prior.FieldReferenceExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	parent := s.resolveNames(expr.Parent, context)
-	child := s.resolveNames(expr.Child, context.withFieldReferenceLhs(parent))
+	child := s.resolveNames(expr.Child, context.WithFieldReferenceLhs(parent))
 	return &FieldReferenceExpr{
 		SourcePosition: expr.SourcePosition,
 		Parent:         parent,
@@ -218,7 +218,7 @@ func (s *nameResolver) resolveFloatingPointLiteralExpr(expr *prior.Float64Litera
 
 func (s *nameResolver) resolveGreaterThanExpr(
 	expr *prior.GreaterThanExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -233,7 +233,7 @@ func (s *nameResolver) resolveGreaterThanExpr(
 
 func (s *nameResolver) resolveGreaterThanOrEqualsExpr(
 	expr *prior.GreaterThanOrEqualsExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -248,12 +248,12 @@ func (s *nameResolver) resolveGreaterThanOrEqualsExpr(
 
 func (s *nameResolver) resolveIdentifierExpr(
 	expr *prior.IdentifierExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	return &IdentifierExpr{
 		SourcePosition: expr.SourcePosition,
 		NameIndex:      expr.NameIndex,
-		// TODO: fields from resolving the name
+		NameUsage:      context.LookUpName(expr.NameIndex),
 	}
 }
 
@@ -270,7 +270,7 @@ func (s *nameResolver) resolveIntegerLiteralExpr(expr *prior.Int64LiteralExpr) I
 
 func (s *nameResolver) resolveIsExpr(
 	expr *prior.IsExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -285,7 +285,7 @@ func (s *nameResolver) resolveIsExpr(
 
 func (s *nameResolver) resolveLessThanExpr(
 	expr *prior.LessThanExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -300,7 +300,7 @@ func (s *nameResolver) resolveLessThanExpr(
 
 func (s *nameResolver) resolveLessThanOrEqualsExpr(
 	expr *prior.LessThanOrEqualsExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -315,7 +315,7 @@ func (s *nameResolver) resolveLessThanOrEqualsExpr(
 
 func (s *nameResolver) resolveLogicalAndExpr(
 	expr *prior.LogicalAndExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -330,7 +330,7 @@ func (s *nameResolver) resolveLogicalAndExpr(
 
 func (s *nameResolver) resolveLogicalNotOperationExpr(
 	expr *prior.LogicalNotOperationExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	operand := s.resolveNames(expr.Operand, context)
 	return &LogicalNotOperationExpr{
@@ -343,7 +343,7 @@ func (s *nameResolver) resolveLogicalNotOperationExpr(
 
 func (s *nameResolver) resolveLogicalOrExpr(
 	expr *prior.LogicalOrExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -358,7 +358,7 @@ func (s *nameResolver) resolveLogicalOrExpr(
 
 func (s *nameResolver) resolveMultiplicationExpr(
 	expr *prior.MultiplicationExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -373,7 +373,7 @@ func (s *nameResolver) resolveMultiplicationExpr(
 
 func (s *nameResolver) resolveNegationOperationExpr(
 	expr *prior.NegationOperationExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	operand := s.resolveNames(expr.Operand, context)
 	return &NegationOperationExpr{
@@ -386,7 +386,7 @@ func (s *nameResolver) resolveNegationOperationExpr(
 
 func (s *nameResolver) resolveNotEqualsExpr(
 	expr *prior.NotEqualsExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -401,7 +401,7 @@ func (s *nameResolver) resolveNotEqualsExpr(
 
 func (s *nameResolver) resolveParenthesizedExpr(
 	expr *prior.ParenthesizedExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	inner := s.resolveNames(expr.InnerExpr, context)
 	return &ParenthesizedExpr{
@@ -414,7 +414,7 @@ func (s *nameResolver) resolveParenthesizedExpr(
 
 func (s *nameResolver) resolveRecordExpr(
 	expr *prior.RecordExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	fields := make([]*RecordFieldExpr, 0)
 	fieldNameIndexes := make([]uint64, 0)
@@ -436,7 +436,7 @@ func (s *nameResolver) resolveRecordExpr(
 
 func (s *nameResolver) resolveRecordFieldExpr(
 	expr *prior.RecordFieldExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) *RecordFieldExpr {
 	return &RecordFieldExpr{
 		SourcePosition: expr.GetSourcePosition(),
@@ -460,7 +460,7 @@ func (s *nameResolver) resolveStringLiteralExpr(
 
 func (s *nameResolver) resolveSubtractionExpr(
 	expr *prior.SubtractionExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	lhs := s.resolveNames(expr.Lhs, context)
 	rhs := s.resolveNames(expr.Rhs, context)
@@ -475,58 +475,14 @@ func (s *nameResolver) resolveSubtractionExpr(
 
 func (s *nameResolver) resolveWhereExpr(
 	expr *prior.WhereExpr,
-	context *nameResolutionContext,
+	context *NameResolutionContext,
 ) IExpression {
 	rhs := s.resolveNames(expr.Rhs, context)
-	lhs := s.resolveNames(expr.Lhs, context.withWhereRhs(rhs))
+	lhs := s.resolveNames(expr.Lhs, context.WithWhereRhs(rhs))
 	return &WhereExpr{
 		SourcePosition: expr.SourcePosition,
 		Lhs:            lhs,
 		Rhs:            rhs,
-	}
-}
-
-//=====================================================================================================================
-
-// TODO: make these maps instead of arrays
-
-type nameResolutionContext struct {
-	fieldReferenceNameIndexes           []uint64
-	whereNameIndexes                    []uint64
-	recordsUnderConstructionNameIndexes [][]uint64
-	topLevelNameIndexes                 []uint64
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func newNameResolutionContext() *nameResolutionContext {
-	return &nameResolutionContext{
-		fieldReferenceNameIndexes:           make([]uint64, 0),
-		whereNameIndexes:                    make([]uint64, 0),
-		recordsUnderConstructionNameIndexes: make([][]uint64, 0),
-		topLevelNameIndexes:                 make([]uint64, 0),
-	}
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (c *nameResolutionContext) withFieldReferenceLhs(fieldReferenceLhs IExpression) *nameResolutionContext {
-	return &nameResolutionContext{
-		fieldReferenceNameIndexes:           fieldReferenceLhs.GetFieldNameIndexes(),
-		whereNameIndexes:                    c.whereNameIndexes,
-		recordsUnderConstructionNameIndexes: c.recordsUnderConstructionNameIndexes,
-		topLevelNameIndexes:                 c.topLevelNameIndexes,
-	}
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-func (c *nameResolutionContext) withWhereRhs(whereRhs IExpression) *nameResolutionContext {
-	return &nameResolutionContext{
-		fieldReferenceNameIndexes:           c.fieldReferenceNameIndexes,
-		whereNameIndexes:                    whereRhs.GetFieldNameIndexes(),
-		recordsUnderConstructionNameIndexes: c.recordsUnderConstructionNameIndexes,
-		topLevelNameIndexes:                 c.topLevelNameIndexes,
 	}
 }
 
