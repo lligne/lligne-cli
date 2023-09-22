@@ -7,6 +7,8 @@
 
 package nameresolution
 
+import "lligne-cli/internal/lligne/runtime/pools"
+
 //=====================================================================================================================
 
 // ResolutionMechanism is an enumeration of how identifiers link to their origin.
@@ -40,20 +42,20 @@ type NameUsage struct {
 // TODO: make these maps instead of arrays
 
 type NameResolutionContext struct {
-	fieldReferenceNames           map[uint64]NameUsage
-	whereNames                    map[uint64]NameUsage
-	recordsUnderConstructionNames map[uint64]NameUsage
-	topLevelNames                 map[uint64]NameUsage
+	fieldReferenceNames           map[pools.NameIndex]NameUsage
+	whereNames                    map[pools.NameIndex]NameUsage
+	recordsUnderConstructionNames map[pools.NameIndex]NameUsage
+	topLevelNames                 map[pools.NameIndex]NameUsage
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
 func NewNameResolutionContext() *NameResolutionContext {
 	return &NameResolutionContext{
-		fieldReferenceNames:           make(map[uint64]NameUsage),
-		whereNames:                    make(map[uint64]NameUsage),
-		recordsUnderConstructionNames: make(map[uint64]NameUsage),
-		topLevelNames:                 make(map[uint64]NameUsage),
+		fieldReferenceNames:           make(map[pools.NameIndex]NameUsage),
+		whereNames:                    make(map[pools.NameIndex]NameUsage),
+		recordsUnderConstructionNames: make(map[pools.NameIndex]NameUsage),
+		topLevelNames:                 make(map[pools.NameIndex]NameUsage),
 	}
 }
 
@@ -81,7 +83,7 @@ func (c *NameResolutionContext) WithWhereRhs(whereRhs IExpression) *NameResoluti
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *NameResolutionContext) LookUpName(nameIndex uint64) NameUsage {
+func (c *NameResolutionContext) LookUpName(nameIndex pools.NameIndex) NameUsage {
 	// Name resolution rules:
 	// 1. When inside the right hand side of a field reference expression, find the name inside the left hand side of the expression or fail.
 	//
@@ -103,8 +105,8 @@ func (c *NameResolutionContext) LookUpName(nameIndex uint64) NameUsage {
 
 //=====================================================================================================================
 
-func makeNameUsageMap(nameIndexes []uint64, mechanism ResolutionMechanism) map[uint64]NameUsage {
-	result := make(map[uint64]NameUsage)
+func makeNameUsageMap(nameIndexes []pools.NameIndex, mechanism ResolutionMechanism) map[pools.NameIndex]NameUsage {
+	result := make(map[pools.NameIndex]NameUsage)
 
 	for index, nameIndex := range nameIndexes {
 		result[nameIndex] = NameUsage{

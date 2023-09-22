@@ -7,13 +7,14 @@ package nameresolution
 
 import (
 	"lligne-cli/internal/lligne/code/util"
+	"lligne-cli/internal/lligne/runtime/pools"
 )
 
 //=====================================================================================================================
 
 // IExpression is the interface to an expression AST node with identifier names linked to their source.
 type IExpression interface {
-	GetFieldNameIndexes() []uint64
+	GetFieldNameIndexes() []pools.NameIndex
 	GetSourcePosition() util.SourcePos
 	isStructuredExpression()
 }
@@ -27,9 +28,9 @@ type AdditionExpr struct {
 	Rhs            IExpression
 }
 
-func (e *AdditionExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *AdditionExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *AdditionExpr) isStructuredExpression()           {}
+func (e *AdditionExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *AdditionExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *AdditionExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -39,9 +40,9 @@ type ArrayLiteralExpr struct {
 	Elements       []IExpression
 }
 
-func (e *ArrayLiteralExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *ArrayLiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *ArrayLiteralExpr) isStructuredExpression()           {}
+func (e *ArrayLiteralExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *ArrayLiteralExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *ArrayLiteralExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -51,9 +52,9 @@ type BooleanLiteralExpr struct {
 	Value          bool
 }
 
-func (e *BooleanLiteralExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *BooleanLiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *BooleanLiteralExpr) isStructuredExpression()           {}
+func (e *BooleanLiteralExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *BooleanLiteralExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *BooleanLiteralExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -62,9 +63,9 @@ type BuiltInTypeExpr struct {
 	SourcePosition util.SourcePos
 }
 
-func (e *BuiltInTypeExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *BuiltInTypeExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *BuiltInTypeExpr) isStructuredExpression()           {}
+func (e *BuiltInTypeExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *BuiltInTypeExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *BuiltInTypeExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -75,9 +76,9 @@ type DivisionExpr struct {
 	Rhs            IExpression
 }
 
-func (e *DivisionExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *DivisionExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *DivisionExpr) isStructuredExpression()           {}
+func (e *DivisionExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *DivisionExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *DivisionExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -88,9 +89,9 @@ type EqualsExpr struct {
 	Rhs            IExpression
 }
 
-func (e *EqualsExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *EqualsExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *EqualsExpr) isStructuredExpression()           {}
+func (e *EqualsExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *EqualsExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *EqualsExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -101,9 +102,9 @@ type FieldReferenceExpr struct {
 	Child          IExpression
 }
 
-func (e *FieldReferenceExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *FieldReferenceExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *FieldReferenceExpr) isStructuredExpression()           {}
+func (e *FieldReferenceExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *FieldReferenceExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *FieldReferenceExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -113,9 +114,9 @@ type Float64LiteralExpr struct {
 	Value          float64
 }
 
-func (e *Float64LiteralExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *Float64LiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *Float64LiteralExpr) isStructuredExpression()           {}
+func (e *Float64LiteralExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *Float64LiteralExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *Float64LiteralExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -126,9 +127,9 @@ type FunctionCallExpr struct {
 	Argument          IExpression
 }
 
-func (e *FunctionCallExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *FunctionCallExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *FunctionCallExpr) isStructuredExpression()           {}
+func (e *FunctionCallExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *FunctionCallExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *FunctionCallExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -139,9 +140,9 @@ type GreaterThanExpr struct {
 	Rhs            IExpression
 }
 
-func (e *GreaterThanExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *GreaterThanExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *GreaterThanExpr) isStructuredExpression()           {}
+func (e *GreaterThanExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *GreaterThanExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *GreaterThanExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -152,22 +153,22 @@ type GreaterThanOrEqualsExpr struct {
 	Rhs            IExpression
 }
 
-func (e *GreaterThanOrEqualsExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *GreaterThanOrEqualsExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *GreaterThanOrEqualsExpr) isStructuredExpression()           {}
+func (e *GreaterThanOrEqualsExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *GreaterThanOrEqualsExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *GreaterThanOrEqualsExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
 // IdentifierExpr represents a single identifier.
 type IdentifierExpr struct {
 	SourcePosition util.SourcePos
-	NameIndex      uint64
+	NameIndex      pools.NameIndex
 	NameUsage      NameUsage
 }
 
-func (e *IdentifierExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *IdentifierExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *IdentifierExpr) isStructuredExpression()           {}
+func (e *IdentifierExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *IdentifierExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *IdentifierExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -177,9 +178,9 @@ type Int64LiteralExpr struct {
 	Value          int64
 }
 
-func (e *Int64LiteralExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *Int64LiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *Int64LiteralExpr) isStructuredExpression()           {}
+func (e *Int64LiteralExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *Int64LiteralExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *Int64LiteralExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -190,9 +191,9 @@ type IsExpr struct {
 	Rhs            IExpression
 }
 
-func (e *IsExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *IsExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *IsExpr) isStructuredExpression()           {}
+func (e *IsExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *IsExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *IsExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -202,7 +203,7 @@ type LeadingDocumentationExpr struct {
 	Text           string
 }
 
-func (e *LeadingDocumentationExpr) GetFieldNameIndexes() []uint64 { return nil }
+func (e *LeadingDocumentationExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
 func (e *LeadingDocumentationExpr) GetSourcePosition() util.SourcePos {
 	return e.SourcePosition
 }
@@ -217,9 +218,9 @@ type LessThanExpr struct {
 	Rhs            IExpression
 }
 
-func (e *LessThanExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *LessThanExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LessThanExpr) isStructuredExpression()           {}
+func (e *LessThanExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *LessThanExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *LessThanExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -230,9 +231,9 @@ type LessThanOrEqualsExpr struct {
 	Rhs            IExpression
 }
 
-func (e *LessThanOrEqualsExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *LessThanOrEqualsExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LessThanOrEqualsExpr) isStructuredExpression()           {}
+func (e *LessThanOrEqualsExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *LessThanOrEqualsExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *LessThanOrEqualsExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -243,9 +244,9 @@ type LogicalAndExpr struct {
 	Rhs            IExpression
 }
 
-func (e *LogicalAndExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *LogicalAndExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LogicalAndExpr) isStructuredExpression()           {}
+func (e *LogicalAndExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *LogicalAndExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *LogicalAndExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -255,9 +256,9 @@ type LogicalNotOperationExpr struct {
 	Operand        IExpression
 }
 
-func (e *LogicalNotOperationExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *LogicalNotOperationExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LogicalNotOperationExpr) isStructuredExpression()           {}
+func (e *LogicalNotOperationExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *LogicalNotOperationExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *LogicalNotOperationExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -268,9 +269,9 @@ type LogicalOrExpr struct {
 	Rhs            IExpression
 }
 
-func (e *LogicalOrExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *LogicalOrExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *LogicalOrExpr) isStructuredExpression()           {}
+func (e *LogicalOrExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *LogicalOrExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *LogicalOrExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -281,9 +282,9 @@ type MultiplicationExpr struct {
 	Rhs            IExpression
 }
 
-func (e *MultiplicationExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *MultiplicationExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *MultiplicationExpr) isStructuredExpression()           {}
+func (e *MultiplicationExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *MultiplicationExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *MultiplicationExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -293,9 +294,9 @@ type NegationOperationExpr struct {
 	Operand        IExpression
 }
 
-func (e *NegationOperationExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *NegationOperationExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *NegationOperationExpr) isStructuredExpression()           {}
+func (e *NegationOperationExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *NegationOperationExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *NegationOperationExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -306,9 +307,9 @@ type NotEqualsExpr struct {
 	Rhs            IExpression
 }
 
-func (e *NotEqualsExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *NotEqualsExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *NotEqualsExpr) isStructuredExpression()           {}
+func (e *NotEqualsExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *NotEqualsExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *NotEqualsExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -318,9 +319,9 @@ type OptionalExpr struct {
 	Operand        IExpression
 }
 
-func (e *OptionalExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *OptionalExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *OptionalExpr) isStructuredExpression()           {}
+func (e *OptionalExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *OptionalExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *OptionalExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -330,35 +331,35 @@ type ParenthesizedExpr struct {
 	InnerExpr      IExpression
 }
 
-func (e *ParenthesizedExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *ParenthesizedExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *ParenthesizedExpr) isStructuredExpression()           {}
+func (e *ParenthesizedExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *ParenthesizedExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *ParenthesizedExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
 // RecordExpr represents a record.
 type RecordExpr struct {
 	SourcePosition   util.SourcePos
-	FieldNameIndexes []uint64
+	FieldNameIndexes []pools.NameIndex
 	Fields           []*RecordFieldExpr
 }
 
-func (e *RecordExpr) GetFieldNameIndexes() []uint64     { return e.FieldNameIndexes }
-func (e *RecordExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *RecordExpr) isStructuredExpression()           {}
+func (e *RecordExpr) GetFieldNameIndexes() []pools.NameIndex { return e.FieldNameIndexes }
+func (e *RecordExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *RecordExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
 // RecordFieldExpr represents a record field.
 type RecordFieldExpr struct {
 	SourcePosition util.SourcePos
-	FieldNameIndex uint64
+	FieldNameIndex pools.NameIndex
 	FieldValue     IExpression
 }
 
-func (e *RecordFieldExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *RecordFieldExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *RecordFieldExpr) isStructuredExpression()           {}
+func (e *RecordFieldExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *RecordFieldExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *RecordFieldExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -369,21 +370,21 @@ type StringConcatenationExpr struct {
 	Rhs            IExpression
 }
 
-func (e *StringConcatenationExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *StringConcatenationExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *StringConcatenationExpr) isStructuredExpression()           {}
+func (e *StringConcatenationExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *StringConcatenationExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *StringConcatenationExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
 // StringLiteralExpr represents a single string literal.
 type StringLiteralExpr struct {
 	SourcePosition util.SourcePos
-	ValueIndex     uint64
+	ValueIndex     pools.StringIndex
 }
 
-func (e *StringLiteralExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *StringLiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *StringLiteralExpr) isStructuredExpression()           {}
+func (e *StringLiteralExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *StringLiteralExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *StringLiteralExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -394,9 +395,9 @@ type SubtractionExpr struct {
 	Rhs            IExpression
 }
 
-func (e *SubtractionExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *SubtractionExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *SubtractionExpr) isStructuredExpression()           {}
+func (e *SubtractionExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *SubtractionExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *SubtractionExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================
 
@@ -406,7 +407,7 @@ type TrailingDocumentationExpr struct {
 	Text           string
 }
 
-func (e *TrailingDocumentationExpr) GetFieldNameIndexes() []uint64 { return nil }
+func (e *TrailingDocumentationExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
 func (e *TrailingDocumentationExpr) GetSourcePosition() util.SourcePos {
 	return e.SourcePosition
 }
@@ -421,8 +422,8 @@ type WhereExpr struct {
 	Rhs            IExpression
 }
 
-func (e *WhereExpr) GetFieldNameIndexes() []uint64     { return nil }
-func (e *WhereExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
-func (e *WhereExpr) isStructuredExpression()           {}
+func (e *WhereExpr) GetFieldNameIndexes() []pools.NameIndex { return nil }
+func (e *WhereExpr) GetSourcePosition() util.SourcePos      { return e.SourcePosition }
+func (e *WhereExpr) isStructuredExpression()                {}
 
 //=====================================================================================================================

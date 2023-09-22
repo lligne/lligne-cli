@@ -20,7 +20,7 @@ type Outcome struct {
 	NewLineOffsets  []uint32
 	Model           prior.IExpression
 	StringConstants *pools.StringConstantPool
-	IdentifierNames *pools.StringConstantPool
+	IdentifierNames *pools.NameConstantPool
 	TypeConstants   *types.TypeConstantPool
 	CodeBlock       *bytecode.CodeBlock
 }
@@ -50,7 +50,7 @@ type generator struct {
 	SourceCode      string
 	NewLineOffsets  []uint32
 	StringConstants *pools.StringPool
-	IdentifierNames *pools.StringPool
+	IdentifierNames *pools.NamePool
 	TypeConstants   *types.TypeConstantPool
 	CodeBlock       *bytecode.CodeBlock
 }
@@ -62,7 +62,7 @@ func newGenerator(priorOutcome *prior.Outcome) *generator {
 		SourceCode:      priorOutcome.SourceCode,
 		NewLineOffsets:  priorOutcome.NewLineOffsets,
 		StringConstants: pools.NewStringPool(),
-		IdentifierNames: pools.NewStringPool(),
+		IdentifierNames: pools.NewNamePool(),
 		TypeConstants:   priorOutcome.TypeConstants,
 		CodeBlock:       bytecode.NewCodeBlock(),
 	}

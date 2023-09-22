@@ -7,6 +7,7 @@ package pooling
 
 import (
 	"lligne-cli/internal/lligne/code/util"
+	"lligne-cli/internal/lligne/runtime/pools"
 )
 
 //=====================================================================================================================
@@ -149,7 +150,7 @@ func (e *GreaterThanOrEqualsExpr) isPooledExpression()               {}
 // IdentifierExpr represents a single identifier.
 type IdentifierExpr struct {
 	SourcePosition util.SourcePos
-	NameIndex      uint64
+	NameIndex      pools.NameIndex
 }
 
 func (e *IdentifierExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }
@@ -347,7 +348,7 @@ func (e *StringConcatenationExpr) isPooledExpression()               {}
 // StringLiteralExpr represents a single string literal.
 type StringLiteralExpr struct {
 	SourcePosition util.SourcePos
-	ValueIndex     uint64
+	ValueIndex     pools.StringIndex
 }
 
 func (e *StringLiteralExpr) GetSourcePosition() util.SourcePos { return e.SourcePosition }

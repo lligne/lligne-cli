@@ -20,7 +20,7 @@ type Outcome struct {
 	NewLineOffsets  []uint32
 	Model           IExpression
 	StringConstants *pools.StringConstantPool
-	IdentifierNames *pools.StringConstantPool
+	IdentifierNames *pools.NameConstantPool
 }
 
 //=====================================================================================================================
@@ -45,7 +45,7 @@ type pooler struct {
 	SourceCode      string
 	NewLineOffsets  []uint32
 	StringConstants *pools.StringPool
-	IdentifierNames *pools.StringPool
+	IdentifierNames *pools.NamePool
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ func newPooler(priorOutcome *prior.Outcome) *pooler {
 		SourceCode:      priorOutcome.SourceCode,
 		NewLineOffsets:  priorOutcome.NewLineOffsets,
 		StringConstants: pools.NewStringPool(),
-		IdentifierNames: pools.NewStringPool(),
+		IdentifierNames: pools.NewNamePool(),
 	}
 }
 

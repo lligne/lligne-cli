@@ -51,7 +51,7 @@ func (m *Machine) Int64GetResult() int64 {
 
 // StringGetResult returns a string result from the top of the value stack.
 func (m *Machine) StringGetResult(stringPool *pools.StringPool) string {
-	return stringPool.Get(m.Stack[m.Top])
+	return stringPool.Get(pools.StringIndex(m.Stack[m.Top]))
 }
 
 //=====================================================================================================================

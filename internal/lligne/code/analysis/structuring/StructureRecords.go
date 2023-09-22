@@ -20,7 +20,7 @@ type Outcome struct {
 	NewLineOffsets  []uint32
 	Model           IExpression
 	StringConstants *pools.StringConstantPool
-	IdentifierNames *pools.StringConstantPool
+	IdentifierNames *pools.NameConstantPool
 }
 
 //=====================================================================================================================
@@ -46,7 +46,7 @@ type structurer struct {
 	SourceCode      string
 	NewLineOffsets  []uint32
 	StringConstants *pools.StringConstantPool
-	IdentifierNames *pools.StringConstantPool
+	IdentifierNames *pools.NameConstantPool
 }
 
 //---------------------------------------------------------------------------------------------------------------------

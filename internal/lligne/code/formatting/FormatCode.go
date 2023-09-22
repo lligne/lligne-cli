@@ -27,7 +27,7 @@ type formatter struct {
 	SourceCode      string
 	NewLineOffsets  []uint32
 	StringConstants *pools.StringPool
-	IdentifierNames *pools.StringPool
+	IdentifierNames *pools.NamePool
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ func newFormatter(priorOutcome *prior.Outcome) *formatter {
 		SourceCode:      priorOutcome.SourceCode,
 		NewLineOffsets:  priorOutcome.NewLineOffsets,
 		StringConstants: pools.NewStringPool(),
-		IdentifierNames: pools.NewStringPool(),
+		IdentifierNames: pools.NewNamePool(),
 	}
 }
 

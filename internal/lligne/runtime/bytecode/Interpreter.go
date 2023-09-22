@@ -25,7 +25,11 @@ type Interpreter struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func NewInterpreter(codeBlock *CodeBlock, stringPool *pools.StringPool, typePool *types.TypePool) *Interpreter {
+func NewInterpreter(
+	codeBlock *CodeBlock,
+	stringPool *pools.StringPool,
+	typePool *types.TypePool,
+) *Interpreter {
 	return &Interpreter{
 		codeBlock:  codeBlock,
 		recordPool: records.NewRecordPool(),
@@ -392,7 +396,7 @@ func init() {
 		fieldCount := *(*int)(unsafe.Pointer(&n.codeBlock.OpCodes[m.IP]))
 		m.IP += 4
 
-		typeIndex := m.Stack[m.Top-fieldCount]
+		typeIndex := types.TypeIndex(m.Stack[m.Top-fieldCount])
 
 		fieldValues := make([]uint64, fieldCount)
 		copy(fieldValues, m.Stack[m.Top-fieldCount+1:m.Top+1])
@@ -432,16 +436,16 @@ func init() {
 	}
 
 	dispatch[OpCodeStringConcatenate] = func(n *Interpreter, m *Machine) {
-		rhs := n.stringPool.Get(m.Stack[m.Top])
+		rhs := n.stringPool.Get(pools.StringIndex(m.Stack[m.Top]))
 		m.Top -= 1
-		lhs := n.stringPool.Get(m.Stack[m.Top])
-		m.Stack[m.Top] = n.stringPool.Put(lhs + rhs)
+		lhs := n.stringPool.Get(pools.StringIndex(m.Stack[m.Top]))
+		m.Stack[m.Top] = uint64(n.stringPool.Put(lhs + rhs))
 	}
 
 	dispatch[OpCodeStringEquals] = func(n *Interpreter, m *Machine) {
-		rhs := n.stringPool.Get(m.Stack[m.Top])
+		rhs := n.stringPool.Get(pools.StringIndex(m.Stack[m.Top]))
 		m.Top -= 1
-		lhs := n.stringPool.Get(m.Stack[m.Top])
+		lhs := n.stringPool.Get(pools.StringIndex(m.Stack[m.Top]))
 		if lhs == rhs {
 			m.Stack[m.Top] = true64
 		} else {
@@ -456,9 +460,9 @@ func init() {
 	}
 
 	dispatch[OpCodeStringNotEquals] = func(n *Interpreter, m *Machine) {
-		rhs := n.stringPool.Get(m.Stack[m.Top])
+		rhs := n.stringPool.Get(pools.StringIndex(m.Stack[m.Top]))
 		m.Top -= 1
-		lhs := n.stringPool.Get(m.Stack[m.Top])
+		lhs := n.stringPool.Get(pools.StringIndex(m.Stack[m.Top]))
 		if lhs == rhs {
 			m.Stack[m.Top] = 0
 		} else {

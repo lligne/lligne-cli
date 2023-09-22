@@ -21,7 +21,7 @@ type Outcome struct {
 	NewLineOffsets  []uint32
 	Model           IExpression
 	StringConstants *pools.StringConstantPool
-	IdentifierNames *pools.StringConstantPool
+	IdentifierNames *pools.NameConstantPool
 	TypeConstants   *types.TypeConstantPool
 }
 
@@ -29,7 +29,7 @@ type Outcome struct {
 
 func CheckTypes(priorOutcome *prior.Outcome) *Outcome {
 	checker := newTypeChecker(priorOutcome)
-	model := checker.checkTypes(priorOutcome.Model, make([]uint64, 0))
+	model := checker.checkTypes(priorOutcome.Model, make([]types.TypeIndex, 0))
 
 	return &Outcome{
 		SourceCode:      priorOutcome.SourceCode,
@@ -47,7 +47,7 @@ type typeChecker struct {
 	SourceCode      string
 	NewLineOffsets  []uint32
 	StringConstants *pools.StringConstantPool
-	IdentifierNames *pools.StringConstantPool
+	IdentifierNames *pools.NameConstantPool
 	TypePool        *types.TypePool
 }
 
@@ -67,7 +67,7 @@ func newTypeChecker(priorOutcome *prior.Outcome) *typeChecker {
 
 func (t *typeChecker) checkTypes(
 	expression prior.IExpression,
-	idContexts []uint64,
+	idContexts []types.TypeIndex,
 ) IExpression {
 
 	switch expr := expression.(type) {
@@ -132,7 +132,7 @@ func (t *typeChecker) checkTypes(
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckAdditionExpr(expr *prior.AdditionExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckAdditionExpr(expr *prior.AdditionExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	switch lhs.GetTypeIndex() {
@@ -177,7 +177,7 @@ func (t *typeChecker) typeCheckBuiltInTypeExpr(expr *prior.BuiltInTypeExpr) IExp
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckDivisionExpr(expr *prior.DivisionExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckDivisionExpr(expr *prior.DivisionExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're the same
@@ -191,7 +191,7 @@ func (t *typeChecker) typeCheckDivisionExpr(expr *prior.DivisionExpr, idContexts
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckEqualsExpr(expr *prior.EqualsExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckEqualsExpr(expr *prior.EqualsExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're the same
@@ -204,7 +204,7 @@ func (t *typeChecker) typeCheckEqualsExpr(expr *prior.EqualsExpr, idContexts []u
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckFieldReferenceExpr(expr *prior.FieldReferenceExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckFieldReferenceExpr(expr *prior.FieldReferenceExpr, idContexts []types.TypeIndex) IExpression {
 	parent := t.checkTypes(expr.Parent, idContexts)
 	parentTypeIndex := parent.GetTypeIndex()
 	child := t.checkTypes(expr.Child, append(idContexts, parentTypeIndex))
@@ -227,7 +227,7 @@ func (t *typeChecker) typeCheckFloat64LiteralExpr(expr *prior.Float64LiteralExpr
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckGreaterThanExpr(expr *prior.GreaterThanExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckGreaterThanExpr(expr *prior.GreaterThanExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're the same
@@ -240,7 +240,7 @@ func (t *typeChecker) typeCheckGreaterThanExpr(expr *prior.GreaterThanExpr, idCo
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckGreaterThanOrEqualsExpr(expr *prior.GreaterThanOrEqualsExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckGreaterThanOrEqualsExpr(expr *prior.GreaterThanOrEqualsExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're the same
@@ -253,10 +253,10 @@ func (t *typeChecker) typeCheckGreaterThanOrEqualsExpr(expr *prior.GreaterThanOr
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckIdentifierExpr(expr *prior.IdentifierExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckIdentifierExpr(expr *prior.IdentifierExpr, idContexts []types.TypeIndex) IExpression {
 
 	fieldIndex := uint64(0xFFFFFFFF)
-	typeIndex := uint64(0xFFFFFFFF)
+	typeIndex := types.TypeIndex(0xFFFFFFFF)
 
 outer:
 	for i := len(idContexts) - 1; i >= 0; i-- {
@@ -294,7 +294,7 @@ func (t *typeChecker) typeCheckInt64LiteralExpr(expr *prior.Int64LiteralExpr) IE
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckIsExpr(expr *prior.IsExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckIsExpr(expr *prior.IsExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure the lhs and rhs are compatible
@@ -307,7 +307,7 @@ func (t *typeChecker) typeCheckIsExpr(expr *prior.IsExpr, idContexts []uint64) I
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckLessThanExpr(expr *prior.LessThanExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckLessThanExpr(expr *prior.LessThanExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're the same
@@ -320,7 +320,7 @@ func (t *typeChecker) typeCheckLessThanExpr(expr *prior.LessThanExpr, idContexts
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckLessThanOrEqualsExpr(expr *prior.LessThanOrEqualsExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckLessThanOrEqualsExpr(expr *prior.LessThanOrEqualsExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're the same
@@ -333,7 +333,7 @@ func (t *typeChecker) typeCheckLessThanOrEqualsExpr(expr *prior.LessThanOrEquals
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckLogicalAndExpr(expr *prior.LogicalAndExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckLogicalAndExpr(expr *prior.LogicalAndExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're both boolean
@@ -346,7 +346,7 @@ func (t *typeChecker) typeCheckLogicalAndExpr(expr *prior.LogicalAndExpr, idCont
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckLogicalNotOperationExpr(expr *prior.LogicalNotOperationExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckLogicalNotOperationExpr(expr *prior.LogicalNotOperationExpr, idContexts []types.TypeIndex) IExpression {
 	operand := t.checkTypes(expr.Operand, idContexts)
 
 	// TODO: validate that operands are boolean
@@ -359,7 +359,7 @@ func (t *typeChecker) typeCheckLogicalNotOperationExpr(expr *prior.LogicalNotOpe
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckLogicalOrExpr(expr *prior.LogicalOrExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckLogicalOrExpr(expr *prior.LogicalOrExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're both boolean
@@ -372,7 +372,7 @@ func (t *typeChecker) typeCheckLogicalOrExpr(expr *prior.LogicalOrExpr, idContex
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckMultiplicationExpr(expr *prior.MultiplicationExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckMultiplicationExpr(expr *prior.MultiplicationExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're the same
@@ -386,7 +386,7 @@ func (t *typeChecker) typeCheckMultiplicationExpr(expr *prior.MultiplicationExpr
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckNegationOperationExpr(expr *prior.NegationOperationExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckNegationOperationExpr(expr *prior.NegationOperationExpr, idContexts []types.TypeIndex) IExpression {
 	operand := t.checkTypes(expr.Operand, idContexts)
 
 	return &NegationOperationExpr{
@@ -398,7 +398,7 @@ func (t *typeChecker) typeCheckNegationOperationExpr(expr *prior.NegationOperati
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckNotEqualsExpr(expr *prior.NotEqualsExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckNotEqualsExpr(expr *prior.NotEqualsExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're the same
@@ -411,7 +411,7 @@ func (t *typeChecker) typeCheckNotEqualsExpr(expr *prior.NotEqualsExpr, idContex
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckParenthesizedExpr(expr *prior.ParenthesizedExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckParenthesizedExpr(expr *prior.ParenthesizedExpr, idContexts []types.TypeIndex) IExpression {
 
 	inner := t.checkTypes(expr.InnerExpr, idContexts)
 
@@ -425,13 +425,13 @@ func (t *typeChecker) typeCheckParenthesizedExpr(expr *prior.ParenthesizedExpr, 
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckRecordExpr(expr *prior.RecordExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckRecordExpr(expr *prior.RecordExpr, idContexts []types.TypeIndex) IExpression {
 
 	// TODO: make sure fields are in the same order as the record type
 
 	fields := make([]*RecordFieldExpr, 0)
-	fieldNameIndexes := make([]uint64, 0)
-	fieldTypeIndexes := make([]uint64, 0)
+	fieldNameIndexes := make([]pools.NameIndex, 0)
+	fieldTypeIndexes := make([]types.TypeIndex, 0)
 
 	for _, priorField := range expr.Fields {
 		// Type check each field
@@ -461,7 +461,7 @@ func (t *typeChecker) typeCheckRecordExpr(expr *prior.RecordExpr, idContexts []u
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckRecordFieldExpr(expr *prior.RecordFieldExpr, idContexts []uint64) *RecordFieldExpr {
+func (t *typeChecker) typeCheckRecordFieldExpr(expr *prior.RecordFieldExpr, idContexts []types.TypeIndex) *RecordFieldExpr {
 	return &RecordFieldExpr{
 		SourcePosition: expr.SourcePosition,
 		FieldNameIndex: expr.FieldNameIndex,
@@ -480,7 +480,7 @@ func (t *typeChecker) typeCheckStringLiteralExpr(expr *prior.StringLiteralExpr) 
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckSubtractionExpr(expr *prior.SubtractionExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckSubtractionExpr(expr *prior.SubtractionExpr, idContexts []types.TypeIndex) IExpression {
 	lhs := t.checkTypes(expr.Lhs, idContexts)
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	// TODO: ensure they're the same
@@ -494,7 +494,7 @@ func (t *typeChecker) typeCheckSubtractionExpr(expr *prior.SubtractionExpr, idCo
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (t *typeChecker) typeCheckWhereExpr(expr *prior.WhereExpr, idContexts []uint64) IExpression {
+func (t *typeChecker) typeCheckWhereExpr(expr *prior.WhereExpr, idContexts []types.TypeIndex) IExpression {
 	rhs := t.checkTypes(expr.Rhs, idContexts)
 	rhsTypeIndex := rhs.GetTypeIndex()
 	lhs := t.checkTypes(expr.Lhs, append(idContexts, rhsTypeIndex))

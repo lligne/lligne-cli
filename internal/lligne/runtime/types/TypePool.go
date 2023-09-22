@@ -7,11 +7,15 @@ package types
 
 //=====================================================================================================================
 
+type TypeIndex uint64
+
+//=====================================================================================================================
+
 // TypePool holds a list of types interned so that they can be retrieved by index.
 type TypePool struct {
 	types         []IType
-	indexes       map[IType]uint64
-	indexesByName map[string]uint64
+	indexes       map[IType]TypeIndex
+	indexesByName map[string]TypeIndex
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -20,8 +24,8 @@ type TypePool struct {
 func NewTypePool() *TypePool {
 	result := &TypePool{
 		types:         nil,
-		indexes:       make(map[IType]uint64),
-		indexesByName: make(map[string]uint64),
+		indexes:       make(map[IType]TypeIndex),
+		indexesByName: make(map[string]TypeIndex),
 	}
 
 	// NOTE: Keep these in sync with BuiltInTypeIndex just below
@@ -40,7 +44,7 @@ func NewTypePool() *TypePool {
 // BuiltInTypeIndex is an enumeration of known pool indexes for built-in types.
 const (
 	// NOTE: Keep these in sync with type pool initialization just above
-	BuiltInTypeIndexUnit uint64 = iota
+	BuiltInTypeIndexUnit TypeIndex = iota
 	BuiltInTypeIndexBool
 	BuiltInTypeIndexFloat64
 	BuiltInTypeIndexInt64
@@ -60,7 +64,7 @@ func (p *TypePool) Freeze() *TypeConstantPool {
 //---------------------------------------------------------------------------------------------------------------------
 
 // Get returns the type at the given index.
-func (p *TypePool) Get(index uint64) IType {
+func (p *TypePool) Get(index TypeIndex) IType {
 	return p.types[index]
 }
 
@@ -74,7 +78,7 @@ func (p *TypePool) GetByName(name string) IType {
 //---------------------------------------------------------------------------------------------------------------------
 
 // GetIndexByName returns the index of the type with given name.
-func (p *TypePool) GetIndexByName(name string) uint64 {
+func (p *TypePool) GetIndexByName(name string) TypeIndex {
 	return p.indexesByName[name]
 }
 
@@ -82,11 +86,11 @@ func (p *TypePool) GetIndexByName(name string) uint64 {
 
 // Put looks for the type already in the pool. It adds it if not there.
 // Returns the index of the new or existing entry.
-func (p *TypePool) Put(value IType) uint64 {
+func (p *TypePool) Put(value IType) TypeIndex {
 	result, found := p.indexes[value]
 
 	if !found {
-		result = uint64(len(p.types))
+		result = TypeIndex(len(p.types))
 		p.types = append(p.types, value)
 		p.indexes[value] = result
 		p.indexesByName[value.Name()] = result
@@ -116,7 +120,7 @@ func (p *TypeConstantPool) Clone() *TypePool {
 //---------------------------------------------------------------------------------------------------------------------
 
 // Get returns the type at the given index.
-func (p *TypeConstantPool) Get(index uint64) IType {
+func (p *TypeConstantPool) Get(index TypeIndex) IType {
 	return p.ITypes[index]
 }
 

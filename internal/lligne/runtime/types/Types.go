@@ -5,6 +5,8 @@
 
 package types
 
+import "lligne-cli/internal/lligne/runtime/pools"
+
 //=====================================================================================================================
 
 type TypeCategory uint16
@@ -66,8 +68,8 @@ var Int64TypeInstance = &Int64Type{}
 //=====================================================================================================================
 
 type RecordType struct {
-	FieldNameIndexes []uint64
-	FieldTypeIndexes []uint64
+	FieldNameIndexes []pools.NameIndex
+	FieldTypeIndexes []TypeIndex
 }
 
 func (t *RecordType) isType()                {}

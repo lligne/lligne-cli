@@ -20,7 +20,7 @@ type Outcome struct {
 	NewLineOffsets  []uint32
 	Model           IExpression
 	StringConstants *pools.StringConstantPool
-	IdentifierNames *pools.StringConstantPool
+	IdentifierNames *pools.NameConstantPool
 }
 
 //=====================================================================================================================
@@ -47,7 +47,7 @@ type nameResolver struct {
 	SourceCode      string
 	NewLineOffsets  []uint32
 	StringConstants *pools.StringConstantPool
-	IdentifierNames *pools.StringConstantPool
+	IdentifierNames *pools.NameConstantPool
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -417,7 +417,7 @@ func (s *nameResolver) resolveRecordExpr(
 	context *NameResolutionContext,
 ) IExpression {
 	fields := make([]*RecordFieldExpr, 0)
-	fieldNameIndexes := make([]uint64, 0)
+	fieldNameIndexes := make([]pools.NameIndex, 0)
 
 	for _, field := range expr.Fields {
 		fieldNameIndexes = append(fieldNameIndexes, field.FieldNameIndex)

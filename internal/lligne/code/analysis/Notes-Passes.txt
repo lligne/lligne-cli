@@ -1,0 +1,22 @@
+
+Scanning
+  - NewLineOffsets
+
+Parsing
+  - SourcePosition
+
+Pooling
+  - String Constant Indexes
+  - Identifier Name Indexes
+
+Structuring
+  - [Record expressions restructured into fields]
+
+Name Resolution
+  - Field Indexes
+  - Name Usages
+
+Type Checking
+  - Type Indexes
+
+

@@ -10,7 +10,7 @@ import "lligne-cli/internal/lligne/runtime/types"
 //=====================================================================================================================
 
 type Record struct {
-	TypeIndex   uint64
+	TypeIndex   types.TypeIndex
 	FieldValues []RecordFieldValue
 }
 
@@ -49,7 +49,12 @@ func AreRecordsEqual(p *types.TypePool, r *RecordPool, r1Index uint64, r2Index u
 
 //=====================================================================================================================
 
-func areRecordTypesEquivalent(p *types.TypePool, r *RecordPool, type1Index uint64, type2Index uint64) bool {
+func areRecordTypesEquivalent(
+	p *types.TypePool,
+	r *RecordPool,
+	type1Index types.TypeIndex,
+	type2Index types.TypeIndex,
+) bool {
 
 	type1 := p.Get(type1Index).(*types.RecordType)
 	type2 := p.Get(type2Index).(*types.RecordType)

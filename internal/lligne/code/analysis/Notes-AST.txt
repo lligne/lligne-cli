@@ -1,0 +1,75 @@
+
+# Literals
+BooleanLiteralExpr (Boolean)
+BuiltInTypeExpr (Type)
+Float64LiteralExpr (Float64)
+Int64LiteralExpr (Int64)
+LeadingDocumentationExpr (Text)
+StringLiteralExpr (String)
+TrailingDocumentationExpr (Text)
+UnitExpr (Unit)
+
+# Identifiers
+IdentifierExpr
+
+# Unary Operators
+NegationOperationExpr
+OptionalExpr
+ParenthesizedExpr
+
+# Unary Predicates
+LogicalNotOperationExpr
+
+# Binary Operators (Same Types)
+AdditionExpr
+DivisionExpr
+MultiplicationExpr
+StringConcatenationExpr
+SubtractionExpr
+
+# Binary Operators (Different Types)
+FieldReferenceExpr
+FunctionArrowExpr
+FunctionCallExpr
+IntersectExpr
+IntersectAssignValueExpr
+IntersectDefaultValueExpr
+IntersectLowPrecedenceExpr
+QualifyExpr
+RangeExpr
+WhenExpr
+WhereExpr
+UnionExpr
+
+# Binary Predicates (Same Types)
+EqualsExpr
+GreaterThanExpr
+GreaterThanOrEqualsExpr
+LessThanExpr
+LessThanOrEqualsExpr
+LogicalAndExpr
+LogicalOrExpr
+NotEqualsExpr
+
+# Binary Predicates (Different Types)
+InExpr
+IsExpr
+RegexMatchExpr
+RegexNotMatchExpr
+
+# N-Ary Expressions
+ArrayLiteralExpr (Elements)
+FunctionArgumentsExpr (Arguments)
+RecordExpr (Fields)
+RecordFieldExpr (Name, Type, Value, DefaultValue) [not primary from the parse]
+
+
+# TODO
+DateLiteral
+DateTimeLiteral
+
+TagIdentifier
+
+Module
+Package
+TopLevel
